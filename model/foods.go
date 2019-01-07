@@ -9,6 +9,23 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// BrowseResult is returned from the browse endpoints
+type BrowseResult struct {
+	Count int32        `json:"count"`
+	Start int32        `json:"start"`
+	Max   int32        `json:"max"`
+	Items []BrowseItem `json:"items"`
+}
+
+// BrowseItem abbreviated Food returned by browse endpoints
+type BrowseItem struct {
+	FdcID        string `json:"fdcId" binding:"required"`
+	Upc          string `json:"upc"`
+	Description  string `json:"foodDescription" binding:"required"`
+	Source       string `json:"dataSource"`
+	Manufacturer string `json:"company"`
+}
+
 // Food reflects JSON used to transfer BFPD foods data from JIFSAN to NAL
 type Food struct {
 	UpdatedAt       time.Time      `json:"lastChangeDateTime"`
