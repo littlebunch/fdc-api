@@ -3,16 +3,14 @@ Provides query and retrieval REST services for USDA "Food Data Central" datasets
 ## Installation
 ### Step 1: Set up go environment if necessary   
 Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g. $GOPATH/src/github.com/littlebunch
-### Step 2: Install supporting packages as needed:     
+### Step 2: Install supporting packages as needed.  Normally, your editor should install these automatically.  The list includes:      
 *[gin framework](https://github.com/gin-gonic/gin) go get github.com/gin-gonic/gin  and go get gopkg.in/appleboy/gin-jwt.v2  
 *[gin-jwt](https://github.com/appleboy/gin-jwt) go get github.com/appleboy/gin-jwt       
-*[bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) go get golang.org/x/crypto/bcrypt
-*[mgo mongodb drivers] (https://labix.org/mgo) go get gopkg.in/mgo.v2 gopkg.in/mgo.v2/bson      
-*[nsq client](https://godoc.org/github.com/nsqio/go-nsq) go get -u -v github.com/bitly/go-nsq    
+*[bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) go get golang.org/x/crypto/bcrypt 
+*[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK
 *[yaml](http://gopkg.in/yaml.v2) go get gopkg.in/yaml.v2   
 *[endless](https://github.com/fvbock/endless) go get github.com/fvbock/endless     
-*[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson    
-You can also use [gpm](https://github.com/pote/gpm) with the Godeps file provided with the distribution for a one-step install.
+*[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson 
 ### Step 3:Install gnut-api services into your $GOBIN:
 ```
 cd bfpd; go build -o $GOBIN/bfpd main.go routes.go

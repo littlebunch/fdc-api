@@ -1,7 +1,5 @@
 package main
 
-// go:generate swagger generate bfpd
-// @APIVersion 1.0.0
 // @APITitle Brand Foods Product Database
 
 import (
@@ -14,7 +12,6 @@ import (
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/isdapps/bfpd-api/auth"
-	"github.com/isdapps/bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
@@ -31,7 +28,6 @@ var (
 	l   = flag.String("l", "/tmp/bfpd.out", "send log output to this file -- defaults to /tmp/bfpd.out")
 	p   = flag.String("p", "8000", "TCP port to used")
 	r   = flag.String("r", "v1", "root path to deploy -- defaults to 'v1'")
-	cs  bfpd.Config
 	err error
 )
 
