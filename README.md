@@ -7,8 +7,8 @@ Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g.
 *[gin framework](https://github.com/gin-gonic/gin) go get github.com/gin-gonic/gin  and go get gopkg.in/appleboy/gin-jwt.v2  
 *[gin-jwt](https://github.com/appleboy/gin-jwt) go get github.com/appleboy/gin-jwt       
 *[bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) go get golang.org/x/crypto/bcrypt 
-*[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK
-*[yaml](http://gopkg.in/yaml.v2) go get gopkg.in/yaml.v2   
+*[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK    
+*[yaml](http://gopkg.in/yaml.v2) go get gopkg.in/yaml.v2       
 *[endless](https://github.com/fvbock/endless) go get github.com/fvbock/endless     
 *[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson 
 ### Step 3:Install gnut-api services into your $GOBIN:
@@ -22,11 +22,9 @@ Configuration is minimal and can be in a YAML file or envirnoment variables whic
 
 YAML    
 ```
-mongodb:
-  url:              //array of mongo url's
-    -localhost
-  db: foods         //default  
-  collection: bfpd  //default
+couchdb:
+  url:  localhost
+  bucket: gnutdata   //default  
   user: <your_user>
   pwd: <your_password>
 
@@ -71,21 +69,17 @@ or if you prefer [httpie](https://github.com/jakubroztocil/httpie):
 ```
 http -v --json POST localhost:8000/v1/login username=your-password password=your-user-name
 ```
-### Fetch a single food by ndbno: 
+### Fetch a single food by id: 
 ```
 curl -X GET http://localhost:8000/v1/food/45001535  
 ```
 #### returns meta data only for a food  
 ```
-curl -X GET http://localhost:8000/v1/food/45001535/meta
+curl -X GET http://localhost:8000/v1/food/meta/45001535
 ```
 #### returns servings data only for a food  
 ```
-curl -X GET http://localhost:8000/v1/food/45001535/servings
-```
-#### request a food in XML via the ACCEPT header:
-```
-curl -H "Accept:application/xml" -X GET http://localhost:8000/v1food/45001535/servings
+curl -X GET http://localhost:8000/v1/food/servings/45001535
 ```
 ### Browse foods:
 ```
@@ -96,17 +90,14 @@ or
 ```
 http GET localhost:8000/v1/food/ max=50 page=1
 ```
-#### request a list in XML via the ACCEPT header:
-```
-curl -H "Accept:application/xml" -X GET http://localhost:8000/v1/foods?page=1&max=50?format=full
-```
-### Perform a simple search of the mongodb text index.  Include quotes to search phrases, e.g. ?q="bubbies homemade".
+
+### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='foodDescription:"bubbies homemade"'.
 ```
 curl -X GET http://localhost:8000/v1/foods?q=bread&page=1&max=100
 ```
 or
 ```
-http GET localhost:8000/v1/search q=break max=50 page=1
+http GET localhost:8000/v1/food q=break max=50 page=1
 ```
 ### GET a list of nutrients
 ```

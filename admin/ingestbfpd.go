@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	fdc "github.com/littlebunch/gnutdata-api/model"
+	fdc "github.com/littlebunch/gnut-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
 

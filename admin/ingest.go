@@ -10,7 +10,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/littlebunch/gnutdata-api/model"
+	"github.com/littlebunch/gnut-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
