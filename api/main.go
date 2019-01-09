@@ -24,6 +24,7 @@ const (
 	FULL           = "full"
 	META           = "meta"
 	SERVING        = "servings"
+	NUTRIENTS      = "nutrients"
 )
 
 var (
@@ -82,8 +83,8 @@ func main() {
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)
 		//	v1.GET("/browse", foodsGet)
-		v1.GET("/food/:fdcid/:servings", foodFdcID)
-		v1.GET("/food/:fdcid", foodFdcID)
+		v1.GET("/food/:id/:format", foodFdcID)
+		v1.GET("/food/:id", foodFdcID)
 
 		//	v1.GET("/nutrient/report", foodNutReportGet)
 		//	v1.GET("/nutrient/list", nutListGet)
@@ -93,15 +94,15 @@ func main() {
 
 }
 
-// foodFdcID returns a single food based on a key value constructed from the fdcid parameter.
-// If the servings parameter equals 'meta' then only the food's meta-data is returned.
+// foodFdcID returns a single food based on a key value constructed from the fdcid
+// If the format parameter equals 'meta' then only the food's meta-data is returned.
 func foodFdcID(c *gin.Context) {
 	var (
 		q string
 	)
-	q = fmt.Sprintf("BFPD:%s", c.Param("fdcid"))
-	if c.Param("servings") == META {
-		var f fdc.BrowseItem
+	q = fmt.Sprintf("BFPD:%s", c.Param("id"))
+	if c.Param("format") == META {
+		var f fdc.FoodMeta
 		_, err := b.Get(q, &f)
 		if err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
@@ -113,6 +114,11 @@ func foodFdcID(c *gin.Context) {
 		_, err := b.Get(q, &f)
 		if err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
+		}
+		if c.Param("format") == SERVING {
+			c.JSON(http.StatusOK, f.Servings)
+		} else if c.Param("format") == NUTRIENTS {
+			c.JSON(http.StatusOK, f.Nutrients)
 		} else {
 			c.JSON(http.StatusOK, f)
 		}

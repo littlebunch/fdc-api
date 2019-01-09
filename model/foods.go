@@ -11,14 +11,14 @@ import (
 
 // BrowseResult is returned from the browse endpoints
 type BrowseResult struct {
-	Count int32        `json:"count"`
-	Start int32        `json:"start"`
-	Max   int32        `json:"max"`
-	Items []BrowseItem `json:"items"`
+	Count int32      `json:"count"`
+	Start int32      `json:"start"`
+	Max   int32      `json:"max"`
+	Items []FoodMeta `json:"items"`
 }
 
-// BrowseItem abbreviated Food returned by browse endpoints
-type BrowseItem struct {
+// FoodMeta abbreviated Food containing only meta-data
+type FoodMeta struct {
 	FdcID        string `json:"fdcId" binding:"required"`
 	Upc          string `json:"upc"`
 	Description  string `json:"foodDescription" binding:"required"`
@@ -26,7 +26,7 @@ type BrowseItem struct {
 	Manufacturer string `json:"company"`
 }
 
-// Food reflects JSON used to transfer BFPD foods data from JIFSAN to NAL
+// Food reflects JSON used to transfer BFPD foods data from USDA csv
 type Food struct {
 	UpdatedAt       time.Time      `json:"lastChangeDateTime"`
 	FdcID           string         `json:"fdcId" binding:"required"`
@@ -80,7 +80,7 @@ type FoodGroup struct {
 	Type        string `json:"type" binding:"required"`
 }
 
-//Config provides basic MySQL, Elasticsearch and Nsq configuration properties for bfpd web and microservices.  Properties are normally read in from a YAML file or the environment
+//Config provides basic CouchBase configuration properties for API services.  Properties are normally read in from a YAML file or the environment
 type Config struct {
 	CouchDb CouchDb
 }
@@ -94,7 +94,7 @@ type CouchDb struct {
 	Pwd        string
 }
 
-// Defaults sets values for Elastic and Nsq configuration properties if none have been provided.
+// Defaults sets values for CouchBase configuration properties if none have been provided.
 func (cs *Config) Defaults() {
 	if cs.CouchDb.URL == "" {
 		cs.CouchDb.URL = "localhost"
