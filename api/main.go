@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
@@ -20,8 +21,6 @@ const (
 	maxListSize    = 150
 	defaultListMax = 50
 	apiVersion     = "1.0.0 Beta"
-	BRIEF          = "brief"
-	FULL           = "full"
 	META           = "meta"
 	SERVING        = "servings"
 	NUTRIENTS      = "nutrients"
@@ -35,6 +34,7 @@ var (
 	p   = flag.String("p", "8000", "TCP port to used")
 	r   = flag.String("r", "v1", "root path to deploy -- defaults to 'v1'")
 	b   *gocb.Bucket
+	cs  fdc.Config
 	err error
 )
 
@@ -54,7 +54,7 @@ func init() {
 func main() {
 	flag.Parse()
 	// get configuration
-	var cs fdc.Config
+
 	cs.GetConfig(c)
 	// Connect to couchbase
 	cluster, err := gocb.Connect("couchbase://" + cs.CouchDb.URL)
@@ -69,6 +69,8 @@ func main() {
 	if err != nil {
 		log.Fatalln("Cannot connect to bucket!", err)
 	}
+	defer b.Close()
+	defer cluster.Close()
 	// initialize our jwt authentication
 	//var u *auth.User
 	//if *i {
@@ -85,7 +87,7 @@ func main() {
 		//	v1.GET("/browse", foodsGet)
 		v1.GET("/food/:id/:format", foodFdcID)
 		v1.GET("/food/:id", foodFdcID)
-
+		v1.GET("/foods", foodsGet)
 		//	v1.GET("/nutrient/report", foodNutReportGet)
 		//	v1.GET("/nutrient/list", nutListGet)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
@@ -125,6 +127,78 @@ func foodFdcID(c *gin.Context) {
 	}
 
 	return
+}
+
+func foodsGet(c *gin.Context) {
+	var (
+		max    int64
+		page   int64
+		count  int
+		format string
+		sort   string
+		foods  []interface{}
+	)
+	// check the format parameter which defaults to BRIEF if not set
+	format = c.Query("format")
+	if format != "" && (format != META && format != SERVING && format != NUTRIENTS) {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s or %s", META)})
+		return
+	}
+	if sort != "" && sort == "name" {
+		sort = "foodDescription"
+	} else {
+		sort = "fdcId"
+	}
+	max, err = strconv.ParseInt(c.Query("max"), 10, 32)
+	if err != nil {
+		max = defaultListMax
+	}
+	if max > maxListSize {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("max parameter %d exceeds maximum allowed size of %d", max, maxListSize)})
+		return
+	}
+	page, err = strconv.ParseInt(c.Query("page"), 10, 32)
+	if err != nil {
+		page = 0
+	}
+	if page < 0 {
+		page = 0
+	}
+	offset := page * max
+
+	q := fmt.Sprintf("select * from %s as gd offset %d limit %d", cs.CouchDb.Bucket, offset, max)
+	query := gocb.NewN1qlQuery(q)
+	rows, err := b.ExecuteN1qlQuery(query, nil)
+	if err != nil {
+		fmt.Printf("ERROR=%v for %v", err, query)
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No foods found"})
+	}
+	if format == META {
+		type n1q struct {
+			Item fdc.FoodMeta `json:"gd"`
+		}
+		var row n1q
+		for rows.Next(&row) {
+			foods = append(foods, row.Item)
+		}
+	} else {
+		type n1q struct {
+			Item fdc.Food `json:"gd"`
+		}
+		var row n1q
+		for rows.Next(&row) {
+			if format == SERVING {
+				foods = append(foods, fdc.BrowseServings{FdcID: row.Item.FdcID, Servings: row.Item.Servings})
+			} else if format == NUTRIENTS {
+				foods = append(foods, fdc.BrowseNutrients{FdcID: row.Item.FdcID, Nutrients: row.Item.Nutrients})
+			} else {
+				foods = append(foods, row.Item)
+			}
+			row = n1q{}
+		}
+	}
+	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
+	c.JSON(http.StatusOK, results)
 }
 
 // errorout

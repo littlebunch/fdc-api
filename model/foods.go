@@ -11,10 +11,22 @@ import (
 
 // BrowseResult is returned from the browse endpoints
 type BrowseResult struct {
-	Count int32      `json:"count"`
-	Start int32      `json:"start"`
-	Max   int32      `json:"max"`
-	Items []FoodMeta `json:"items"`
+	Count int32         `json:"count"`
+	Start int32         `json:"start"`
+	Max   int32         `json:"max"`
+	Items []interface{} `json:"items"`
+}
+
+// BrowseServings is returned from the browse endpoints
+type BrowseServings struct {
+	FdcID    string    `json:"fdcId" binding:"required"`
+	Servings []Serving `json:"servingSizes"`
+}
+
+// BrowseNutrients is returned from the browse endpoints
+type BrowseNutrients struct {
+	FdcID     string         `json:"fdcId" binding:"required"`
+	Nutrients []NutrientData `json:"nutrients"`
 }
 
 // FoodMeta abbreviated Food containing only meta-data
@@ -36,15 +48,15 @@ type Food struct {
 	PublicationDate time.Time      `json:"publicationDateTime"`
 	Ingredients     string         `json:"ingredients"`
 	Manufacturer    string         `json:"company"`
-	Servings        []Serving      `json:"servingSizes"`
-	Nutrients       []NutrientData `json:"nutrients"`
+	Servings        []Serving      `json:"servingSizes,omitempty"`
+	Nutrients       []NutrientData `json:"nutrients,omitempty"`
 }
 
 // Serving describes a list nutrients for a given state, weight and amount
 type Serving struct {
 	Nutrientbasis string  `json:"100UnitNutrientBasis"`
 	Description   string  `json:"householdServingUom"`
-	Servingstate  string  `json:"servingState"`
+	Servingstate  string  `json:"servingState,omitempty"`
 	Weight        float32 `json:"weightInGmOrMl"`
 	Servingamount float32 `json:"householdServingValue"`
 }
