@@ -15,12 +15,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/littlebunch/gnut-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
+	"gopkg.in/couchbase/gocb.v1/cbft"
 )
 
 const (
 	maxListSize    = 150
 	defaultListMax = 50
 	apiVersion     = "1.0.0 Beta"
+	FULL           = "full"
 	META           = "meta"
 	SERVING        = "servings"
 	NUTRIENTS      = "nutrients"
@@ -88,6 +90,7 @@ func main() {
 		v1.GET("/food/:id/:format", foodFdcID)
 		v1.GET("/food/:id", foodFdcID)
 		v1.GET("/foods", foodsGet)
+		v1.GET("/foods/search", foodsSearch)
 		//	v1.GET("/nutrient/report", foodNutReportGet)
 		//	v1.GET("/nutrient/list", nutListGet)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
@@ -140,15 +143,22 @@ func foodsGet(c *gin.Context) {
 	)
 	// check the format parameter which defaults to BRIEF if not set
 	format = c.Query("format")
-	if format != "" && (format != META && format != SERVING && format != NUTRIENTS) {
+	if format == "" {
+		format = META
+	}
+	if format != FULL && format != META && format != SERVING && format != NUTRIENTS {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s or %s", META)})
 		return
 	}
-	if sort != "" && sort == "name" {
-		sort = "foodDescription"
-	} else {
+	sort = c.Query("sort")
+	if sort == "" {
 		sort = "fdcId"
 	}
+	if sort != "" && sort != "foodDescription" && sort != "company" && sort != "fdcId" {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'company', 'name' or 'fdcId'"})
+		return
+	}
+
 	max, err = strconv.ParseInt(c.Query("max"), 10, 32)
 	if err != nil {
 		max = defaultListMax
@@ -166,8 +176,9 @@ func foodsGet(c *gin.Context) {
 	}
 	offset := page * max
 
-	q := fmt.Sprintf("select * from %s as gd offset %d limit %d", cs.CouchDb.Bucket, offset, max)
+	q := fmt.Sprintf("select * from %s as gd where %s != '' offset %d limit %d", cs.CouchDb.Bucket, sort, offset, max)
 	query := gocb.NewN1qlQuery(q)
+	fmt.Printf("Q=%s", q)
 	rows, err := b.ExecuteN1qlQuery(query, nil)
 	if err != nil {
 		fmt.Printf("ERROR=%v for %v", err, query)
@@ -195,6 +206,73 @@ func foodsGet(c *gin.Context) {
 				foods = append(foods, row.Item)
 			}
 			row = n1q{}
+		}
+	}
+	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
+	c.JSON(http.StatusOK, results)
+}
+func foodsSearch(c *gin.Context) {
+	var (
+		max    int
+		page   int
+		count  int
+		format string
+		sort   string
+		foods  []interface{}
+	)
+	// check the format parameter which defaults to BRIEF if not set
+	format = c.Query("format")
+	if format == "" {
+		format = META
+	}
+	if format != FULL && format != META && format != SERVING && format != NUTRIENTS {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s or %s", META)})
+		return
+	}
+	sort = c.Query("sort")
+	if sort == "" {
+		sort = "fdcId"
+	}
+	if sort != "" && sort != "foodDescription" && sort != "company" && sort != "fdcId" {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'company', 'name' or 'fdcId'"})
+		return
+	}
+
+	max, err = strconv.ParseInt(c.Query("max"), 0, 32)
+	if err != nil {
+		max = defaultListMax
+	}
+	if max > maxListSize {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("max parameter %d exceeds maximum allowed size of %d", max, maxListSize)})
+		return
+	}
+	page, err = int(strconv.ParseInt(c.Query("page"), 10, 32))
+	if err != nil {
+		page = 0
+	}
+	if page < 0 {
+		page = 0
+	}
+	offset := page * max
+	indexName := "fd_food"
+	q := c.Query("q")
+	fmt.Printf("Q=%s", q)
+	query := gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q)).Limit(int(max))
+	result, err := b.ExecuteSearchQuery(query)
+	if err != nil {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Search query failed %v", err)})
+		return
+	}
+	if format == META {
+		var f fdc.FoodMeta
+		for _, r := range result.Hits() {
+			_, err := b.Get(r.Id, &f)
+			if err != nil {
+				errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
+			} else {
+				foods = append(foods, f)
+			}
+
 		}
 	}
 	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
