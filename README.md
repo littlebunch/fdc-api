@@ -35,7 +35,8 @@ YAML
 ```
 couchdb:
   url:  localhost
-  bucket: gnutdata   //default  
+  bucket: gnutdata   //default  bucket
+  ftsindex: fd_food  // default full-text index
   user: <your_user>
   pwd: <your_password>
 
@@ -46,8 +47,8 @@ All data is stored in [Couchbase](http://www.couchbase.com)
 Environment   
 ```
 COUCHBASE_URL=localhost
-COUCHBASE_COLLECTION=bfpd
-COUCHBASE_DB=foods
+COUCHBASE_BUCKET=gnutdata
+COUCHBASE_FTSINDEX=fd_food
 COUCHBASE_USER=bfpduser
 COUCHBASE_PWD=bfpduser_password
 
@@ -64,7 +65,7 @@ where
   -d output debugging messages 
   -c configuration file to use (defaults to ./config.yml )  
   -p TCP port to run server (defaults to 8000)
-  -r root deployment context (defaults to bfpd)
+  -r root deployment context (v1)
   -l send stdout/stderr to named file (defaults to /tmp/bfpd.out
  ```
 ## Usage
@@ -87,23 +88,24 @@ curl -X GET http://localhost:8000/v1/food/nutrients/45001535
 ```
 ### Browse foods:
 ```
-curl -X GET http://localhost:8000/v1/foods?page=1&max=50?format=meta&sort=foodDescription
-curl -X GET http://localhost:8000/v1/foods?page=1&max=50?format=full&sort=company
-curl -X GET http://localhost:8000/v1/foods?page=1&max=50?format=nutrients
-curl -X GET http://localhost:8000/v1/foods?page=1&max=50?format=servings
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=meta&sort=foodDescription
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=full&sort=company
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=nutrients
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=servings
 ```
 or
 ```
-http GET localhost:8000/v1/food/ max=50 page=1
+http GET localhost:8000/v1/browse max=50 page=1
 ```
 
-### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='foodDescription:"bubbies homemade"'.
+### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='foodDescription:"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company' or 'ingredients'.
 ```
 curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100
+curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100
 ```
 or
 ```
-http GET localhost:8000/v1/foods/search q=break max=50 page=1
+http GET localhost:8000/v1/search q=bread max=50 page=1 format=servings
 ```
 ### GET a list of nutrients
 ```

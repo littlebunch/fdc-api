@@ -99,11 +99,11 @@ type Config struct {
 
 // CouchDb configuration for connecting, reading and writing Couchbase nodes
 type CouchDb struct {
-	URL        string
-	ReplicaSet string
-	Bucket     string
-	User       string
-	Pwd        string
+	URL      string
+	Bucket   string
+	FtsIndex string
+	User     string
+	Pwd      string
 }
 
 // Defaults sets values for CouchBase configuration properties if none have been provided.
@@ -113,6 +113,9 @@ func (cs *Config) Defaults() {
 	}
 	if cs.CouchDb.Bucket == "" {
 		cs.CouchDb.Bucket = "gnutdata"
+	}
+	if cs.CouchDb.FtsIndex == "" {
+		cs.CouchDb.FtsIndex = "fd_food"
 	}
 }
 
