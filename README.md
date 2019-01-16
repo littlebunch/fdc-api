@@ -5,7 +5,7 @@ Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g.
 ### Step 2: Install supporting packages as needed.  Normally, your editor should install these automatically.  The list includes:      
 *[gin framework](https://github.com/gin-gonic/gin) go get github.com/gin-gonic/gin  and go get gopkg.in/appleboy/gin-jwt.v2  
 *[gin-jwt](https://github.com/appleboy/gin-jwt) go get github.com/appleboy/gin-jwt       
-*[bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) go get golang.org/x/crypto/bcrypt 
+*[bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) go get golang.org/x/crypto/bcrypt      
 *[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK    
 *[yaml](http://gopkg.in/yaml.v2) go get gopkg.in/yaml.v2       
 *[endless](https://github.com/fvbock/endless) go get github.com/fvbock/endless     
@@ -23,49 +23,47 @@ If you do already have access to a CouchBase instance then you will need to down
 3. Download and unzip the BFPD csv file into a location of your choice.   
 4. Run the loader:   
 ```
-$GOBIN/ingest -c /path/to/config.yml -i /path/to/BFFD.csv -t BFPD
-```u
-The loader can take up to an hour or two for a complete load.
+$GOBIN/ingest -c /path/to/config.yml -i /path/to/BFFD.csv -t BFPD    
+```
+The loader can take up to an hour or two for a complete load.    
 5. Start the web server (see below)   
 
-## Configuration
-Configuration is minimal and can be in a YAML file or envirnoment variables which override the config file.  
-
-YAML    
-```
-couchdb:
-  url:  localhost
-  bucket: gnutdata   //default  bucket
-  ftsindex: fd_food  // default full-text index
-  user: <your_user>
-  pwd: <your_password>
+## Configuration     
+Configuration is minimal and can be in a YAML file or envirnoment variables which override the config file.   
 
 ```
+couchdb:   
+  url:  localhost   
+  bucket: gnutdata   //default  bucket    
+  ftsindex: fd_food  // default full-text index   
+  user: <your_user>    
+  pwd: <your_password>    
 
-All data is stored in [Couchbase](http://www.couchbase.com)
+```
+
+All data is stored in [Couchbase](http://www.couchbase.com)   
 
 Environment   
 ```
-COUCHBASE_URL=localhost
-COUCHBASE_BUCKET=gnutdata
-COUCHBASE_FTSINDEX=fd_food
-COUCHBASE_USER=bfpduser
-COUCHBASE_PWD=bfpduser_password
-
+COUCHBASE_URL=localhost   
+COUCHBASE_BUCKET=gnutdata   
+COUCHBASE_FTSINDEX=fd_food   
+COUCHBASE_USER=bfpduser   
+COUCHBASE_PWD=bfpduser_password   
 ```
 ## Running    
 
 The instructions below assume you are deploying on a local workstation.   
 
 
-### Start the web server:
+### Start the web server:    
 ```
 $GOBIN/bfpd -d -c /path/to/config.yml -r context   
-where
-  -d output debugging messages 
-  -c configuration file to use (defaults to ./config.yml )  
-  -p TCP port to run server (defaults to 8000)
-  -r root deployment context (v1)
+where    
+  -d output debugging messages     
+  -c configuration file to use (defaults to ./config.yml )      
+  -p TCP port to run server (defaults to 8000)    
+  -r root deployment context (v1)    
   -l send stdout/stderr to named file (defaults to /tmp/bfpd.out
  ```
 ## Usage
@@ -103,17 +101,17 @@ http GET localhost:8000/v1/browse max=50 page=1
 curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100    
 curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100   
 ```
-or
+or    
 ```
-http GET localhost:8000/v1/search q=bread max=50 page=1 format=servings
+http GET localhost:8000/v1/search q=bread max=50 page=1 format=servings    
 ```
-### GET a list of nutrients
+### GET a list of nutrients    
 ```
 curl -X GET http://localhost:8000/v1/nutrient/list   
 curl -X GET http://localhost:8000/v1/nutrient/list?nutrientno=301    
 curl -X GET http://localhost:8000/v1/nutrient/list?nutrient=calcium    
 ```
-or
+or    
 ```
 http GET localhost:8000/v1/nutrient/list   
 http GET localhost:8000/v1/nutrient/list?nutrientno=301      
