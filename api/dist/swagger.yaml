@@ -1,0 +1,272 @@
+swagger: '2.0'
+info:
+  description: >-
+    REST API for the <a
+    href="https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/nutrient-data-laboratory/docs/usda-branded-food-products-database/">Branded
+    Food Products</a> dataset released by the USDA
+  version: 1.0.0
+  title: Branded Food Products API
+  contact:
+    name: Gary Moore
+    email: gary@littlebunch.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: localhost:8000
+basePath: /
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: developers
+    description: Operations available to regular developers
+schemes:
+  - http
+paths:
+  /v1/food/{id}:
+    get:
+      tags:
+        - developers
+      summary: fetches one food item by fdcId in various formats
+      description: >-
+        Retrieves a single food item by fdc id.  A format parameter can be
+        specified to only return selected data elements for a food.  The default
+        format is to return all data elements.
+      operationId: fetch
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: Food Data Central ID of the food to retrieve
+          required: true
+          type: string
+        - name: format
+          in: query
+          description: >-
+            Food documents can be formated in 4 ways.    
+            1) A value of \'meta\' returns only meta-data (fdcId, upc, foodDescription and company) for a
+            food.  This is the default format.
+            2)  \'servings\' returns only the servings array for an item
+            3) \'nutrients\' returns only the nutrients array for an item.
+            4) \'full\' all data elements are returned
+          required: false
+          type: string
+      responses:
+        '200':
+          description: results matching criteria
+          schema:
+            $ref: '#/definitions/FoodItem'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
+  /v1/browse:
+    get:
+      tags:
+        - developers
+      summary: browse foods data
+      description: By passing in the appropriate options, you can browse for available foods
+      operationId: browse
+      produces:
+        - application/json
+      parameters:
+        - name: format
+          in: query
+          description: >-
+            Food documents can be formated in 4 ways.    
+            1) A value of \'meta\' returns only meta-data (fdcId, upc, foodDescription and company) for a
+            food.  This is the default format.
+            2)  \'servings\' returns only the servings array for an item
+            3) \'nutrients\' returns only the nutrients array for an item.
+            4) \'full\' all data elements are returned
+          required: false
+          type: string
+        - name: page
+          in: query
+          description: page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc. 
+          required: false
+          type: integer
+          minimum: 0
+          format: int32
+        - name: max
+          in: query
+          description: maximum number of records to return. 
+          required: false
+          type: integer
+          maximum: 150
+          minimum: 1
+          format: int32
+        - name: sort
+          in: query
+          description: return the results list ordered by foodDescription, company, or fdcId.  Default is fdcId
+          type: string
+          required: false
+      responses:
+        '200':
+          description: browse results matching criteria
+          schema:
+            $ref: '#/definitions/BrowseResult'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
+  /v1/search:
+    get:
+      tags:
+        - developers
+      summary: search and browse foods data
+      description: |
+        By passing in the appropriate options, you can browse for
+        available foods in the system
+      operationId: search
+      produces:
+        - application/json
+      parameters:
+        - name: q
+          in: query
+          description: search string for looking up foods.  Unless restricted to a field specified in the f parameter, the foodDescription, company, ingredients, source and upc fields are searched for matches.
+          required: true
+          type: string
+        - name: f
+          in: query
+          description: a search query can be limited to a particular field.  Presently there are three choices -- \'foodDescription\',\'company\' or \'ingredients\'. 
+          required: false
+          type: string
+        - name: format
+          in: query
+          description:  Returned food documents can be formated in 4 ways.    
+           >-  
+            1) A value of \'meta\' returns only meta-data (fdcId, upc, foodDescription and company) for a
+            food.  This is the default format.
+           >-
+            2)  \'servings\' returns only the servings array for an item
+           >-
+            3) \'nutrients\' returns only the nutrients array for an item.
+           >-
+            4) \'full\' all data elements are returned
+          type: string
+          required: false
+        - name: page
+          in: query
+          description: page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc. 
+          required: false
+          type: integer
+          minimum: 1
+          format: int32
+        - name: max
+          in: query
+          description: maximum number of records to return
+          required: false
+          type: integer
+          maximum: 150
+          minimum: 1
+          format: int32
+        - name: sort
+          in: query
+          description: return the results list ordered by foodDescription, company, relevance
+          type: string
+          required: false
+      responses:
+        '200':
+          description: browse results matching criteria
+          schema:
+            $ref: '#/definitions/BrowseResult'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
+definitions:
+  BrowseResult:
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int32
+        description: Number of records found by a browse or search request
+        example: 10
+      start:
+        type: integer
+        description: Starting point (offset) into the list returned by a browse or search request
+        format: int32
+        example: 0
+      max:
+        type: integer
+        description: The number of items in the list returned by a browse or search request
+        format: int32
+        example: 50
+        minimum: 1
+        maximum: 150
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/FoodItem'
+  FoodItem:
+    type: object
+    required:
+      - fdcId
+      - foodDescription
+    properties:
+      fdcId:
+        type: string
+        example: '45001529'
+      foodDescription:
+        type: string
+        example: HOT & SPICY BARBECUE SAUCE
+      publicationDateTime:
+        type: string
+        format: date-time
+        example: '2016-08-29T09:12:33.001Z'
+      company:
+        type: string
+        example: FRESH & EASY
+      upc:
+        type: string
+        example: 011150548885
+      ingredients:
+        type: string
+        example: 'SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH.'
+      servingSizes:
+        $ref: '#/definitions/servingSizes'
+      nutrients:
+        $ref: '#/definitions/nutrients'
+  servingSizes:
+    properties:
+      100UnitNutrientBasis:
+        type: string
+        example: g
+      householdServingUom:
+        type: string
+        example: Tbsp
+      servingState:
+        type: string
+        example: PREPARED
+      weightInGmOrMl:
+        type: number
+        format: float
+        example: 32
+      householdServingValue:
+        type: number
+        format: float
+        example: 10.1
+  nutrients:
+    required:
+      - nutrientNumber
+      - unit
+    properties:
+      nutrientNumber:
+        type: integer
+        format: uint
+        example: 301
+      nutrientName:
+        type: string
+        example: Energy
+      unit:
+        type: string
+        example: kcal
+      derivation:
+        type: string
+        example: LCAC
+      valuePer100UnitServing:
+        type: number
+        format: float
+        example: 10.4

@@ -24,7 +24,7 @@ If you do already have access to a CouchBase instance then you will need to down
 4. Run the loader:   
 ```
 $GOBIN/ingest -c /path/to/config.yml -i /path/to/BFFD.csv -t BFPD
-```
+```u
 The loader can take up to an hour or two for a complete load.
 5. Start the web server (see below)   
 
@@ -76,15 +76,15 @@ curl -X GET http://localhost:8000/v1/food/45001535
 ```
 #### returns meta data only for a food  
 ```
-curl -X GET http://localhost:8000/v1/food/meta/45001535
+curl -X GET http://localhost:8000/v1/food/45001535?format=meta
 ```
 #### returns servings data only for a food  
 ```
-curl -X GET http://localhost:8000/v1/food/servings/45001535
+curl -X GET http://localhost:8000/v1/food/45001535?format=servings
 ```   
 ### returns nutrient data only for a food
 ```
-curl -X GET http://localhost:8000/v1/food/nutrients/45001535
+curl -X GET http://localhost:8000/v1/food/45001535??format=nutrients
 ```
 ### Browse foods:
 ```
