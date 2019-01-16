@@ -74,34 +74,34 @@ where
 ```
 curl -X GET http://localhost:8000/v1/food/45001535  
 ```
-#### returns meta data only for a food  
+#### returns meta data only for a food   
 ```
-curl -X GET http://localhost:8000/v1/food/45001535?format=meta
+curl -X GET http://localhost:8000/v1/food/45001535?format=meta    
 ```
-#### returns servings data only for a food  
+#### returns servings data only for a food     
 ```
-curl -X GET http://localhost:8000/v1/food/45001535?format=servings
+curl -X GET http://localhost:8000/v1/food/45001535?format=servings     
 ```   
-### returns nutrient data only for a food
+### returns nutrient data only for a food   
 ```
-curl -X GET http://localhost:8000/v1/food/45001535??format=nutrients
+curl -X GET http://localhost:8000/v1/food/45001535??format=nutrients   
 ```
-### Browse foods:
+### Browse foods:   
 ```
 curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=meta&sort=foodDescription
-curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=full&sort=company
-curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=nutrients
-curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=servings
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=full&sort=company      
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=nutrients    
+curl -X GET http://localhost:8000/v1/browse?page=1&max=50?format=servings     
 ```
-or
+or      
 ```
-http GET localhost:8000/v1/browse max=50 page=1
+http GET localhost:8000/v1/browse max=50 page=1     
 ```
 
-### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='foodDescription:"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company' or 'ingredients'.
+### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='foodDescription:"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company' or 'ingredients'.   
 ```
-curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100
-curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100
+curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100    
+curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100   
 ```
 or
 ```
@@ -110,12 +110,12 @@ http GET localhost:8000/v1/search q=bread max=50 page=1 format=servings
 ### GET a list of nutrients
 ```
 curl -X GET http://localhost:8000/v1/nutrient/list   
-curl -X GET http://localhost:8000/v1/nutrient/list?nutrientno=301
-curl -X GET http://localhost:8000/v1/nutrient/list?nutrient=calcium
+curl -X GET http://localhost:8000/v1/nutrient/list?nutrientno=301    
+curl -X GET http://localhost:8000/v1/nutrient/list?nutrient=calcium    
 ```
 or
 ```
 http GET localhost:8000/v1/nutrient/list   
-http GET localhost:8000/v1/nutrient/list?nutrientno=301
-http GET localhost:8000/v1/nutrient/list?nutrient=calcium
+http GET localhost:8000/v1/nutrient/list?nutrientno=301      
+http GET localhost:8000/v1/nutrient/list?nutrient=calcium       
 ```
