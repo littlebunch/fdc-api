@@ -60,7 +60,7 @@ func foodsGet(c *gin.Context) {
 		format = META
 	}
 	if format != FULL && format != META && format != SERVING && format != NUTRIENTS {
-		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s or %s", META)})
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", META, FULL, SERVING, NUTRIENTS)})
 		return
 	}
 	sort = c.Query("sort")

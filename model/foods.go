@@ -4,6 +4,7 @@ package fdc
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
@@ -108,6 +109,9 @@ type CouchDb struct {
 
 // Defaults sets values for CouchBase configuration properties if none have been provided.
 func (cs *Config) Defaults() {
+	if os.Getenv("") != "" {
+		cs.CouchDb.URL = os.Getenv("COUCHBASE_URL")
+	}
 	if cs.CouchDb.URL == "" {
 		cs.CouchDb.URL = "localhost"
 	}
