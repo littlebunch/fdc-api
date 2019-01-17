@@ -109,8 +109,20 @@ type CouchDb struct {
 
 // Defaults sets values for CouchBase configuration properties if none have been provided.
 func (cs *Config) Defaults() {
-	if os.Getenv("") != "" {
+	if os.Getenv("COUCHBASE_URL") != "" {
 		cs.CouchDb.URL = os.Getenv("COUCHBASE_URL")
+	}
+	if os.Getenv("COUCHBASE_BUCKET") != "" {
+		cs.CouchDb.Bucket = os.Getenv("COUCHBASE_BUCKET")
+	}
+	if os.Getenv("COUCHBASE_FTSINDEX") != "" {
+		cs.CouchDb.FtsIndex = os.Getenv("COUCHBASE_FTSINDEX")
+	}
+	if os.Getenv("COUCHBASE_USER") != "" {
+		cs.CouchDb.User = os.Getenv("COUCHBASE_USER")
+	}
+	if os.Getenv("COUCHBASE_PWD") != "" {
+		cs.CouchDb.Pwd = os.Getenv("COUCHBASE_PWD")
 	}
 	if cs.CouchDb.URL == "" {
 		cs.CouchDb.URL = "localhost"

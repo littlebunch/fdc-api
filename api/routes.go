@@ -9,7 +9,7 @@ import (
 	gocb "gopkg.in/couchbase/gocb.v1"
 	"gopkg.in/couchbase/gocb.v1/cbft"
 
-	"github.com/littlebunch/gnut-bfpd-api/model"
+	"github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
 // foodFdcID returns a single food based on a key value constructed from the fdcid

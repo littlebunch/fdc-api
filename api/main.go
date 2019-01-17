@@ -11,7 +11,7 @@ import (
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
-	"github.com/littlebunch/gnut-bfpd-api/model"
+	"github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
