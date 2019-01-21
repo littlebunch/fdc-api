@@ -4,13 +4,12 @@ package main
 import (
 	"encoding/csv"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"os"
 	"strconv"
 
-	"github.com/littlebunch/gnut-bfpd-api/model"
+	"github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
@@ -62,17 +61,15 @@ func main() {
 	}
 	bucket.Manager("", "").CreatePrimaryIndex("", true, false)
 	if dtype == fdc.BFPD {
-		c, err := ProcessBFPDFiles(bucket, *in)
+		err := ProcessBFPDFiles(bucket, *in)
 		if err != nil {
 			log.Fatal(err)
 		}
-		cnt = c
 	} else {
 		// read in the file and insert into couchbase
 		f, err := os.Open(*in)
 		if err != nil {
-			log.Printf("Cannot open %s", *in)
-			return
+			log.Fatalf("Cannot open %s", *in)
 		}
 		r := csv.NewReader(f)
 		for {
@@ -115,8 +112,8 @@ func main() {
 					}, 0)
 
 			}
-
 		}
 	}
-	fmt.Printf("Finished.  Count=%d\n", cnt)
+	log.Println("Finished.")
+	os.Exit(0)
 }

@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
-	fdc "github.com/littlebunch/gnut-bfpd-api/model"
+	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
@@ -21,6 +22,7 @@ type ingestCnt struct {
 var (
 	cnts ingestCnt
 	err  error
+	wg   sync.WaitGroup
 )
 
 // ProcessBFPDFiles loads a set of Branded Food Products csv files processed
@@ -28,14 +30,22 @@ var (
 //		Products.csv  -- main food file
 //		Servings.csv  -- servings sizes for each food
 //		Nutrients.csv -- nutrient values for each food
-func ProcessBFPDFiles(bucket *gocb.Bucket, path string) (int, error) {
-	//cnts.Foods, err = foods(bucket, path)
-	cnts.Servings, err = servings(bucket, path)
-	cnts.Nutrients, err = nutrients(bucket, path)
+func ProcessBFPDFiles(bucket *gocb.Bucket, path string) error {
+
+	cnts.Foods, err = foods(bucket, path)
 	if err != nil {
-		return 0, err
+		log.Fatal(err)
 	}
-	return cnt, err
+	wg.Add(1)
+	go servings(bucket, path)
+	wg.Add(1)
+	go nutrients(bucket, path)
+	wg.Wait()
+	if err != nil {
+		return err
+	}
+	log.Printf("Finished.  Counts: %d Foods %d Servings %d\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
+	return err
 }
 func foods(bucket *gocb.Bucket, path string) (int, error) {
 	fn := path + "Products.csv"
@@ -52,9 +62,9 @@ func foods(bucket *gocb.Bucket, path string) (int, error) {
 		if err != nil {
 			return cnt, err
 		}
-		cnt++
-		if cnt%1000 == 0 {
-			log.Println("Count = ", cnt)
+		cnts.Foods++
+		if cnts.Foods%1000 == 0 {
+			log.Println("Count = ", cnts.Foods)
 		}
 		update, err := time.Parse("2006-01-02 15:04:05", record[5])
 		if err != nil {
@@ -76,9 +86,10 @@ func foods(bucket *gocb.Bucket, path string) (int, error) {
 				Ingredients:     record[7],
 			}, 0)
 	}
-	return cnt, err
+	return cnts.Foods, err
 }
 func servings(bucket *gocb.Bucket, path string) (int, error) {
+	defer wg.Done()
 	fn := path + "Serving_size.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -97,7 +108,7 @@ func servings(bucket *gocb.Bucket, path string) (int, error) {
 			break
 		}
 		if err != nil {
-			return cnt, err
+			return cnts.Servings, err
 		}
 
 		id := *t + ":" + record[0]
@@ -107,12 +118,13 @@ func servings(bucket *gocb.Bucket, path string) (int, error) {
 				bucket.Upsert(cid, food, 0)
 			}
 			cid = id
+			bucket.Get(id, &food)
 			s = nil
 		}
-		bucket.Get(id, &food)
-		cnt++
-		if cnt%10000 == 0 {
-			log.Println("Servings Count = ", cnt)
+
+		cnts.Servings++
+		if cnts.Servings%10000 == 0 {
+			log.Println("Servings Count = ", cnts.Servings)
 		}
 		w, err := strconv.ParseFloat(record[1], 32)
 		if err != nil {
@@ -131,9 +143,10 @@ func servings(bucket *gocb.Bucket, path string) (int, error) {
 		})
 
 	}
-	return cnt, err
+	return cnts.Servings, err
 }
 func nutrients(bucket *gocb.Bucket, path string) (int, error) {
+	defer wg.Done()
 	fn := path + "Nutrients.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -152,7 +165,7 @@ func nutrients(bucket *gocb.Bucket, path string) (int, error) {
 			break
 		}
 		if err != nil {
-			return cnt, err
+			return cnts.Nutrients, err
 		}
 
 		id := *t + ":" + record[0]
@@ -162,10 +175,10 @@ func nutrients(bucket *gocb.Bucket, path string) (int, error) {
 				bucket.Upsert(cid, food, 0)
 			}
 			cid = id
+			bucket.Get(id, &food)
 			n = nil
 		}
-		bucket.Get(id, &food)
-		cnt++
+		cnts.Nutrients++
 		w, err := strconv.ParseFloat(record[4], 32)
 		if err != nil {
 			log.Println(record[0] + ": can't parse value " + record[4])
@@ -182,10 +195,10 @@ func nutrients(bucket *gocb.Bucket, path string) (int, error) {
 			Derivation: record[3],
 			Unit:       record[5],
 		})
-		if cnt%30000 == 0 {
-			log.Println("Nutrients Count = ", cnt)
+		if cnts.Nutrients%30000 == 0 {
+			log.Println("Nutrients Count = ", cnts.Nutrients)
 		}
 
 	}
-	return cnt, err
+	return cnts.Nutrients, err
 }
