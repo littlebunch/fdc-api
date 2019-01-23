@@ -3,6 +3,14 @@ package fdc
 // DocType provides a list of document types
 type DocType int
 
+// FULL etc define values for Foods formats
+const (
+	FULL      = "full"
+	META      = "meta"
+	SERVING   = "servings"
+	NUTRIENTS = "nutrients"
+)
+
 // SR is standard reference
 const (
 	SR DocType = iota

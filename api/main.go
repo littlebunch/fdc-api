@@ -20,10 +20,6 @@ const (
 	maxListSize    = 150
 	defaultListMax = 50
 	apiVersion     = "1.0.0 Beta"
-	FULL           = "full"
-	META           = "meta"
-	SERVING        = "servings"
-	NUTRIENTS      = "nutrients"
 )
 
 var (

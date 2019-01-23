@@ -1,31 +1,34 @@
 # gnutdata-api
-Provides query and retrieval REST services for USDA "Branded Food Products" datasets.  Also included are standalone admin utilities for loading USDA csv files into CouchDB.
+Provides query and retrieval REST services for USDA "Branded Food Products" datasets.  Also included are standalone admin utilities for loading USDA csv files into a datastore of your choice.  Applications are coded out of the box for a Couchbase implementation but it's possible without a great deal of effort to implement a MongoDb, ElasticSearch or whatever datastore using the ds package.  The steps below outline how to go about building and running the applications using Couchbase.
+
 ### Step 1: Set up go environment if necessary  
-Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g. $GOPATH/src/github.com/littlebunch
-### Step 2: Install supporting packages as needed.  Normally, your editor should install these automatically.  The list includes:      
+Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g. $GOPATH/src/github.com/littlebunch    
+
+### Step 2: Install supporting packages as needed.  Often, your editor, e.g. Atom or Visual Studio Code, will install these for you automatically.  The list includes:     
+
 *[gin framework](https://github.com/gin-gonic/gin) go get github.com/gin-gonic/gin  and go get gopkg.in/appleboy/gin-jwt.v2  
-*[gin-jwt](https://github.com/appleboy/gin-jwt) go get github.com/appleboy/gin-jwt       
-*[bcrypt](https://godoc.org/golang.org/x/crypto/bcrypt) go get golang.org/x/crypto/bcrypt      
 *[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK    
 *[yaml](http://gopkg.in/yaml.v2) go get gopkg.in/yaml.v2       
 *[endless](https://github.com/fvbock/endless) go get github.com/fvbock/endless     
-*[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson 
+*[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson    
+
 ### Step 3:Install the gnut-bfpd-api webserver and standalone loader into your $GOBIN:
 ```
 cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api/api; go build -o $GOBIN/bfpd main.go
 cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api//ingest go build -o $GOBIN/ingest ingest.go intestbfpd.go
 ```
 ### Step 4: Install [Couchbase](https://www.couchbase.com)     
-If you do already have access to a CouchBase instance then you will need to download and install the Community edition.   
+If you do not already have access to a CouchBase instance then you will need to download and install the Community edition.     
+
 ### Step 5:  Load the BFPD csv data
-1. From your Couchbase console, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the following roles on the bucket:  Views Reader, Query Select, Search Reader, Data Reader, Application Access.    
+1. From your Couchbase console, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the following roles on the bucket:  Views Reader, Query Select, Search Reader, Data Reader, Application Access, and indexes.    Sample scripts are also provided in the couchbase path for these steps as well.
 2. Configure config.yml (see below) for host, bucket and user id/pw values you have selected.
 3. Download and unzip the BFPD csv file into a location of your choice.   
 4. Run the loader:   
 ```
 $GOBIN/ingest -c /path/to/config.yml -i /path/to/BFFD.csv -t BFPD    
 ```
-The loader can take up to an hour or two for a complete load.    
+The loader can take up to an hour for a complete load on an I5 MBP.    
 5. Start the web server (see below)   
 
 ## Configuration     

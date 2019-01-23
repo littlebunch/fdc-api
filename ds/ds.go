@@ -1,3 +1,7 @@
+// Package ds provides a wrapper for application calls to the datastore.
+// A datastore, e.g. Couchbase, MongoDb, MariaDb, is implemented as a type assertions on
+// the Conn element in the DS struct.  Thus, a datastore may be added by coding in the particulars
+// as a case statement.
 package ds
 
 import (
@@ -36,7 +40,7 @@ func (ds *DS) ConnectDs(cs fdc.Config) error {
 	return err
 }
 
-// Get finds data for an individual food
+// Get finds data for a single food
 func (ds *DS) Get(q string, f interface{}) error {
 	var err error
 	switch v := ds.Conn.(type) {
@@ -48,8 +52,7 @@ func (ds *DS) Get(q string, f interface{}) error {
 	return err
 }
 
-// Browse is a wrapper for a datastore connection which
-// fills out a slice of Foods data
+// Browse fills out a slice of Foods items
 func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, sort string, f *[]interface{}) error {
 	switch v := ds.Conn.(type) {
 	case *gocb.Bucket:
@@ -59,7 +62,7 @@ func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, so
 		if err != nil {
 			return err
 		}
-		if format == "meta" {
+		if format == fdc.META {
 			type n1q struct {
 				Item fdc.FoodMeta `json:"gd"`
 			}
@@ -73,9 +76,9 @@ func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, so
 			}
 			var row n1q
 			for rows.Next(&row) {
-				if format == "servings" {
+				if format == fdc.SERVING {
 					*f = append(*f, fdc.BrowseServings{FdcID: row.Item.FdcID, Servings: row.Item.Servings})
-				} else if format == "nutrients" {
+				} else if format == fdc.NUTRIENTS {
 					*f = append(*f, fdc.BrowseNutrients{FdcID: row.Item.FdcID, Nutrients: row.Item.Nutrients})
 				} else {
 					*f = append(*f, row.Item)
@@ -89,7 +92,7 @@ func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, so
 	return nil
 }
 
-// Close is a wrapper for the connection close func
+// CloseDs is a wrapper for the connection close func
 func (ds *DS) CloseDs() {
 	switch v := ds.Conn.(type) {
 	case *gocb.Bucket:

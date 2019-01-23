@@ -58,8 +58,8 @@ func foodsGet(c *gin.Context) {
 	if format == "" {
 		format = META
 	}
-	if format != FULL && format != META && format != SERVING && format != NUTRIENTS {
-		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", META, FULL, SERVING, NUTRIENTS)})
+	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
 		return
 	}
 	sort = c.Query("sort")
@@ -104,7 +104,7 @@ func foodsSearch(c *gin.Context) {
 	if format == "" {
 		format = META
 	}
-	if format != FULL && format != META && format != SERVING && format != NUTRIENTS {
+	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", META, FULL, SERVING, NUTRIENTS)})
 		return
 	}
@@ -142,7 +142,7 @@ func foodsSearch(c *gin.Context) {
 		return
 	}
 	count := result.TotalHits()
-	if format == META {
+	if format == fdc.META {
 		var f fdc.FoodMeta
 		for _, r := range result.Hits() {
 			_, err := b.Get(r.Id, &f)
@@ -160,9 +160,9 @@ func foodsSearch(c *gin.Context) {
 			if err != nil {
 				errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
 			} else {
-				if format == SERVING {
+				if format == fdc.SERVING {
 					foods = append(foods, fdc.BrowseServings{FdcID: f.FdcID, Servings: f.Servings})
-				} else if format == NUTRIENTS {
+				} else if format == fdc.NUTRIENTS {
 					foods = append(foods, fdc.BrowseNutrients{FdcID: f.FdcID, Nutrients: f.Nutrients})
 				} else {
 					foods = append(foods, f)
