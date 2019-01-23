@@ -10,6 +10,7 @@ import (
 
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
+	"gopkg.in/couchbase/gocb.v1/cbft"
 )
 
 // DS is the datastore connection interface
@@ -90,6 +91,54 @@ func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, so
 		log.Fatalln("Invalid connection")
 	}
 	return nil
+}
+func (ds *DS) Search(q string, f string, indexName string, format string, limit int, offset int, foods *[]interface{}) (int, error) {
+	count := 0
+	switch v := ds.Conn.(type) {
+	case *gocb.Bucket:
+		var query *gocb.SearchQuery
+		if f == "" {
+			query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q)).Limit(int(limit)).Skip(offset)
+		} else {
+			query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q).Field(f)).Limit(int(limit)).Skip(offset)
+		}
+		result, err := v.ExecuteSearchQuery(query)
+		if err != nil {
+			return 0, err
+		}
+		count = result.TotalHits()
+		if format == fdc.META {
+			var f fdc.FoodMeta
+			for _, r := range result.Hits() {
+				_, err := v.Get(r.Id, &f)
+				if err != nil {
+					return 0, err
+				} else {
+					*foods = append(*foods, f)
+				}
+
+			}
+		} else {
+			var f fdc.Food
+			for _, r := range result.Hits() {
+				_, err := v.Get(r.Id, &f)
+				if err != nil {
+					return 0, err
+				} else {
+					if format == fdc.SERVING {
+						*foods = append(*foods, fdc.BrowseServings{FdcID: f.FdcID, Servings: f.Servings})
+					} else if format == fdc.NUTRIENTS {
+						*foods = append(*foods, fdc.BrowseNutrients{FdcID: f.FdcID, Nutrients: f.Nutrients})
+					} else {
+						*foods = append(*foods, f)
+					}
+					f = fdc.Food{}
+				}
+
+			}
+		}
+	}
+	return count, nil
 }
 
 // CloseDs is a wrapper for the connection close func

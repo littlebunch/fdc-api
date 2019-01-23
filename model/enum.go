@@ -1,3 +1,4 @@
+// Package fdc describes food products data model
 package fdc
 
 // DocType provides a list of document types

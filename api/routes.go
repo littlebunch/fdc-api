@@ -7,8 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
-	gocb "gopkg.in/couchbase/gocb.v1"
-	"gopkg.in/couchbase/gocb.v1/cbft"
 )
 
 // foodFdcID returns a single food based on a key value constructed from the fdcid
@@ -18,7 +16,7 @@ func foodFdcID(c *gin.Context) {
 		q string
 	)
 	q = fmt.Sprintf("BFPD:%s", c.Param("id"))
-	if c.Query("format") == META {
+	if c.Query("format") == fdc.META {
 		var f fdc.FoodMeta
 		err := dc.Get(q, &f)
 		if err != nil {
@@ -32,9 +30,9 @@ func foodFdcID(c *gin.Context) {
 		if err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
 		}
-		if c.Query("format") == SERVING {
+		if c.Query("format") == fdc.SERVING {
 			c.JSON(http.StatusOK, f.Servings)
-		} else if c.Query("format") == NUTRIENTS {
+		} else if c.Query("format") == fdc.NUTRIENTS {
 			c.JSON(http.StatusOK, f.Nutrients)
 		} else {
 			c.JSON(http.StatusOK, f)
@@ -44,6 +42,7 @@ func foodFdcID(c *gin.Context) {
 	return
 }
 
+// foodsGet returns a BrowseResult
 func foodsGet(c *gin.Context) {
 	var (
 		max    int64
@@ -53,10 +52,10 @@ func foodsGet(c *gin.Context) {
 		sort   string
 		foods  []interface{}
 	)
-	// check the format parameter which defaults to BRIEF if not set
+	// check the format parameter which defaults to META if not set
 	format = c.Query("format")
 	if format == "" {
-		format = META
+		format = fdc.META
 	}
 	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
@@ -91,21 +90,23 @@ func foodsGet(c *gin.Context) {
 	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
+
+// foodsSearch runs a search and returns a BrowseResult
 func foodsSearch(c *gin.Context) {
 	var (
 		max    int
 		page   int
 		format string
 		foods  []interface{}
-		query  *gocb.SearchQuery
 	)
+	count := 0
 	// check the format parameter which defaults to BRIEF if not set
 	format = c.Query("format")
 	if format == "" {
-		format = META
+		format = fdc.META
 	}
 	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", META, FULL, SERVING, NUTRIENTS)})
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
 		return
 	}
 	max, err = strconv.Atoi(c.Query("max"))
@@ -124,54 +125,19 @@ func foodsSearch(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	indexName := cs.CouchDb.FtsIndex
 	q := c.Query("q")
 	f := c.Query("f")
-	if f == "" {
-		query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q)).Limit(int(max)).Skip(offset)
-	} else {
-		if f != "foodDescription" && f != "company" && f != "ingredients" {
-			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company' or 'ingredients'"})
-			return
-		}
-		query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q).Field(f)).Limit(int(max)).Skip(offset)
+
+	if f != "" && f != "foodDescription" && f != "company" && f != "ingredients" {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company' or 'ingredients'"})
+		return
 	}
-	result, err := b.ExecuteSearchQuery(query)
+	count, err = dc.Search(q, f, cs.CouchDb.FtsIndex, format, max, offset, &foods)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
-	count := result.TotalHits()
-	if format == fdc.META {
-		var f fdc.FoodMeta
-		for _, r := range result.Hits() {
-			_, err := b.Get(r.Id, &f)
-			if err != nil {
-				errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
-			} else {
-				foods = append(foods, f)
-			}
 
-		}
-	} else {
-		var f fdc.Food
-		for _, r := range result.Hits() {
-			_, err := b.Get(r.Id, &f)
-			if err != nil {
-				errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
-			} else {
-				if format == fdc.SERVING {
-					foods = append(foods, fdc.BrowseServings{FdcID: f.FdcID, Servings: f.Servings})
-				} else if format == fdc.NUTRIENTS {
-					foods = append(foods, fdc.BrowseNutrients{FdcID: f.FdcID, Nutrients: f.Nutrients})
-				} else {
-					foods = append(foods, f)
-				}
-				f = fdc.Food{}
-			}
-
-		}
-	}
 	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
