@@ -6,10 +6,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 	"gopkg.in/couchbase/gocb.v1/cbft"
-
-	"github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
 // foodFdcID returns a single food based on a key value constructed from the fdcid
@@ -21,7 +20,7 @@ func foodFdcID(c *gin.Context) {
 	q = fmt.Sprintf("BFPD:%s", c.Param("id"))
 	if c.Query("format") == META {
 		var f fdc.FoodMeta
-		_, err := b.Get(q, &f)
+		err := dc.Get(q, &f)
 		if err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
 		} else {
@@ -29,7 +28,7 @@ func foodFdcID(c *gin.Context) {
 		}
 	} else {
 		var f fdc.Food
-		_, err := b.Get(q, &f)
+		err := dc.Get(q, &f)
 		if err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
 		}
@@ -88,37 +87,7 @@ func foodsGet(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-
-	q := fmt.Sprintf("select * from %s as gd where %s != '' offset %d limit %d", cs.CouchDb.Bucket, sort, offset, max)
-	query := gocb.NewN1qlQuery(q)
-	rows, err := b.ExecuteN1qlQuery(query, nil)
-	if err != nil {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "No foods found"})
-	}
-	if format == META {
-		type n1q struct {
-			Item fdc.FoodMeta `json:"gd"`
-		}
-		var row n1q
-		for rows.Next(&row) {
-			foods = append(foods, row.Item)
-		}
-	} else {
-		type n1q struct {
-			Item fdc.Food `json:"gd"`
-		}
-		var row n1q
-		for rows.Next(&row) {
-			if format == SERVING {
-				foods = append(foods, fdc.BrowseServings{FdcID: row.Item.FdcID, Servings: row.Item.Servings})
-			} else if format == NUTRIENTS {
-				foods = append(foods, fdc.BrowseNutrients{FdcID: row.Item.FdcID, Nutrients: row.Item.Nutrients})
-			} else {
-				foods = append(foods, row.Item)
-			}
-			row = n1q{}
-		}
-	}
+	dc.Browse(cs.CouchDb.Bucket, offset, max, format, sort, &foods)
 	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }

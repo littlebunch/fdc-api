@@ -1,9 +1,9 @@
 #!/bin/sh
-# creates a full text index for foods metadata: 
-# foodDescription, company, ingredients, fdcId and upc
-# run this after data is fully loaded
-# change -u values and url as needed
-curl -u Administrator:maggie -XPUT http://localhost:8094/api/index/fts_bfpd -H 'cache-control: no-cache' -H 'content-type:application/json' -d '{ 
+###########################################################################
+# creates a full text index required for API search                       #
+# run this after data is fully loaded. change -u values and url as needed # 
+###########################################################################
+curl -u Administrator:pw -XPUT http://localhost:8094/api/index/fts_bfpd -H 'cache-control: no-cache' -H 'content-type:application/json' -d '{ 
  "name": "fts_bfpd",
  "type": "fulltext-index",
  "params": {

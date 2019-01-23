@@ -11,6 +11,7 @@ import (
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
+	"github.com/littlebunch/gnutdata-bfpd-api/ds"
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
@@ -34,6 +35,7 @@ var (
 	r   = flag.String("r", "v1", "root path to deploy -- defaults to 'v1'")
 	b   *gocb.Bucket
 	cs  fdc.Config
+	dc  ds.DS
 	err error
 )
 
@@ -53,23 +55,11 @@ func init() {
 func main() {
 	flag.Parse()
 	// get configuration
-
 	cs.GetConfig(c)
-	// Connect to couchbase
-	cluster, err := gocb.Connect("couchbase://" + cs.CouchDb.URL)
-	if err != nil {
-		log.Fatalln("Cannot connect to cluster ", err)
-	}
-	cluster.Authenticate(gocb.PasswordAuthenticator{
-		Username: cs.CouchDb.User,
-		Password: cs.CouchDb.Pwd,
-	})
-	b, err = cluster.OpenBucket(cs.CouchDb.Bucket, "")
-	if err != nil {
-		log.Fatalln("Cannot connect to bucket!", err)
-	}
-	defer b.Close()
-	defer cluster.Close()
+	dc.Conn = b
+	// Connect to couchbase datastore
+	err = dc.ConnectDs(cs)
+	defer dc.CloseDs()
 	// initialize our jwt authentication
 	//var u *auth.User
 	//if *i {
