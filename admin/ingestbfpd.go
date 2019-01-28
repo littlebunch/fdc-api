@@ -10,7 +10,6 @@ import (
 	"time"
 
 	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
-	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
 type ingestCnt struct {
@@ -30,16 +29,16 @@ var (
 //		Products.csv  -- main food file
 //		Servings.csv  -- servings sizes for each food
 //		Nutrients.csv -- nutrient values for each food
-func ProcessBFPDFiles(bucket *gocb.Bucket, path string) error {
+func ProcessBFPDFiles(path string) error {
 
-	cnts.Foods, err = foods(bucket, path)
+	cnts.Foods, err = foods(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 	wg.Add(1)
-	go servings(bucket, path)
+	go servings(path)
 	wg.Add(1)
-	go nutrients(bucket, path)
+	go nutrients(path)
 	wg.Wait()
 	if err != nil {
 		return err
@@ -47,7 +46,7 @@ func ProcessBFPDFiles(bucket *gocb.Bucket, path string) error {
 	log.Printf("Finished.  Counts: %d Foods %d Servings %d\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
-func foods(bucket *gocb.Bucket, path string) (int, error) {
+func foods(path string) (int, error) {
 	fn := path + "Products.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -74,7 +73,7 @@ func foods(bucket *gocb.Bucket, path string) (int, error) {
 		if err != nil {
 			log.Println(err)
 		}
-		bucket.Upsert(*t+":"+record[0],
+		dc.Update(*t+":"+record[0],
 			fdc.Food{
 				FdcID:           record[0],
 				Description:     record[1],
@@ -84,11 +83,11 @@ func foods(bucket *gocb.Bucket, path string) (int, error) {
 				UpdatedAt:       update,
 				PublicationDate: pubdate,
 				Ingredients:     record[7],
-			}, 0)
+			})
 	}
 	return cnts.Foods, err
 }
-func servings(bucket *gocb.Bucket, path string) (int, error) {
+func servings(path string) (int, error) {
 	defer wg.Done()
 	fn := path + "Serving_size.csv"
 	f, err := os.Open(fn)
@@ -115,10 +114,10 @@ func servings(bucket *gocb.Bucket, path string) (int, error) {
 		if cid != id {
 			if cid != "" {
 				food.Servings = s
-				bucket.Upsert(cid, food, 0)
+				dc.Update(cid, food)
 			}
 			cid = id
-			bucket.Get(id, &food)
+			dc.Get(id, &food)
 			s = nil
 		}
 
@@ -145,7 +144,7 @@ func servings(bucket *gocb.Bucket, path string) (int, error) {
 	}
 	return cnts.Servings, err
 }
-func nutrients(bucket *gocb.Bucket, path string) (int, error) {
+func nutrients(path string) (int, error) {
 	defer wg.Done()
 	fn := path + "Nutrients.csv"
 	f, err := os.Open(fn)
@@ -172,10 +171,10 @@ func nutrients(bucket *gocb.Bucket, path string) (int, error) {
 		if cid != id {
 			if cid != "" {
 				food.Nutrients = n
-				bucket.Upsert(cid, food, 0)
+				dc.Update(cid, food)
 			}
 			cid = id
-			bucket.Get(id, &food)
+			dc.Get(id, &food)
 			n = nil
 		}
 		cnts.Nutrients++

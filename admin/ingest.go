@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/littlebunch/gnutdata-bfpd-api/ds"
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
 	gocb "gopkg.in/couchbase/gocb.v1"
 )
@@ -16,10 +17,12 @@ import (
 var (
 	c   = flag.String("c", "config.yml", "YAML Config file")
 	l   = flag.String("l", "/tmp/ingest.out", "send log output to this file -- defaults to /tmp/ingest.out")
-	m   = flag.Int("m", 20, "number of concurrent message handle -- defaults to 20")
-	in  = flag.String("i", "", "Input csv file")
+	i   = flag.String("i", "", "Input csv file")
 	t   = flag.String("t", "", "Input file type")
 	cnt = 0
+	b   *gocb.Bucket
+	cs  fdc.Config
+	dc  ds.DS
 )
 
 func init() {
@@ -45,31 +48,22 @@ func main() {
 
 	var cs fdc.Config
 	cs.GetConfig(c)
-	// Connect to couchbase
-	log.Println("URL=", cs.CouchDb.URL, " user=", cs.CouchDb.User, " pwd=", cs.CouchDb.Pwd)
-	cluster, err := gocb.Connect("couchbase://" + cs.CouchDb.URL)
-	if err != nil {
+	dc.Conn = b
+	// connect to datastore
+	if dc.ConnectDs(cs) != nil {
 		log.Fatalln("Cannot connect to cluster ", err)
 	}
-	cluster.Authenticate(gocb.PasswordAuthenticator{
-		Username: cs.CouchDb.User,
-		Password: cs.CouchDb.Pwd,
-	})
-	bucket, err := cluster.OpenBucket(cs.CouchDb.Bucket, "")
-	if err != nil {
-		log.Fatalln("Cannot connect to bucket!", err)
-	}
-	bucket.Manager("", "").CreatePrimaryIndex("", true, false)
+
 	if dtype == fdc.BFPD {
-		err := ProcessBFPDFiles(bucket, *in)
+		err := ProcessBFPDFiles(*i)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		// read in the file and insert into couchbase
-		f, err := os.Open(*in)
+		f, err := os.Open(*i)
 		if err != nil {
-			log.Fatalf("Cannot open %s", *in)
+			log.Fatalf("Cannot open %s", *i)
 		}
 		r := csv.NewReader(f)
 		for {
@@ -83,33 +77,33 @@ func main() {
 			cnt++
 			switch dtype {
 			case fdc.FGSR:
-				bucket.Upsert(*t+":"+record[1],
+				dc.Update(*t+":"+record[1],
 					fdc.FoodGroup{
 						Code:        record[1],
 						Type:        *t,
 						Description: record[2],
 						LastUpdate:  record[3],
-					}, 0)
+					})
 			case fdc.FGFNDDS:
-				bucket.Upsert(*t+":"+record[0],
+				dc.Update(*t+":"+record[0],
 					fdc.FoodGroup{
 						Code:        record[0],
 						Type:        *t,
 						Description: record[1],
-					}, 0)
+					})
 			case fdc.NUT:
 				no, err := strconv.ParseInt(record[6], 10, 0)
 				if err != nil {
 					no = 0
 				}
-				bucket.Upsert(*t+":"+record[6],
+				dc.Update(*t+":"+record[6],
 					fdc.Nutrient{
 						Nutrientno: uint(no),
 						Tagname:    record[18],
 						Name:       record[1],
 						Unit:       record[2],
 						Type:       *t,
-					}, 0)
+					})
 
 			}
 		}
