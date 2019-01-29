@@ -145,6 +145,16 @@ func (ds *DS) Search(q string, f string, indexName string, format string, limit 
 	return count, nil
 }
 
+// Update updates an existing document in the datastore
+func (ds *DS) Update(id string, r interface{}) {
+	switch v := ds.Conn.(type) {
+	case *gocb.Bucket:
+		v.Upsert(id, r, 0)
+	default:
+		log.Fatalln("Invalid connection type!")
+	}
+}
+
 // CloseDs is a wrapper for the connection close func
 func (ds *DS) CloseDs() {
 	switch v := ds.Conn.(type) {
