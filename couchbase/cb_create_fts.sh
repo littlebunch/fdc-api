@@ -3,7 +3,7 @@
 # creates a full text index required for API search                       #
 # run this after data is fully loaded. change -u values and url as needed # 
 ###########################################################################
-curl -u Administrator:pw -XPUT http://localhost:8094/api/index/fts_bfpd -H 'cache-control: no-cache' -H 'content-type:application/json' -d '{ 
+curl -u Administrator:password -XPUT http://localhost:8094/api/index/fts_bfpd -H 'cache-control: no-cache' -H 'content-type:application/json' -d '{ 
  "name": "fts_bfpd",
  "type": "fulltext-index",
  "params": {
@@ -107,7 +107,7 @@ curl -u Administrator:pw -XPUT http://localhost:8094/api/index/fts_bfpd -H 'cach
   }
  },
  "sourceType": "couchbase",
- "sourceName": "gnutdata",
+ "sourceName": "gnutbfpd",
  "sourceParams": {},
  "planParams": {
   "maxPartitionsPerPIndex": 171,
