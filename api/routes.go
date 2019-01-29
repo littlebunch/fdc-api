@@ -112,6 +112,7 @@ func foodsSearch(c *gin.Context) {
 	}
 	// check the format parameter which defaults to BRIEF if not set
 	format = c.Query("format")
+	fmt.Printf("FORMAT QUERY=%s\n", format)
 	if format == "" {
 		format = fdc.META
 	}
@@ -136,7 +137,7 @@ func foodsSearch(c *gin.Context) {
 	}
 	offset := page * max
 
-	count, err = dc.Search(q, f, cs.CouchDb.FtsIndex, format, max, offset, &foods)
+	count, err = dc.Search(q, f, cs.CouchDb.Fts, format, max, offset, &foods)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return

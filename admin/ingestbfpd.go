@@ -83,6 +83,7 @@ func foods(path string) (int, error) {
 				UpdatedAt:       update,
 				PublicationDate: pubdate,
 				Ingredients:     record[7],
+				Type:            *t,
 			})
 	}
 	return cnts.Foods, err

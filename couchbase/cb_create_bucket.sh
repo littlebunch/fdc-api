@@ -5,4 +5,5 @@
 ######################################################
 curl -u Administrator:password -X POST http://localhost:8091/pools/default/buckets -d name=gnutbfpd -d ramQuotaMB=100 -d bucketType=couchbase -d authType=none
 # Creates a bucket_admin user for the bucket
-curl -u Administrator:password -X PUT --data "name=Admin&password=bfpdadmin&roles=bucket_admin[gnutbfpd]" -H "Content-Type: application/x-www-form-urlencoded" http://localhost:8091/settings/rbac/users/local/bfpdadmin
+# API call is only available on the Couchbase EE edition
+#curl -u Administrator:password -X PUT --data "name=Admin&password=gnutadmin&roles=Application_Access[gnutbfpd]" -H "Content-Type: application/x-www-form-urlencoded" http://localhost:8091/settings/rbac/users/local/gnutadmin

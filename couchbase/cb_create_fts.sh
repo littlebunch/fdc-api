@@ -7,80 +7,37 @@ curl -u Administrator:password -XPUT http://localhost:8094/api/index/fts_bfpd -H
  "name": "fts_bfpd",
  "type": "fulltext-index",
  "params": {
-  "doc_config": {
-   "docid_prefix_delim": ":",
-   "docid_regexp": "",
-   "mode": "docid_prefix",
-   "type_field": "type"
-  },
   "mapping": {
-   "default_analyzer": "standard",
-   "default_datetime_parser": "dateTimeOptional",
-   "default_field": "_all",
-   "default_mapping": {
-    "dynamic": true,
-    "enabled": false
-   },
-   "default_type": "_default",
-   "docvalues_dynamic": true,
-   "index_dynamic": true,
-   "store_dynamic": false,
-   "type_field": "_type",
    "types": {
     "BFPD": {
-     "dynamic": false,
      "enabled": true,
+     "dynamic": false,
      "properties": {
-      "company": {
-       "enabled": true,
-       "dynamic": false,
-       "fields": [
-        {
-         "include_in_all": true,
-         "include_term_vectors": true,
-         "index": true,
-         "name": "company",
-         "type": "text"
-        }
-       ]
-      },
-      "fdcId": {
-       "enabled": true,
-       "dynamic": false,
-       "fields": [
-        {
-         "include_in_all": true,
-         "include_term_vectors": true,
-         "index": true,
-         "name": "fdcId",
-         "type": "text"
-        }
-       ]
-      },
-      "foodDescription": {
-       "enabled": true,
-       "dynamic": false,
-       "fields": [
-        {
-         "include_in_all": true,
-         "include_term_vectors": true,
-         "index": true,
-         "name": "foodDescription",
-         "store": true,
-         "type": "text"
-        }
-       ]
-      },
       "ingredients": {
        "enabled": true,
        "dynamic": false,
        "fields": [
         {
-         "include_in_all": true,
-         "include_term_vectors": true,
-         "index": true,
          "name": "ingredients",
-         "type": "text"
+         "type": "text",
+         "store": false,
+         "index": true,
+         "include_term_vectors": true,
+         "include_in_all": true
+        }
+       ]
+      },
+      "company": {
+       "enabled": true,
+       "dynamic": false,
+       "fields": [
+        {
+         "name": "company",
+         "type": "text",
+         "store": false,
+         "index": true,
+         "include_term_vectors": true,
+         "include_in_all": true
         }
        ]
       },
@@ -89,28 +46,61 @@ curl -u Administrator:password -XPUT http://localhost:8094/api/index/fts_bfpd -H
        "dynamic": false,
        "fields": [
         {
-         "include_in_all": true,
-         "include_term_vectors": true,
-         "index": true,
          "name": "ups",
-         "type": "text"
+         "type": "text",
+         "store": false,
+         "index": true,
+         "include_term_vectors": true,
+         "include_in_all": true
+        }
+       ]
+      },
+      "foodDescription": {
+       "enabled": true,
+       "dynamic": false,
+       "fields": [
+        {
+         "name": "foodDescription",
+         "type": "text",
+         "store": false,
+         "index": true,
+         "include_term_vectors": true,
+         "include_in_all": true
         }
        ]
       }
      }
     }
-   }
+   },
+   "default_mapping": {
+    "enabled": false,
+    "dynamic": true
+   },
+   "default_type": "_default",
+   "default_analyzer": "standard",
+   "default_datetime_parser": "dateTimeOptional",
+   "default_field": "_all",
+   "store_dynamic": false,
+   "index_dynamic": true
   },
   "store": {
    "indexType": "scorch",
    "kvStoreName": ""
+  },
+  "doc_config": {
+   "mode": "type_field",
+   "type_field": "type",
+   "docid_prefix_delim": "",
+   "docid_regexp": ""
   }
  },
  "sourceType": "couchbase",
  "sourceName": "gnutbfpd",
+ "sourceUUID": "31cc474496e50b5284bac5f6882b617f",
  "sourceParams": {},
  "planParams": {
   "maxPartitionsPerPIndex": 171,
   "numReplicas": 0
- }
+ },
+ "uuid": ""
 }'

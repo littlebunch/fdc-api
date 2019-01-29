@@ -2,7 +2,6 @@
 package fdc
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -38,6 +37,7 @@ type FoodMeta struct {
 	Description  string `json:"foodDescription" binding:"required"`
 	Source       string `json:"dataSource"`
 	Manufacturer string `json:"company"`
+	Type         string `json:"type" binding:"required"`
 }
 
 // Food reflects JSON used to transfer BFPD foods data from USDA csv
@@ -52,9 +52,11 @@ type Food struct {
 	Manufacturer    string         `json:"company"`
 	Servings        []Serving      `json:"servingSizes,omitempty"`
 	Nutrients       []NutrientData `json:"nutrients,omitempty"`
+	Type            string         `json:"type" binding:"required"`
 }
 
 // Serving describes a list nutrients for a given state, weight and amount
+// A subdocument of Food
 type Serving struct {
 	Nutrientbasis string  `json:"100UnitNutrientBasis"`
 	Description   string  `json:"householdServingUom"`
@@ -77,7 +79,8 @@ type Derivation struct {
 	Code string `json:"code"`
 }
 
-// NutrientData is the list of nutrient values attached to Serving
+// NutrientData is the list of nutrient values
+// A subdocument of Food
 type NutrientData struct {
 	Value      float32 `json:"valuePer100UnitServing"`
 	Unit       string  `json:"unit"  binding:"required"`
@@ -101,24 +104,23 @@ type Config struct {
 
 // CouchDb configuration for connecting, reading and writing Couchbase nodes
 type CouchDb struct {
-	URL      string
-	Bucket   string
-	FtsIndex string
-	User     string
-	Pwd      string
+	URL    string
+	Bucket string
+	Fts    string
+	User   string
+	Pwd    string
 }
 
 // Defaults sets values for CouchBase configuration properties if none have been provided.
 func (cs *Config) Defaults() {
 	if os.Getenv("COUCHBASE_URL") != "" {
-		fmt.Printf("HAVE URL=%s\n", os.Getenv("COUCHBASE_URL"))
 		cs.CouchDb.URL = os.Getenv("COUCHBASE_URL")
 	}
 	if os.Getenv("COUCHBASE_BUCKET") != "" {
 		cs.CouchDb.Bucket = os.Getenv("COUCHBASE_BUCKET")
 	}
 	if os.Getenv("COUCHBASE_FTSINDEX") != "" {
-		cs.CouchDb.FtsIndex = os.Getenv("COUCHBASE_FTSINDEX")
+		cs.CouchDb.Fts = os.Getenv("COUCHBASE_FTSINDEX")
 	}
 	if os.Getenv("COUCHBASE_USER") != "" {
 		cs.CouchDb.User = os.Getenv("COUCHBASE_USER")
@@ -132,8 +134,8 @@ func (cs *Config) Defaults() {
 	if cs.CouchDb.Bucket == "" {
 		cs.CouchDb.Bucket = "gnutdata"
 	}
-	if cs.CouchDb.FtsIndex == "" {
-		cs.CouchDb.FtsIndex = "fd_food"
+	if cs.CouchDb.Fts == "" {
+		cs.CouchDb.Fts = "fd_food"
 	}
 }
 
