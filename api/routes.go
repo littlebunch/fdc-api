@@ -12,9 +12,7 @@ import (
 // foodFdcID returns a single food based on a key value constructed from the fdcid
 // If the format parameter equals 'meta' then only the food's meta-data is returned.
 func foodFdcID(c *gin.Context) {
-	var (
-		q string
-	)
+	var q string
 	q = fmt.Sprintf("BFPD:%s", c.Param("id"))
 	if c.Query("format") == fdc.META {
 		var f fdc.FoodMeta
@@ -100,6 +98,18 @@ func foodsSearch(c *gin.Context) {
 		foods  []interface{}
 	)
 	count := 0
+	// check for a query
+	q := c.Query("q")
+	if q == "" {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "A search string in the q parameter is required"})
+		return
+	}
+	// check for field
+	f := c.Query("f")
+	if f != "" && f != "foodDescription" && f != "upc" && f != "company" && f != "ingredients" {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company', 'upc' or 'ingredients'"})
+		return
+	}
 	// check the format parameter which defaults to BRIEF if not set
 	format = c.Query("format")
 	if format == "" {
@@ -125,13 +135,7 @@ func foodsSearch(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	q := c.Query("q")
-	f := c.Query("f")
 
-	if f != "" && f != "foodDescription" && f != "company" && f != "ingredients" {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company' or 'ingredients'"})
-		return
-	}
 	count, err = dc.Search(q, f, cs.CouchDb.FtsIndex, format, max, offset, &foods)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})

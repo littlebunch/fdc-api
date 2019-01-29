@@ -55,6 +55,9 @@ func main() {
 	dc.Conn = b
 	// Connect to couchbase datastore
 	err = dc.ConnectDs(cs)
+	if err != nil {
+		log.Fatal("Cannot get datastore connection.")
+	}
 	defer dc.CloseDs()
 	// initialize our jwt authentication
 	//var u *auth.User
@@ -69,13 +72,10 @@ func main() {
 	v1 := router.Group(fmt.Sprintf("%s", *r))
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)
-		//	v1.GET("/browse", foodsGet)
 		v1.GET("/food/:id/:format", foodFdcID)
 		v1.GET("/food/:id", foodFdcID)
 		v1.GET("/browse", foodsGet)
 		v1.GET("/search", foodsSearch)
-		//	v1.GET("/nutrient/report", foodNutReportGet)
-		//	v1.GET("/nutrient/list", nutListGet)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
 	}
 	endless.ListenAndServe(":"+*p, router)

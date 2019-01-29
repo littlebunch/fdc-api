@@ -21,7 +21,7 @@ cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api//ingest go build -o $GOB
 If you do not already have access to a CouchBase instance then you will need to download and install the Community edition.     
 
 ### Step 5:  Load the BFPD csv data
-1. From your Couchbase console, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the following roles on the bucket:  Views Reader, Query Select, Search Reader, Data Reader, Application Access, and indexes.    Sample scripts are also provided in the couchbase path for these steps as well.
+1. From your Couchbase console or REST API, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the following roles on the bucket:  Views Reader, Query Select, Search Reader, Data Reader, Application Access, and indexes.    Sample API scripts are also provided in the couchbase path for these steps as well.
 2. Configure config.yml (see below) for host, bucket and user id/pw values you have selected.
 3. Download and unzip the BFPD csv file into a location of your choice.   
 4. Run the loader:   
@@ -99,7 +99,7 @@ or
 http GET localhost:8000/v1/browse max=50 page=1     
 ```
 
-### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='foodDescription:"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company' or 'ingredients'.   
+### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company', 'upc', or 'ingredients'.   
 ```
 curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100    
 curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100   
@@ -108,15 +108,4 @@ or
 ```
 http GET localhost:8000/v1/search q=bread max=50 page=1 format=servings    
 ```
-### GET a list of nutrients    
-```
-curl -X GET http://localhost:8000/v1/nutrient/list   
-curl -X GET http://localhost:8000/v1/nutrient/list?nutrientno=301    
-curl -X GET http://localhost:8000/v1/nutrient/list?nutrient=calcium    
-```
-or    
-```
-http GET localhost:8000/v1/nutrient/list   
-http GET localhost:8000/v1/nutrient/list?nutrientno=301      
-http GET localhost:8000/v1/nutrient/list?nutrient=calcium       
-```
+

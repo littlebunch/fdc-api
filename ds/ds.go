@@ -23,6 +23,8 @@ func (ds *DS) ConnectDs(cs fdc.Config) error {
 	var err error
 	switch ds.Conn.(type) {
 	case *gocb.Bucket:
+
+		fmt.Printf("URL=%s\n", cs.CouchDb.URL)
 		cluster, err := gocb.Connect("couchbase://" + cs.CouchDb.URL)
 		if err != nil {
 			log.Fatalln("Cannot connect to cluster ", err)
@@ -53,7 +55,7 @@ func (ds *DS) Get(q string, f interface{}) error {
 	return err
 }
 
-// Browse fills out a slice of Foods items
+// Browse fills out a slice of Foods items, returns error
 func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, sort string, f *[]interface{}) error {
 	switch v := ds.Conn.(type) {
 	case *gocb.Bucket:
@@ -92,6 +94,8 @@ func (ds *DS) Browse(bucket string, offset int64, limit int64, format string, so
 	}
 	return nil
 }
+
+// Search performs a search query, fills out a Foods slice and returns count, error
 func (ds *DS) Search(q string, f string, indexName string, format string, limit int, offset int, foods *[]interface{}) (int, error) {
 	count := 0
 	switch v := ds.Conn.(type) {

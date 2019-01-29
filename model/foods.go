@@ -2,6 +2,7 @@
 package fdc
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -110,6 +111,7 @@ type CouchDb struct {
 // Defaults sets values for CouchBase configuration properties if none have been provided.
 func (cs *Config) Defaults() {
 	if os.Getenv("COUCHBASE_URL") != "" {
+		fmt.Printf("HAVE URL=%s\n", os.Getenv("COUCHBASE_URL"))
 		cs.CouchDb.URL = os.Getenv("COUCHBASE_URL")
 	}
 	if os.Getenv("COUCHBASE_BUCKET") != "" {
