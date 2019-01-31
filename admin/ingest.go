@@ -46,7 +46,9 @@ func main() {
 		log.Fatalln("Valid t option is required")
 	}
 
-	var cs fdc.Config
+	var (
+		cs fdc.Config
+	)
 	cs.GetConfig(c)
 	dc.Conn = b
 	// connect to datastore
@@ -76,32 +78,60 @@ func main() {
 			}
 			cnt++
 			switch dtype {
+			case fdc.DERV:
+				id, err := strconv.ParseInt(record[0], 10, 0)
+				if err != nil {
+					id = 0
+				}
+				dc.Update(*t+":"+record[0],
+					fdc.Derivation{
+						ID:          int32(id),
+						Code:        record[1],
+						Type:        *t,
+						Description: record[2],
+					})
 			case fdc.FGSR:
-				dc.Update(*t+":"+record[1],
+				no, err := strconv.ParseInt(record[0], 10, 0)
+				if err != nil {
+					no = 0
+				}
+				dc.Update(*t+":"+record[0],
 					fdc.FoodGroup{
+						ID:          int32(no),
 						Code:        record[1],
 						Type:        *t,
 						Description: record[2],
 						LastUpdate:  record[3],
 					})
 			case fdc.FGFNDDS:
+				no, err := strconv.ParseInt(record[0], 10, 0)
+				if err != nil {
+					no = 0
+				}
 				dc.Update(*t+":"+record[0],
 					fdc.FoodGroup{
-						Code:        record[0],
+						ID:          int32(no),
 						Type:        *t,
 						Description: record[1],
 					})
 			case fdc.NUT:
+				var nid int64
 				no, err := strconv.ParseInt(record[6], 10, 0)
 				if err != nil {
 					no = 0
 				}
-				dc.Update(*t+":"+record[6],
+				nid, err = strconv.ParseInt(record[0], 10, 0)
+				if err != nil {
+					log.Println("Cannot parse ID: " + record[0])
+					continue
+				}
+				dc.Update(*t+":"+record[0],
 					fdc.Nutrient{
+						NutrientID: uint(nid),
 						Nutrientno: uint(no),
-						Tagname:    record[18],
 						Name:       record[1],
 						Unit:       record[2],
+						Tagname:    record[18],
 						Type:       *t,
 					})
 

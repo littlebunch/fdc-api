@@ -9,6 +9,23 @@ import (
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
+func countsGet(c *gin.Context) {
+	var counts []interface{}
+	t := c.Param("doctype")
+	if t == "" {
+		if t = c.Query("doctype"); t == "" {
+			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Count parameter is required!"})
+			return
+		}
+	}
+	if err := dc.Counts(cs.CouchDb.Bucket, t, &counts); err != nil {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No counts found!"})
+		return
+	}
+	c.JSON(http.StatusOK, counts[0])
+	return
+}
+
 // foodFdcID returns a single food based on a key value constructed from the fdcid
 // If the format parameter equals 'meta' then only the food's meta-data is returned.
 func foodFdcID(c *gin.Context) {
@@ -43,41 +60,36 @@ func foodFdcID(c *gin.Context) {
 // foodsGet returns a BrowseResult
 func foodsGet(c *gin.Context) {
 	var (
-		max    int64
-		page   int64
-		count  int
+		max  int64
+		page int64
+		//count  int
 		format string
 		sort   string
 		foods  []interface{}
 	)
 	// check the format parameter which defaults to META if not set
-	format = c.Query("format")
-	if format == "" {
+	if format = c.Query("format"); format == "" {
 		format = fdc.META
 	}
 	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
 		return
 	}
-	sort = c.Query("sort")
-	if sort == "" {
+	if sort = c.Query("sort"); sort == "" {
 		sort = "fdcId"
 	}
 	if sort != "" && sort != "foodDescription" && sort != "company" && sort != "fdcId" {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'company', 'name' or 'fdcId'"})
 		return
 	}
-
-	max, err = strconv.ParseInt(c.Query("max"), 10, 32)
-	if err != nil {
+	if max, err = strconv.ParseInt(c.Query("max"), 10, 32); err != nil {
 		max = defaultListMax
 	}
 	if max > maxListSize {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("max parameter %d exceeds maximum allowed size of %d", max, maxListSize)})
 		return
 	}
-	page, err = strconv.ParseInt(c.Query("page"), 10, 32)
-	if err != nil {
+	if page, err = strconv.ParseInt(c.Query("page"), 10, 32); err != nil {
 		page = 0
 	}
 	if page < 0 {
@@ -85,7 +97,7 @@ func foodsGet(c *gin.Context) {
 	}
 	offset := page * max
 	dc.Browse(cs.CouchDb.Bucket, offset, max, format, sort, &foods)
-	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
+	results := fdc.BrowseResult{Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
 
@@ -111,25 +123,21 @@ func foodsSearch(c *gin.Context) {
 		return
 	}
 	// check the format parameter which defaults to BRIEF if not set
-	format = c.Query("format")
-	fmt.Printf("FORMAT QUERY=%s\n", format)
-	if format == "" {
+	if format = c.Query("format"); format == "" {
 		format = fdc.META
 	}
 	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
 		return
 	}
-	max, err = strconv.Atoi(c.Query("max"))
-	if err != nil {
+	if max, err = strconv.Atoi(c.Query("max")); err != nil {
 		max = defaultListMax
 	}
 	if max > maxListSize {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("max parameter %d exceeds maximum allowed size of %d", max, maxListSize)})
 		return
 	}
-	page, err = strconv.Atoi(c.Query("page"))
-	if err != nil {
+	if page, err = strconv.Atoi(c.Query("page")); err != nil {
 		page = 0
 	}
 	if page < 0 {
@@ -137,13 +145,11 @@ func foodsSearch(c *gin.Context) {
 	}
 	offset := page * max
 
-	count, err = dc.Search(q, f, cs.CouchDb.Fts, format, max, offset, &foods)
-	if err != nil {
+	if count, err = dc.Search(q, f, cs.CouchDb.Fts, format, max, offset, &foods); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
-
-	results := fdc.BrowseResult{Count: int32(count), Start: int32(offset), Max: int32(max), Items: foods}
+	results := fdc.BrowseResult{Count: int32(count), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
 

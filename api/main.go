@@ -76,6 +76,7 @@ func main() {
 		v1.GET("/food/:id", foodFdcID)
 		v1.GET("/browse", foodsGet)
 		v1.GET("/search", foodsSearch)
+		v1.GET("/count/:doctype", countsGet)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
 	}
 	endless.ListenAndServe(":"+*p, router)

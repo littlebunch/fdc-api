@@ -21,6 +21,7 @@ const (
 	BFPD
 	UNIT
 	NUT
+	DERV
 )
 
 //ToDocType -- convert a string to a DocType
@@ -40,6 +41,8 @@ func ToDocType(t string) DocType {
 		return UNIT
 	case "NUT":
 		return NUT
+	case "DERV":
+		return DERV
 	default:
 		return 999
 	}
@@ -62,6 +65,8 @@ func String(t DocType) string {
 		return "UNIT"
 	case NUT:
 		return "NUT"
+	case DERV:
+		return "DERV"
 	default:
 		return ""
 	}
