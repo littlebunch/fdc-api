@@ -97,7 +97,7 @@ func foodsGet(c *gin.Context) {
 	}
 	offset := page * max
 	dc.Browse(cs.CouchDb.Bucket, offset, max, format, sort, &foods)
-	results := fdc.BrowseResult{Start: int32(page), Max: int32(max), Items: foods}
+	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
 

@@ -3,6 +3,11 @@ package fdc
 
 // DocType provides a list of document types
 type DocType int
+type IngestCnt struct {
+	Foods     int `json:"foods"`
+	Servings  int `json:"servings"`
+	Nutrients int `json:"nutrients"`
+}
 
 // FULL etc define values for Foods formats
 const (
@@ -25,7 +30,7 @@ const (
 )
 
 //ToDocType -- convert a string to a DocType
-func ToDocType(t string) DocType {
+func (dt *DocType) ToDocType(t string) DocType {
 	switch t {
 	case "SR":
 		return SR
@@ -48,8 +53,8 @@ func ToDocType(t string) DocType {
 	}
 }
 
-//String -- convert a DocType to a string
-func String(t DocType) string {
+//ToString -- convert a DocType to a string
+func (dt *DocType) ToString(t DocType) string {
 	switch t {
 	case SR:
 		return "SR"

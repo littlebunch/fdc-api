@@ -1,8 +1,7 @@
-package main
+package fndds
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -10,17 +9,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
+	"github.com/littlebunch/gnutdata-bfpd-api/ds"
 	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
-type ingestCnt struct {
-	Foods     int `json:"foods"`
-	Servings  int `json:"servings"`
-	Nutrients int `json:"nutrients"`
-}
-
 var (
-	cnts ingestCnt
+	cnts fdc.IngestCnt
 	err  error
 	wg   sync.WaitGroup
 )
@@ -30,16 +25,16 @@ var (
 //		Products.csv  -- main food file
 //		Servings.csv  -- servings sizes for each food
 //		Nutrients.csv -- nutrient values for each food
-func ProcessBFPDFiles(path string) error {
-
-	/*cnts.Foods, err = foods(path)
+func ProcessFiles(path string, dc ds.DS, dt fdc.DocType) error {
+	t := dt.ToString(fdc.BFPD)
+	cnts.Foods, err = Foods(path, dc, &t)
 	if err != nil {
 		log.Fatal(err)
-	}*/
-	//wg.Add(1)
-	//go servings(path)
+	}
 	wg.Add(1)
-	go nutrients(path)
+	go Servings(path, dc, &t)
+	wg.Add(1)
+	go Nutrients(path, dc, &t)
 	wg.Wait()
 	if err != nil {
 		return err
@@ -47,7 +42,8 @@ func ProcessBFPDFiles(path string) error {
 	log.Printf("Finished.  Counts: %d Foods %d Servings %d\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
-func foods(path string) (int, error) {
+func Foods(path string, dc ds.DS, t *string) (int, error) {
+	cnt := 0
 	fn := path + "food.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -81,9 +77,9 @@ func foods(path string) (int, error) {
 	return cnts.Foods, err
 }
 
-func servings(path string) (int, error) {
+func Servings(path string, dc ds.DS, t *string) (int, error) {
 	defer wg.Done()
-	fn := path + "branded_food.csv"
+	fn := path + "food_portion.csv"
 	f, err := os.Open(fn)
 	if err != nil {
 		return 0, err
@@ -104,7 +100,7 @@ func servings(path string) (int, error) {
 			return cnts.Servings, err
 		}
 
-		id := *t + ":" + record[0]
+		id := *t + ":" + record[1]
 		if cid != id {
 			if cid != "" {
 				food.Servings = s
@@ -112,10 +108,7 @@ func servings(path string) (int, error) {
 			}
 			cid = id
 			dc.Get(id, &food)
-			food.Manufacturer = record[1]
-			food.Upc = record[2]
-			food.Ingredients = record[3]
-			food.Source = record[8]
+
 			//food.Group = record[7]
 			s = nil
 		}
@@ -138,11 +131,12 @@ func servings(path string) (int, error) {
 	}
 	return cnts.Servings, err
 }
-func nutrients(path string) (int, error) {
+func Nutrients(path string, dc ds.DS, t *string) (int, error) {
 	defer wg.Done()
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {
+		log.Fatalf("Can't open input file %v", err)
 		return 0, err
 	}
 	r := csv.NewReader(f)
@@ -155,18 +149,13 @@ func nutrients(path string) (int, error) {
 	if err := dc.GetDictionary("gnutdata", "NUT", 0, 500, &il); err != nil {
 		return 0, err
 	}
+	nutmap := dictionaries.InitNutrientInfoMap(il)
 
-	nutmap := initNutrientInfoMap(il)
-	for i := range nutmap {
-		fmt.Printf("NAME=%v\n", nutmap[i].Name)
-	}
 	if err := dc.GetDictionary("gnutdata", "DERV", 0, 500, &il); err != nil {
 		return 0, err
 	}
-	dlmap := initDerivationInfoMap(il)
-	for i := range dlmap {
-		fmt.Printf("%v\n", dlmap[i].Description)
-	}
+	dlmap := dictionaries.InitDerivationInfoMap(il)
+
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -220,17 +209,6 @@ func initDerivationInfoMap(il interface{}) map[uint]fdc.Derivation {
 	case []fdc.Derivation:
 		for _, value := range il {
 			m[uint(value.ID)] = value
-		}
-	}
-	return m
-}
-
-func initNutrientInfoMap(il interface{}) map[uint]fdc.Nutrient {
-	m := make(map[uint]fdc.Nutrient)
-	switch il := il.(type) {
-	case []fdc.Nutrient:
-		for _, value := range il {
-			m[uint(value.NutrientID)] = value
 		}
 	}
 	return m

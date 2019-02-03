@@ -87,9 +87,9 @@ type Serving struct {
 
 // Nutrient is metadata abount nutrients usually in a nutrients collection
 type Nutrient struct {
-	NutrientID uint   `json:"id" binding:required"`
+	NutrientID uint   `json:"id" binding:"required"`
 	Nutrientno uint   `json:"nutrientno" binding:"required"`
-	Tagname    string `json:"tagname"`
+	Tagname    string `json:"tagname,omitempty"`
 	Name       string `json:"name"  binding:"required"`
 	Unit       string `json:"unit"  binding:"required"`
 	Type       string `json:"type"  binding:"required"`
