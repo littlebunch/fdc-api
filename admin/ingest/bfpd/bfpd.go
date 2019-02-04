@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	cnts ingest.IngestCnt
+	cnts ingest.Counts
 	err  error
 	wg   sync.WaitGroup
 )

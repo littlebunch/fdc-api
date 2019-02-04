@@ -9,22 +9,23 @@ import (
 	"sync"
 	"time"
 
+	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
 	"github.com/littlebunch/gnutdata-bfpd-api/ds"
 	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
 var (
-	cnts fdc.IngestCnt
+	cnts ingest.Counts
 	err  error
 	wg   sync.WaitGroup
 )
 
-// ProcessBFPDFiles loads a set of Branded Food Products csv files processed
+// ProcessFiles loads a set of FNDSS csv files processed
 // in this order:
-//		Products.csv  -- main food file
-//		Servings.csv  -- servings sizes for each food
-//		Nutrients.csv -- nutrient values for each food
+//		food.csv  -- main food file
+//		food_portion.csv  -- servings sizes for each food
+//		food_nutrient.csv -- nutrient values for each food
 func ProcessFiles(path string, dc ds.DS, dt fdc.DocType) error {
 	t := dt.ToString(fdc.BFPD)
 	cnts.Foods, err = Foods(path, dc, &t)
@@ -77,6 +78,7 @@ func Foods(path string, dc ds.DS, t *string) (int, error) {
 	return cnts.Foods, err
 }
 
+// Servings implements an ingest of fdc.Food.ServingSizes for FNDDS foods
 func Servings(path string, dc ds.DS, t *string) (int, error) {
 	defer wg.Done()
 	fn := path + "food_portion.csv"
@@ -131,6 +133,8 @@ func Servings(path string, dc ds.DS, t *string) (int, error) {
 	}
 	return cnts.Servings, err
 }
+
+// Nutrients implements an ingest of fdc.Food.NutrietData for FNDDS foods
 func Nutrients(path string, dc ds.DS, t *string) (int, error) {
 	defer wg.Done()
 	fn := path + "food_nutrient.csv"

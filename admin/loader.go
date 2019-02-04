@@ -48,9 +48,7 @@ func main() {
 		log.Fatalln("Valid t option is required")
 	}
 
-	var (
-		cs fdc.Config
-	)
+	var cs fdc.Config
 	cs.GetConfig(c)
 	dc.Conn = b
 	// connect to datastore
