@@ -21,29 +21,32 @@ var (
 	wg   sync.WaitGroup
 )
 
+type Fndds struct {
+	Doctype string
+}
+
 // ProcessFiles loads a set of FNDSS csv files processed
 // in this order:
 //		food.csv  -- main food file
 //		food_portion.csv  -- servings sizes for each food
 //		food_nutrient.csv -- nutrient values for each food
-func ProcessFiles(path string, dc ds.DS, dt fdc.DocType) error {
-	t := dt.ToString(fdc.BFPD)
-	cnts.Foods, err = Foods(path, dc, &t)
+func (p Fndds) ProcessFiles(path string, dc ds.DS) error {
+	cnts.Foods, err = foods(path, dc, p.Doctype)
 	if err != nil {
 		log.Fatal(err)
 	}
 	wg.Add(1)
-	go Servings(path, dc, &t)
+	go servings(path, dc)
 	wg.Add(1)
-	go Nutrients(path, dc, &t)
+	go nutrients(path, dc)
 	wg.Wait()
 	if err != nil {
 		return err
 	}
-	log.Printf("Finished.  Counts: %d Foods %d Servings %d\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
+	log.Printf("Finished.  Counts: %d Foods %d Servings %d Nutrients\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
-func Foods(path string, dc ds.DS, t *string) (int, error) {
+func foods(path string, dc ds.DS, t string) (int, error) {
 	cnt := 0
 	fn := path + "food.csv"
 	f, err := os.Open(fn)
@@ -67,19 +70,19 @@ func Foods(path string, dc ds.DS, t *string) (int, error) {
 		if err != nil {
 			log.Println(err)
 		}
-		dc.Update(*t+":"+record[0],
+		dc.Update(record[0],
 			fdc.Food{
 				FdcID:           record[0],
 				Description:     record[2],
 				PublicationDate: pubdate,
-				Type:            *t,
+				Type:            t,
 			})
 	}
 	return cnts.Foods, err
 }
 
 // Servings implements an ingest of fdc.Food.ServingSizes for FNDDS foods
-func Servings(path string, dc ds.DS, t *string) (int, error) {
+func servings(path string, dc ds.DS) (int, error) {
 	defer wg.Done()
 	fn := path + "food_portion.csv"
 	f, err := os.Open(fn)
@@ -102,7 +105,7 @@ func Servings(path string, dc ds.DS, t *string) (int, error) {
 			return cnts.Servings, err
 		}
 
-		id := *t + ":" + record[1]
+		id := record[1]
 		if cid != id {
 			if cid != "" {
 				food.Servings = s
@@ -120,13 +123,13 @@ func Servings(path string, dc ds.DS, t *string) (int, error) {
 			log.Println("Servings Count = ", cnts.Servings)
 		}
 
-		a, err := strconv.ParseFloat(record[4], 32)
+		a, err := strconv.ParseFloat(record[7], 32)
 		if err != nil {
 			log.Println(record[0] + ": can't parse serving amount " + record[3])
 		}
 		s = append(s, fdc.Serving{
-			Nutrientbasis: record[5],
-			Description:   record[6],
+			Nutrientbasis: "g",
+			Description:   record[5],
 			Servingamount: float32(a),
 		})
 
@@ -135,7 +138,7 @@ func Servings(path string, dc ds.DS, t *string) (int, error) {
 }
 
 // Nutrients implements an ingest of fdc.Food.NutrietData for FNDDS foods
-func Nutrients(path string, dc ds.DS, t *string) (int, error) {
+func nutrients(path string, dc ds.DS) (int, error) {
 	defer wg.Done()
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
@@ -158,7 +161,6 @@ func Nutrients(path string, dc ds.DS, t *string) (int, error) {
 	if err := dc.GetDictionary("gnutdata", "DERV", 0, 500, &il); err != nil {
 		return 0, err
 	}
-	dlmap := dictionaries.InitDerivationInfoMap(il)
 
 	for {
 		record, err := r.Read()
@@ -169,7 +171,7 @@ func Nutrients(path string, dc ds.DS, t *string) (int, error) {
 			return cnts.Nutrients, err
 		}
 
-		id := *t + ":" + record[1]
+		id := record[1]
 		if cid != id {
 			if cid != "" {
 				food.Nutrients = n
@@ -189,16 +191,14 @@ func Nutrients(path string, dc ds.DS, t *string) (int, error) {
 		if err != nil {
 			log.Println(record[0] + ": can't parse nutrient no " + record[1])
 		}
-		d, err := strconv.ParseInt(record[5], 0, 32)
-		if err != nil {
-			log.Println(record[5] + ": can't parse derivation no " + record[1])
-		}
+		var dv *fdc.Derivation
+		dv = nil
 		n = append(n, fdc.NutrientData{
 			Nutrientno: nutmap[uint(v)].Nutrientno,
 			Value:      float32(w),
 			Nutrient:   nutmap[uint(v)].Name,
 			Unit:       nutmap[uint(v)].Unit,
-			Derivation: fdc.Derivation{ID: dlmap[uint(d)].ID, Code: dlmap[uint(d)].Code, Description: dlmap[uint(d)].Description},
+			Derivation: dv,
 		})
 		if cnts.Nutrients%30000 == 0 {
 			log.Println("Nutrients Count = ", cnts.Nutrients)
@@ -206,14 +206,4 @@ func Nutrients(path string, dc ds.DS, t *string) (int, error) {
 
 	}
 	return cnts.Nutrients, err
-}
-func initDerivationInfoMap(il interface{}) map[uint]fdc.Derivation {
-	m := make(map[uint]fdc.Derivation)
-	switch il := il.(type) {
-	case []fdc.Derivation:
-		for _, value := range il {
-			m[uint(value.ID)] = value
-		}
-	}
-	return m
 }

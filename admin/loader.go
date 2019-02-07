@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/bfpd"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/fndds"
@@ -39,6 +40,10 @@ func init() {
 	m := io.MultiWriter(lfile, os.Stdout)
 	log.SetOutput(m)
 }
+func load(p ingest.Ingest) error {
+	err := p.ProcessFiles(*i, dc)
+	return err
+}
 func main() {
 	log.Print("Starting ingest")
 	flag.Parse()
@@ -48,28 +53,31 @@ func main() {
 		log.Fatalln("Valid t option is required")
 	}
 
-	var cs fdc.Config
+	var (
+		cs  fdc.Config
+		err error
+	)
 	cs.GetConfig(c)
 	dc.Conn = b
 	// connect to datastore
 	if err := dc.ConnectDs(cs); err != nil {
 		log.Fatalln("Cannot connect to cluster ", err)
 	}
-
 	if dtype == fdc.BFPD {
-		if err := bfpd.ProcessFiles(*i, dc, dtype); err != nil {
-			log.Fatal(err)
-		}
+		b := bfpd.Bfpd{Doctype: dt.ToString(fdc.BFPD)}
+		err = load(b)
 	} else if dtype == fdc.FNDDS {
-		if err := fndds.ProcessFiles(*i, dc, dtype); err != nil {
-			log.Fatal(err)
-		}
+		b := fndds.Fndds{Doctype: dt.ToString(fdc.FNDDS)}
+		err = load(b)
 	} else {
-		if err := dictionaries.ProcessFiles(*i, dc, dtype); err != nil {
-			log.Fatal(err)
-		}
+		b := dictionaries.Dictionary{Dt: dtype}
+		err = load(b)
+	}
+	if err != nil {
+
 	}
 
 	log.Println("Finished.")
+	dc.CloseDs()
 	os.Exit(0)
 }

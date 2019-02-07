@@ -2,7 +2,6 @@ package ingest
 
 import (
 	"github.com/littlebunch/gnutdata-bfpd-api/ds"
-	"github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
 // Counts holds counts for documents loaded during an ingest
@@ -17,8 +16,8 @@ type Counts struct {
 // Food Data Central documents, i.e. Branded Foods, Standard release legacy,
 // , Nutrients, etc..
 type Ingest interface {
-	ProcessFiles(path string, dc ds.DS, dt fdc.DocType) error
-	Foods(path string, dc ds.DS, t *string) (int, error)
-	Servings(path string, dc ds.DS, t *string) (int, error)
-	Nutrients(path string, dc ds.DS, t *string) (int, error)
+	ProcessFiles(path string, dc ds.DS) error
+	//Foods(path string, dc ds.DS, t *string) (int, error)
+	//Servings(path string, dc ds.DS, t *string) (int, error)
+	//Nutrients(path string, dc ds.DS, t *string) (int, error)
 }

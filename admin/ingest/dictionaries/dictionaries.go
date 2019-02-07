@@ -11,9 +11,13 @@ import (
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
-func ProcessFiles(path string, dc ds.DS, dtype fdc.DocType) error {
+type Dictionary struct {
+	Dt fdc.DocType
+}
+
+func (p Dictionary) ProcessFiles(path string, dc ds.DS) error {
 	// read in the file and insert into couchbase
-	t := dtype.ToString(dtype)
+	t := p.Dt.ToString(p.Dt)
 	cnt := 0
 	f, err := os.Open(path)
 	if err != nil {
@@ -31,7 +35,7 @@ func ProcessFiles(path string, dc ds.DS, dtype fdc.DocType) error {
 			return err
 		}
 		cnt++
-		switch dtype {
+		switch p.Dt {
 		case fdc.DERV:
 			id, err := strconv.ParseInt(record[0], 10, 0)
 			if err != nil {

@@ -55,7 +55,8 @@ type FoodMeta struct {
 	Upc          string `json:"upc"`
 	Description  string `json:"foodDescription" binding:"required"`
 	Source       string `json:"dataSource"`
-	Manufacturer string `json:"company"`
+	Manufacturer string `json:"company,omitempty"`
+	Type         string `json:"type"`
 }
 
 // Food reflects JSON used to transfer BFPD foods data from USDA csv
@@ -78,7 +79,7 @@ type Food struct {
 // Serving describes a list nutrients for a given state, weight and amount
 // A subdocument of Food
 type Serving struct {
-	Nutrientbasis string  `json:"100UnitNutrientBasis"`
+	Nutrientbasis string  `json:"100UnitNutrientBasis,omitempty"`
 	Description   string  `json:"householdServingUom"`
 	Servingstate  string  `json:"servingState,omitempty"`
 	Weight        float32 `json:"weightInGmOrMl"`
@@ -106,11 +107,11 @@ type Derivation struct {
 // NutrientData is the list of nutrient values
 // A subdocument of Food
 type NutrientData struct {
-	Value      float32    `json:"valuePer100UnitServing"`
-	Unit       string     `json:"unit"  binding:"required"`
-	Derivation Derivation `json:"derivation"`
-	Nutrientno uint       `json:"nutrientNumber"`
-	Nutrient   string     `json:"nutrientName"`
+	Value      float32     `json:"valuePer100UnitServing"`
+	Unit       string      `json:"unit"  binding:"required"`
+	Derivation *Derivation `json:"derivation,omitempty"`
+	Nutrientno uint        `json:"nutrientNumber"`
+	Nutrient   string      `json:"nutrientName"`
 }
 
 // FoodGroup is the dictionary of FNDDS and SR food groups
