@@ -40,10 +40,7 @@ func init() {
 	m := io.MultiWriter(lfile, os.Stdout)
 	log.SetOutput(m)
 }
-func load(p ingest.Ingest) error {
-	err := p.ProcessFiles(*i, dc)
-	return err
-}
+
 func main() {
 	log.Print("Starting ingest")
 	flag.Parse()
@@ -54,8 +51,8 @@ func main() {
 	}
 
 	var (
-		cs  fdc.Config
-		err error
+		cs fdc.Config
+		in ingest.Ingest
 	)
 	cs.GetConfig(c)
 	dc.Conn = b
@@ -64,17 +61,14 @@ func main() {
 		log.Fatalln("Cannot connect to cluster ", err)
 	}
 	if dtype == fdc.BFPD {
-		b := bfpd.Bfpd{Doctype: dt.ToString(fdc.BFPD)}
-		err = load(b)
+		in = bfpd.Bfpd{Doctype: dt.ToString(fdc.BFPD)}
 	} else if dtype == fdc.FNDDS {
-		b := fndds.Fndds{Doctype: dt.ToString(fdc.FNDDS)}
-		err = load(b)
+		in = fndds.Fndds{Doctype: dt.ToString(fdc.FNDDS)}
 	} else {
-		b := dictionaries.Dictionary{Dt: dtype}
-		err = load(b)
+		in = dictionaries.Dictionary{Dt: dtype}
 	}
-	if err != nil {
-
+	if err := in.ProcessFiles(*i, dc); err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("Finished.")

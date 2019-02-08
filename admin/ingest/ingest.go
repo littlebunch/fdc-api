@@ -17,7 +17,4 @@ type Counts struct {
 // , Nutrients, etc..
 type Ingest interface {
 	ProcessFiles(path string, dc ds.DS) error
-	//Foods(path string, dc ds.DS, t *string) (int, error)
-	//Servings(path string, dc ds.DS, t *string) (int, error)
-	//Nutrients(path string, dc ds.DS, t *string) (int, error)
 }
