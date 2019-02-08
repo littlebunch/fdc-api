@@ -15,6 +15,7 @@ type Dictionary struct {
 	Dt fdc.DocType
 }
 
+// ProcessFiles implements an Ingest of Dictionary objects
 func (p Dictionary) ProcessFiles(path string, dc ds.DS) error {
 	// read in the file and insert into couchbase
 	t := p.Dt.ToString(p.Dt)
@@ -96,6 +97,8 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DS) error {
 	}
 	return nil
 }
+
+// InitNutrientInfoMap creates a map of NUT documents in the data store.
 func InitNutrientInfoMap(il interface{}) map[uint]fdc.Nutrient {
 	m := make(map[uint]fdc.Nutrient)
 	switch il := il.(type) {
@@ -106,6 +109,8 @@ func InitNutrientInfoMap(il interface{}) map[uint]fdc.Nutrient {
 	}
 	return m
 }
+
+// InitDerivationInfoMap creates a map of DERV documents in the data store.
 func InitDerivationInfoMap(il interface{}) map[uint]fdc.Derivation {
 	m := make(map[uint]fdc.Derivation)
 	switch il := il.(type) {

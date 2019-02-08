@@ -2,12 +2,7 @@
 package fdc
 
 import (
-	"io/ioutil"
-	"log"
-	"os"
 	"time"
-
-	yaml "gopkg.in/yaml.v2"
 )
 
 // BrowseResult is returned from the browse endpoints
@@ -63,12 +58,12 @@ type FoodMeta struct {
 type Food struct {
 	UpdatedAt       time.Time      `json:"lastChangeDateTime,omitempty"`
 	FdcID           string         `json:"fdcId" binding:"required"`
-	Upc             string         `json:"upc"`
+	Upc             string         `json:"upc,omitempty"`
 	Description     string         `json:"foodDescription" binding:"required"`
 	Source          string         `json:"dataSource"`
 	PublicationDate time.Time      `json:"publicationDateTime"`
 	Ingredients     string         `json:"ingredients,omitempty"`
-	Manufacturer    string         `json:"company"`
+	Manufacturer    string         `json:"company,omitempty"`
 	Group           FoodGroup      `json:"foodGroup,omitempty"`
 	Servings        []Serving      `json:"servingSizes,omitempty"`
 	Nutrients       []NutrientData `json:"nutrients,omitempty"`
@@ -121,58 +116,4 @@ type FoodGroup struct {
 	Description string `json:"description" binding:"required"`
 	LastUpdate  string `json:"lastUpdate,omitempty"`
 	Type        string `json:"type" binding:"required"`
-}
-
-//Config provides basic CouchBase configuration properties for API services.  Properties are normally read in from a YAML file or the environment
-type Config struct {
-	CouchDb CouchDb
-}
-
-// CouchDb configuration for connecting, reading and writing Couchbase nodes
-type CouchDb struct {
-	URL    string
-	Bucket string
-	Fts    string
-	User   string
-	Pwd    string
-}
-
-// Defaults sets values for CouchBase configuration properties if none have been provided.
-func (cs *Config) Defaults() {
-	if os.Getenv("COUCHBASE_URL") != "" {
-		cs.CouchDb.URL = os.Getenv("COUCHBASE_URL")
-	}
-	if os.Getenv("COUCHBASE_BUCKET") != "" {
-		cs.CouchDb.Bucket = os.Getenv("COUCHBASE_BUCKET")
-	}
-	if os.Getenv("COUCHBASE_FTSINDEX") != "" {
-		cs.CouchDb.Fts = os.Getenv("COUCHBASE_FTSINDEX")
-	}
-	if os.Getenv("COUCHBASE_USER") != "" {
-		cs.CouchDb.User = os.Getenv("COUCHBASE_USER")
-	}
-	if os.Getenv("COUCHBASE_PWD") != "" {
-		cs.CouchDb.Pwd = os.Getenv("COUCHBASE_PWD")
-	}
-	if cs.CouchDb.URL == "" {
-		cs.CouchDb.URL = "localhost"
-	}
-	if cs.CouchDb.Bucket == "" {
-		cs.CouchDb.Bucket = "gnutdata"
-	}
-	if cs.CouchDb.Fts == "" {
-		cs.CouchDb.Fts = "fd_food"
-	}
-}
-
-// GetConfig reads config from a file
-func (cs *Config) GetConfig(c *string) {
-	raw, err := ioutil.ReadFile(*c)
-	if err != nil {
-		log.Println(err.Error())
-	}
-	if err = yaml.Unmarshal(raw, cs); err != nil {
-		log.Println(err.Error())
-	}
-	cs.Defaults()
 }

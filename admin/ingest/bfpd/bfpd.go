@@ -77,7 +77,7 @@ func foods(path string, dc ds.DS, t string) (int, error) {
 				FdcID:           record[0],
 				Description:     record[2],
 				PublicationDate: pubdate,
-				Type:            t,
+				Type:            "FOOD",
 			})
 	}
 	return cnts.Foods, err
