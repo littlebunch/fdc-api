@@ -3,11 +3,6 @@ package fdc
 
 // DocType provides a list of document types
 type DocType int
-type IngestCnt struct {
-	Foods     int `json:"foods"`
-	Servings  int `json:"servings"`
-	Nutrients int `json:"nutrients"`
-}
 
 // FULL etc define values for Foods formats
 const (
