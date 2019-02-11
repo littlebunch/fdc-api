@@ -1,3 +1,4 @@
+//Package ingest provides the Ingest interface
 package ingest
 
 import (
@@ -10,6 +11,7 @@ type Counts struct {
 	Foods     int `json:"foods"`
 	Servings  int `json:"servings"`
 	Nutrients int `json:"nutrients"`
+	Other     int `json:"other"`
 }
 
 // Ingest wraps the basic methods used for loading different

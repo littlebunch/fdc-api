@@ -1,12 +1,13 @@
+// Package bfpd implements an Ingest for Branded Food Products
 package bfpd
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest"
@@ -18,10 +19,9 @@ import (
 var (
 	cnts ingest.Counts
 	err  error
-	wg   sync.WaitGroup
 )
 
-// Bfpd implements the Ingest interface for Branded Food Products
+// Bfpd for implementing the interface
 type Bfpd struct {
 	Doctype string
 }
@@ -37,15 +37,28 @@ func (p Bfpd) ProcessFiles(path string, dc ds.DataSource) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	wg.Add(1)
-	go servings(path, dc)
-	wg.Add(1)
-	go nutrients(path, dc)
-	wg.Wait()
-	if err != nil {
-		return err
+	rcs := make(chan error)
+	rcn := make(chan error)
+	go servings(path, dc, rcs)
+	go nutrients(path, dc, rcn)
+	for i := 0; i < 2; i++ {
+		select {
+		case errs := <-rcs:
+			if errs != nil {
+				fmt.Printf("Error from servings: %v\n", errs)
+			} else {
+				fmt.Printf("Servings ingest complete.\n")
+			}
+
+		case errn := <-rcn:
+			if err != nil {
+				fmt.Printf("Error from nutrients: %v\n", errn)
+			} else {
+				fmt.Printf("Nutrient ingest complete.\n")
+			}
+		}
 	}
-	log.Printf("Finished.  Counts: %d Foods %d Servings %d\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
+	log.Printf("Finished.  Counts: %d Foods %d Servings %d Nutrients\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
 func foods(path string, dc ds.DataSource, t string) (int, error) {
@@ -83,12 +96,12 @@ func foods(path string, dc ds.DataSource, t string) (int, error) {
 	return cnts.Foods, err
 }
 
-func servings(path string, dc ds.DataSource) (int, error) {
-	defer wg.Done()
+func servings(path string, dc ds.DataSource, rc chan error) {
 	fn := path + "branded_food.csv"
 	f, err := os.Open(fn)
 	if err != nil {
-		return 0, err
+		rc <- err
+		return
 	}
 	r := csv.NewReader(f)
 	cid := ""
@@ -103,7 +116,8 @@ func servings(path string, dc ds.DataSource) (int, error) {
 			break
 		}
 		if err != nil {
-			return cnts.Servings, err
+			rc <- err
+			return
 		}
 
 		id := record[0]
@@ -138,15 +152,15 @@ func servings(path string, dc ds.DataSource) (int, error) {
 		})
 
 	}
-	return cnts.Servings, err
+	rc <- err
+	return
 }
-func nutrients(path string, dc ds.DataSource) (int, error) {
-	defer wg.Done()
+func nutrients(path string, dc ds.DataSource, rc chan error) {
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {
-		log.Fatalf("Can't open input file %v", err)
-		return 0, err
+		rc <- err
+		return
 	}
 	r := csv.NewReader(f)
 	cid := ""
@@ -156,13 +170,15 @@ func nutrients(path string, dc ds.DataSource) (int, error) {
 		il   interface{}
 	)
 	if err := dc.GetDictionary("gnutdata", "NUT", 0, 500, &il); err != nil {
-		return 0, err
+		rc <- err
+		return
 	}
 
 	nutmap := dictionaries.InitNutrientInfoMap(il)
 
 	if err := dc.GetDictionary("gnutdata", "DERV", 0, 500, &il); err != nil {
-		return 0, err
+		rc <- err
+		return
 	}
 	dlmap := dictionaries.InitDerivationInfoMap(il)
 
@@ -172,7 +188,8 @@ func nutrients(path string, dc ds.DataSource) (int, error) {
 			break
 		}
 		if err != nil {
-			return cnts.Nutrients, err
+			rc <- err
+			return
 		}
 
 		id := record[1]
@@ -217,5 +234,6 @@ func nutrients(path string, dc ds.DataSource) (int, error) {
 		}
 
 	}
-	return cnts.Nutrients, err
+	rc <- nil
+	return
 }

@@ -60,8 +60,8 @@ func foodFdcID(c *gin.Context) {
 	return
 }
 
-// foodsGet returns a BrowseResult
-func foodsGet(c *gin.Context) {
+// foodsBrowse returns a BrowseResult
+func foodsBrowse(c *gin.Context) {
 	var (
 		max  int64
 		page int64

@@ -68,7 +68,19 @@ type Food struct {
 	Servings        []Serving      `json:"servingSizes,omitempty"`
 	Nutrients       []NutrientData `json:"nutrients,omitempty"`
 	Type            string         `json:"type" binding:"required"`
-	InputFoods      []Food         `json:"inputfoods,omitempty"`
+	InputFoods      []InputFood    `json:"inputfoods,omitempty"`
+}
+
+// InputFood describes an FNDDS Input Food
+type InputFood struct {
+	Description        string  `json:"foodDescription" binding:"required"`
+	SeqNo              int     `json:"seq"`
+	Amount             float32 `json:"amount"`
+	SrCode             int     `json:"srcode,omitempty"`
+	Unit               string  `json:"unit"`
+	Portion            string  `json:"portion,omitempty"`
+	PortionDescription string  `json:"portionDescription,omitempty"`
+	Weight             float32 `json:"weight"`
 }
 
 // Serving describes a list nutrients for a given state, weight and amount

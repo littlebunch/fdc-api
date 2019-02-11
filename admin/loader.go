@@ -1,6 +1,6 @@
+// loader parses food data central csv and ingests it into couchbase documents
 package main
 
-// parses food data central csv into couchbase documents
 import (
 	"flag"
 	"io"
@@ -56,11 +56,13 @@ func main() {
 		ds ds.DataSource
 	)
 	cs.GetConfig(c)
+	// create a Couchbase datastore
+	// and connect to it
 	ds = &cb
-	// connect to datastore
 	if err := ds.ConnectDs(cs); err != nil {
-		log.Fatalln("Cannot connect to cluster ", err)
+		log.Fatalln("Cannot connect to datastore ", err)
 	}
+	// implement the Ingest interface
 	if dtype == fdc.BFPD {
 		in = bfpd.Bfpd{Doctype: dt.ToString(fdc.BFPD)}
 	} else if dtype == fdc.FNDDS {
@@ -68,7 +70,7 @@ func main() {
 	} else {
 		in = dictionaries.Dictionary{Dt: dtype}
 	}
-
+	// ingest the csv files
 	if err := in.ProcessFiles(*i, ds); err != nil {
 		log.Fatal(err)
 	}

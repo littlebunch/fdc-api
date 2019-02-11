@@ -1,3 +1,4 @@
+// Package main creates and starts a web server
 package main
 
 // @APITitle Brand Foods Product Database
@@ -47,19 +48,17 @@ func init() {
 	log.SetOutput(m)
 }
 
-var ()
-
 func main() {
 
 	var cb cb.Cb
 	flag.Parse()
 	// get configuration
 	cs.GetConfig(c)
+	// Create a couchbase datastore and Connect to it
 	dc = &cb
-	// Connect to couchbase datastore
 	err = dc.ConnectDs(cs)
 	if err != nil {
-		log.Fatal("Cannot get datastore connection.")
+		log.Fatal("Cannot get datastore connection %v.", err)
 	}
 	defer dc.CloseDs()
 	// initialize our jwt authentication
@@ -77,7 +76,7 @@ func main() {
 		//v1.POST("/login", authMiddleware.LoginHandler)
 		v1.GET("/food/:id/:format", foodFdcID)
 		v1.GET("/food/:id", foodFdcID)
-		v1.GET("/browse", foodsGet)
+		v1.GET("/browse", foodsBrowse)
 		v1.GET("/search", foodsSearch)
 		v1.GET("/count/:doctype", countsGet)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)

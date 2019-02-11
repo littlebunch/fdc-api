@@ -1,3 +1,4 @@
+//Package dictionaries implements an Ingest for supporting files
 package dictionaries
 
 import (
@@ -11,13 +12,13 @@ import (
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
 )
 
+//Dictionary for implementing the interface
 type Dictionary struct {
 	Dt fdc.DocType
 }
 
 // ProcessFiles implements an Ingest of Dictionary objects
 func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
-	// read in the file and insert into couchbase
 	t := p.Dt.ToString(p.Dt)
 	cnt := 0
 	f, err := os.Open(path)
@@ -37,6 +38,7 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 		}
 		cnt++
 		switch p.Dt {
+		// derivation codes
 		case fdc.DERV:
 			id, err := strconv.ParseInt(record[0], 10, 0)
 			if err != nil {
@@ -49,6 +51,7 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 					Type:        t,
 					Description: record[2],
 				})
+		// Standard release food groups
 		case fdc.FGSR:
 			no, err := strconv.ParseInt(record[0], 10, 0)
 			if err != nil {
@@ -62,6 +65,7 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 					Description: record[2],
 					LastUpdate:  record[3],
 				})
+		// FNDDS food groups
 		case fdc.FGFNDDS:
 			no, err := strconv.ParseInt(record[0], 10, 0)
 			if err != nil {
@@ -73,6 +77,7 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 					Type:        t,
 					Description: record[1],
 				})
+		// nutrients
 		case fdc.NUT:
 			var nid int64
 			no, err := strconv.ParseInt(record[3], 10, 0)

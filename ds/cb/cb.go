@@ -1,3 +1,4 @@
+// Package cb implements the DataStore interface for CouchBase
 package cb
 
 import (
@@ -40,6 +41,7 @@ func (ds Cb) Get(q string, f interface{}) error {
 	return err
 }
 
+// Counts returns document counts for a specified document type
 func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
 	q := fmt.Sprintf("select type,count(*) as count from %s where type = '%s' group by type", bucket, doctype)
 
@@ -161,7 +163,7 @@ func (ds *Cb) Search(q string, fld string, indexName string, format string, limi
 	return count, nil
 }
 
-// Update updates an existing document in the datastore
+// Update updates an existing document in the datastore using Upsert
 func (ds *Cb) Update(id string, r interface{}) {
 
 	ds.Conn.Upsert(id, r, 0)
