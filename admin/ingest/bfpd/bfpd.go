@@ -31,7 +31,7 @@ type Bfpd struct {
 //		Products.csv  -- main food file
 //		Servings.csv  -- servings sizes for each food
 //		Nutrients.csv -- nutrient values for each food
-func (p Bfpd) ProcessFiles(path string, dc ds.DS) error {
+func (p Bfpd) ProcessFiles(path string, dc ds.DataSource) error {
 
 	cnts.Foods, err = foods(path, dc, p.Doctype)
 	if err != nil {
@@ -48,7 +48,7 @@ func (p Bfpd) ProcessFiles(path string, dc ds.DS) error {
 	log.Printf("Finished.  Counts: %d Foods %d Servings %d\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
-func foods(path string, dc ds.DS, t string) (int, error) {
+func foods(path string, dc ds.DataSource, t string) (int, error) {
 	fn := path + "food.csv"
 	cnt := 0
 	f, err := os.Open(fn)
@@ -83,7 +83,7 @@ func foods(path string, dc ds.DS, t string) (int, error) {
 	return cnts.Foods, err
 }
 
-func servings(path string, dc ds.DS) (int, error) {
+func servings(path string, dc ds.DataSource) (int, error) {
 	defer wg.Done()
 	fn := path + "branded_food.csv"
 	f, err := os.Open(fn)
@@ -140,7 +140,7 @@ func servings(path string, dc ds.DS) (int, error) {
 	}
 	return cnts.Servings, err
 }
-func nutrients(path string, dc ds.DS) (int, error) {
+func nutrients(path string, dc ds.DataSource) (int, error) {
 	defer wg.Done()
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)

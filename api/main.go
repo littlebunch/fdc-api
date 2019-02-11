@@ -12,8 +12,8 @@ import (
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/littlebunch/gnutdata-bfpd-api/ds"
+	"github.com/littlebunch/gnutdata-bfpd-api/ds/cb"
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
-	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
 const (
@@ -29,10 +29,9 @@ var (
 	l   = flag.String("l", "/tmp/bfpd.out", "send log output to this file -- defaults to /tmp/bfpd.out")
 	p   = flag.String("p", "8000", "TCP port to used")
 	r   = flag.String("r", "v1", "root path to deploy -- defaults to 'v1'")
-	b   *gocb.Bucket
 	cs  fdc.Config
-	dc  ds.DS
 	err error
+	dc  ds.DataSource
 )
 
 // process cli flags; build the config and init an Mongo client and a logger
@@ -48,11 +47,15 @@ func init() {
 	log.SetOutput(m)
 }
 
+var ()
+
 func main() {
+
+	var cb cb.Cb
 	flag.Parse()
 	// get configuration
 	cs.GetConfig(c)
-	dc.Conn = b
+	dc = &cb
 	// Connect to couchbase datastore
 	err = dc.ConnectDs(cs)
 	if err != nil {

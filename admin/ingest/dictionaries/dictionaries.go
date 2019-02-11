@@ -16,7 +16,7 @@ type Dictionary struct {
 }
 
 // ProcessFiles implements an Ingest of Dictionary objects
-func (p Dictionary) ProcessFiles(path string, dc ds.DS) error {
+func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 	// read in the file and insert into couchbase
 	t := p.Dt.ToString(p.Dt)
 	cnt := 0

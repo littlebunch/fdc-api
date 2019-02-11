@@ -12,8 +12,8 @@ import (
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/fndds"
 	"github.com/littlebunch/gnutdata-bfpd-api/ds"
+	"github.com/littlebunch/gnutdata-bfpd-api/ds/cb"
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
-	gocb "gopkg.in/couchbase/gocb.v1"
 )
 
 var (
@@ -22,9 +22,7 @@ var (
 	i   = flag.String("i", "", "Input csv file")
 	t   = flag.String("t", "", "Input file type")
 	cnt = 0
-	b   *gocb.Bucket
 	cs  fdc.Config
-	dc  ds.DS
 )
 
 func init() {
@@ -42,6 +40,7 @@ func init() {
 }
 
 func main() {
+
 	log.Print("Starting ingest")
 	flag.Parse()
 	var dt fdc.DocType
@@ -53,11 +52,13 @@ func main() {
 	var (
 		cs fdc.Config
 		in ingest.Ingest
+		cb cb.Cb
+		ds ds.DataSource
 	)
 	cs.GetConfig(c)
-	dc.Conn = b
+	ds = &cb
 	// connect to datastore
-	if err := dc.ConnectDs(cs); err != nil {
+	if err := ds.ConnectDs(cs); err != nil {
 		log.Fatalln("Cannot connect to cluster ", err)
 	}
 	if dtype == fdc.BFPD {
@@ -67,11 +68,12 @@ func main() {
 	} else {
 		in = dictionaries.Dictionary{Dt: dtype}
 	}
-	if err := in.ProcessFiles(*i, dc); err != nil {
+
+	if err := in.ProcessFiles(*i, ds); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Finished.")
-	dc.CloseDs()
+	ds.CloseDs()
 	os.Exit(0)
 }

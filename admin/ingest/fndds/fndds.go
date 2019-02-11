@@ -30,7 +30,7 @@ type Fndds struct {
 //		food.csv  -- main food file
 //		food_portion.csv  -- servings sizes for each food
 //		food_nutrient.csv -- nutrient values for each food
-func (p Fndds) ProcessFiles(path string, dc ds.DS) error {
+func (p Fndds) ProcessFiles(path string, dc ds.DataSource) error {
 	cnts.Foods, err = foods(path, dc, p.Doctype)
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +46,7 @@ func (p Fndds) ProcessFiles(path string, dc ds.DS) error {
 	log.Printf("Finished.  Counts: %d Foods %d Servings %d Nutrients\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
-func foods(path string, dc ds.DS, t string) (int, error) {
+func foods(path string, dc ds.DataSource, t string) (int, error) {
 	cnt := 0
 	fn := path + "food.csv"
 	f, err := os.Open(fn)
@@ -83,7 +83,7 @@ func foods(path string, dc ds.DS, t string) (int, error) {
 }
 
 // Servings implements an ingest of fdc.Food.ServingSizes for FNDDS foods
-func servings(path string, dc ds.DS) (int, error) {
+func servings(path string, dc ds.DataSource) (int, error) {
 	defer wg.Done()
 	fn := path + "food_portion.csv"
 	f, err := os.Open(fn)
@@ -139,7 +139,7 @@ func servings(path string, dc ds.DS) (int, error) {
 }
 
 // Nutrients implements an ingest of fdc.Food.NutrietData for FNDDS foods
-func nutrients(path string, dc ds.DS) (int, error) {
+func nutrients(path string, dc ds.DataSource) (int, error) {
 	defer wg.Done()
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
