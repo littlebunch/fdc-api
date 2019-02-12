@@ -32,19 +32,19 @@ type Fndds struct {
 //		food_portion.csv  -- servings sizes for each food
 //		food_nutrient.csv -- nutrient values for each food
 func (p Fndds) ProcessFiles(path string, dc ds.DataSource) error {
-	var errs, errn, erri error
-	rcs, rcn, rci := make(chan error), make(chan error), make(chan error)
-	c1, c2, c3 := true, true, true
+	var errs, errn, erri, errf error
+	rcs, rcn, rci, rcf := make(chan error), make(chan error), make(chan error), make(chan error)
+	c1, c2, c3, c4 := true, true, true, true
 	err = foods(path, dc, p.Doctype)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	go foodGroups(path, dc, rcf)
 	go servings(path, dc, rcs)
 	go nutrients(path, dc, rcn)
 	go inputFoods(path, dc, rci)
 
-	for c1 || c2 || c3 {
+	for c1 || c2 || c3 || c4 {
 		select {
 		case errs, c1 = <-rcs:
 			if c1 {
@@ -71,7 +71,14 @@ func (p Fndds) ProcessFiles(path string, dc ds.DataSource) error {
 					fmt.Printf("Food input complete.\n")
 				}
 			}
-
+		case errf, c4 = <-rcf:
+			if c4 {
+				if erri != nil {
+					fmt.Printf("Error from food groups %v\n", errf)
+				} else {
+					fmt.Printf("Food groups complete.\n")
+				}
+			}
 		}
 	}
 
@@ -80,10 +87,12 @@ func (p Fndds) ProcessFiles(path string, dc ds.DataSource) error {
 }
 func foods(path string, dc ds.DataSource, t string) error {
 	fn := path + "food.csv"
+	var dt *fdc.DocType
 	f, err := os.Open(fn)
 	if err != nil {
 		return err
 	}
+
 	r := csv.NewReader(f)
 	for {
 		record, err := r.Read()
@@ -101,16 +110,67 @@ func foods(path string, dc ds.DataSource, t string) error {
 		if err != nil {
 			log.Println(err)
 		}
+
 		dc.Update(record[0],
 			fdc.Food{
 				FdcID:           record[0],
 				Description:     record[2],
 				PublicationDate: pubdate,
 				Source:          t,
-				Type:            "FOOD",
+				Type:            dt.ToString(fdc.FOOD),
 			})
 	}
 	return err
+}
+
+func foodGroups(path string, dc ds.DataSource, rc chan error) {
+	defer close(rc)
+	var il interface{}
+	var dt *fdc.DocType
+	dtype := dt.ToString(fdc.FGFNDDS)
+	fn := path + "survey_fndds_food.csv"
+	f, err := os.Open(fn)
+	if err != nil {
+		rc <- err
+		return
+	}
+	err = dc.GetDictionary("gnutdata", dtype, 0, 500, &il)
+	if err != nil {
+		rc <- err
+		return
+	}
+	fgmap := dictionaries.InitFoodGroupInfoMap(il)
+
+	r := csv.NewReader(f)
+	var food fdc.Food
+
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			rc <- err
+			return
+		}
+
+		id := record[0]
+		dc.Get(id, &food)
+		fid, _ := strconv.ParseInt(record[2], 0, 32)
+		var fg *fdc.FoodGroup
+		if fgmap[uint(fid)].Description != "" {
+			fg = &fdc.FoodGroup{ID: fgmap[uint(fid)].ID, Description: fgmap[uint(fid)].Description, Type: dtype}
+
+		} else {
+			fg = nil
+		}
+
+		food.Group = fg
+		dc.Update(id, food)
+
+	}
+	rc <- nil
+	return
 }
 
 // servings implements an ingest of fdc.Food.ServingSizes for FNDDS foods
@@ -147,8 +207,6 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 			}
 			cid = id
 			dc.Get(id, &food)
-
-			//food.Group = record[7]
 			s = nil
 		}
 
@@ -193,12 +251,6 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		return
 	}
 	nutmap := dictionaries.InitNutrientInfoMap(il)
-
-	if err := dc.GetDictionary("gnutdata", "DERV", 0, 500, &il); err != nil {
-		rc <- err
-		return
-	}
-
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -229,6 +281,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		if err != nil {
 			log.Println(record[0] + ": can't parse nutrient no " + record[1])
 		}
+
 		var dv *fdc.Derivation
 		dv = nil
 		n = append(n, fdc.NutrientData{

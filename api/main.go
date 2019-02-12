@@ -54,7 +54,7 @@ func main() {
 	flag.Parse()
 	// get configuration
 	cs.GetConfig(c)
-	// Create a couchbase datastore and Connect to it
+	// Create a datastore and connect to it
 	dc = &cb
 	err = dc.ConnectDs(cs)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/bfpd"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
 	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/fndds"
+	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/sr"
 	"github.com/littlebunch/gnutdata-bfpd-api/ds"
 	"github.com/littlebunch/gnutdata-bfpd-api/ds/cb"
 	"github.com/littlebunch/gnutdata-bfpd-api/model"
@@ -56,8 +57,7 @@ func main() {
 		ds ds.DataSource
 	)
 	cs.GetConfig(c)
-	// create a Couchbase datastore
-	// and connect to it
+	// create a datastore and connect to it
 	ds = &cb
 	if err := ds.ConnectDs(cs); err != nil {
 		log.Fatalln("Cannot connect to datastore ", err)
@@ -67,6 +67,8 @@ func main() {
 		in = bfpd.Bfpd{Doctype: dt.ToString(fdc.BFPD)}
 	} else if dtype == fdc.FNDDS {
 		in = fndds.Fndds{Doctype: dt.ToString(fdc.FNDDS)}
+	} else if dtype == fdc.SR {
+		in = sr.Sr{Doctype: dt.ToString(fdc.SR)}
 	} else {
 		in = dictionaries.Dictionary{Dt: dtype}
 	}

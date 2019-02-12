@@ -64,7 +64,7 @@ type Food struct {
 	PublicationDate time.Time      `json:"publicationDateTime"`
 	Ingredients     string         `json:"ingredients,omitempty"`
 	Manufacturer    string         `json:"company,omitempty"`
-	Group           FoodGroup      `json:"foodGroup,omitempty"`
+	Group           *FoodGroup     `json:"foodGroup,omitempty"`
 	Servings        []Serving      `json:"servingSizes,omitempty"`
 	Nutrients       []NutrientData `json:"nutrients,omitempty"`
 	Type            string         `json:"type" binding:"required"`
@@ -91,6 +91,7 @@ type Serving struct {
 	Servingstate  string  `json:"servingState,omitempty"`
 	Weight        float32 `json:"weightInGmOrMl"`
 	Servingamount float32 `json:"householdServingValue,omitempty"`
+	Datapoints    int32   `json:"datapoints,omitempty"`
 }
 
 // Nutrient is metadata abount nutrients usually in a nutrients collection
@@ -119,6 +120,9 @@ type NutrientData struct {
 	Derivation *Derivation `json:"derivation,omitempty"`
 	Nutrientno uint        `json:"nutrientNumber"`
 	Nutrient   string      `json:"nutrientName"`
+	Datapoints int         `json:"datapoints,omitempty"`
+	Min        float32     `json:"min,omitempty"`
+	Max        float32     `json:"max,omitempty"`
 }
 
 // FoodGroup is the dictionary of FNDDS and SR food groups

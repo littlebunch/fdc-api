@@ -67,6 +67,7 @@ func (p Bfpd) ProcessFiles(path string, dc ds.DataSource) error {
 	return err
 }
 func foods(path string, dc ds.DataSource, t string) (int, error) {
+	var dt *fdc.DocType
 	fn := path + "food.csv"
 	cnt := 0
 	f, err := os.Open(fn)
@@ -95,7 +96,7 @@ func foods(path string, dc ds.DataSource, t string) (int, error) {
 				FdcID:           record[0],
 				Description:     record[2],
 				PublicationDate: pubdate,
-				Type:            "FOOD",
+				Type:            dt.ToString(fdc.FOOD),
 			})
 	}
 	return cnts.Foods, err
@@ -138,7 +139,6 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 			food.Upc = record[2]
 			food.Ingredients = record[3]
 			food.Source = record[8]
-			//food.Group = record[7]
 			s = nil
 		}
 
@@ -163,6 +163,7 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 }
 func nutrients(path string, dc ds.DataSource, rc chan error) {
 	defer close(rc)
+	var dt *fdc.DocType
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -176,14 +177,14 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		n    []fdc.NutrientData
 		il   interface{}
 	)
-	if err := dc.GetDictionary("gnutdata", "NUT", 0, 500, &il); err != nil {
+	if err := dc.GetDictionary("gnutdata", dt.ToString(fdc.NUT), 0, 500, &il); err != nil {
 		rc <- err
 		return
 	}
 
 	nutmap := dictionaries.InitNutrientInfoMap(il)
 
-	if err := dc.GetDictionary("gnutdata", "DERV", 0, 500, &il); err != nil {
+	if err := dc.GetDictionary("gnutdata", dt.ToString(fdc.DERV), 0, 500, &il); err != nil {
 		rc <- err
 		return
 	}
@@ -225,7 +226,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		}
 		var dv *fdc.Derivation
 		if dlmap[uint(d)].Code != "" {
-			dv = &fdc.Derivation{ID: dlmap[uint(d)].ID, Code: dlmap[uint(d)].Code, Description: dlmap[uint(d)].Description}
+			dv = &fdc.Derivation{ID: dlmap[uint(d)].ID, Code: dlmap[uint(d)].Code, Type: dt.ToString(fdc.DERV), Description: dlmap[uint(d)].Description}
 		} else {
 			dv = nil
 		}

@@ -22,6 +22,7 @@ const (
 	UNIT
 	NUT
 	DERV
+	FOOD
 )
 
 //ToDocType -- convert a string to a DocType
@@ -43,6 +44,8 @@ func (dt *DocType) ToDocType(t string) DocType {
 		return NUT
 	case "DERV":
 		return DERV
+	case "FOOD":
+		return FOOD
 	default:
 		return 999
 	}
@@ -67,6 +70,8 @@ func (dt *DocType) ToString(t DocType) string {
 		return "NUT"
 	case DERV:
 		return "DERV"
+	case FOOD:
+		return "FOOD"
 	default:
 		return ""
 	}
