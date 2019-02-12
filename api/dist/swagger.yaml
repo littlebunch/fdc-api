@@ -12,7 +12,7 @@ info:
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-host: localhost:8000
+host: 'localhost:8000'
 basePath: /
 tags:
   - name: admins
@@ -22,7 +22,7 @@ tags:
 schemes:
   - http
 paths:
-  /v1/food/{id}:
+  '/v1/food/{id}':
     get:
       tags:
         - developers
@@ -43,12 +43,12 @@ paths:
         - name: format
           in: query
           description: >-
-            Food documents can be formated in 4 ways.    
-            1) A value of \'meta\' returns only meta-data (fdcId, upc, foodDescription and company) for a
-            food.  This is the default format.
-            2)  \'servings\' returns only the servings array for an item
-            3) \'nutrients\' returns only the nutrients array for an item.
-            4) \'full\' all data elements are returned
+            Food documents can be formated in 4 ways.     1) A value of \'meta\'
+            returns only meta-data (fdcId, upc, foodDescription and company) for
+            a food.  This is the default format. 2)  \'servings\' returns only
+            the servings array for an item 3) \'nutrients\' returns only the
+            nutrients array for an item. 4) \'full\' all data elements are
+            returned
           required: false
           type: string
       responses:
@@ -65,7 +65,9 @@ paths:
       tags:
         - developers
       summary: browse foods data
-      description: By passing in the appropriate options, you can browse for available foods
+      description: >-
+        By passing in the appropriate options, you can browse for available
+        foods
       operationId: browse
       produces:
         - application/json
@@ -73,24 +75,28 @@ paths:
         - name: format
           in: query
           description: >-
-            Food documents can be formated in 4 ways.    
-            1) A value of \'meta\' returns only meta-data (fdcId, upc, foodDescription and company) for a
-            food.  This is the default format.
-            2)  \'servings\' returns only the servings array for an item
-            3) \'nutrients\' returns only the nutrients array for an item.
-            4) \'full\' all data elements are returned
+            Food documents can be formated in 4 ways.     1) A value of \'meta\'
+            returns only meta-data (fdcId, upc, foodDescription and company) for
+            a food.  This is the default format. 2)  \'servings\' returns only
+            the servings array for an item 3) \'nutrients\' returns only the
+            nutrients array for an item. 4) \'full\' all data elements are
+            returned
           required: false
           type: string
         - name: page
           in: query
-          description: page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc. 
+          description: >-
+            page is used to determine a start point (offset) into the search
+            results list, i.e. offset=page*max.  Paging is zero based so page=0
+            and max=50 results in offset 0, page=3 and max=50 results in an
+            offset into the list of 150, etc.
           required: false
           type: integer
           minimum: 0
           format: int32
         - name: max
           in: query
-          description: maximum number of records to return. 
+          description: maximum number of records to return.
           required: false
           type: integer
           maximum: 150
@@ -98,7 +104,9 @@ paths:
           format: int32
         - name: sort
           in: query
-          description: return the results list ordered by foodDescription, company, or fdcId.  Default is fdcId
+          description: >-
+            return the results list ordered by foodDescription, company, or
+            fdcId.  Default is fdcId
           type: string
           required: false
       responses:
@@ -124,31 +132,38 @@ paths:
       parameters:
         - name: q
           in: query
-          description: search string for looking up foods.  Unless restricted to a field specified in the f parameter, the foodDescription, company, ingredients, source and upc fields are searched for matches.
+          description: >-
+            search string for looking up foods.  Unless restricted to a field
+            specified in the f parameter, the foodDescription, company,
+            ingredients, source and upc fields are searched for matches.
           required: true
           type: string
         - name: f
           in: query
-          description: a search query can be limited to a particular field.  Presently there are three choices -- \'foodDescription\',\'company\' or \'ingredients\'. 
+          description: >-
+            a search query can be limited to a particular field.  Presently
+            there are three choices -- \'foodDescription\',\'company\', \'dataSource\' or
+            \'ingredients\'.
           required: false
           type: string
         - name: format
           in: query
-          description:  Returned food documents can be formated in 4 ways.    
-           >-  
-            1) A value of \'meta\' returns only meta-data (fdcId, upc, foodDescription and company) for a
-            food.  This is the default format.
-           >-
-            2)  \'servings\' returns only the servings array for an item
-           >-
-            3) \'nutrients\' returns only the nutrients array for an item.
-           >-
-            4) \'full\' all data elements are returned
+          description: >-
+            Returned food documents can be formated in 4 ways. >- 1) A value of
+            \'meta\' returns only meta-data (fdcId, upc, foodDescription and
+            company) for a food.  This is the default format. >- 2) 
+            \'servings\' returns only the servings array for an item >- 3)
+            \'nutrients\' returns only the nutrients array for an item. >- 4)
+            \'full\' all data elements are returned
           type: string
           required: false
         - name: page
           in: query
-          description: page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc. 
+          description: >-
+            page is used to determine a start point (offset) into the search
+            results list, i.e. offset=page*max.  Paging is zero based so page=0
+            and max=50 results in offset 0, page=3 and max=50 results in an
+            offset into the list of 150, etc.
           required: false
           type: integer
           minimum: 1
@@ -163,7 +178,9 @@ paths:
           format: int32
         - name: sort
           in: query
-          description: return the results list ordered by foodDescription, company, relevance
+          description: >-
+            return the results list ordered by foodDescription, company,
+            relevance
           type: string
           required: false
       responses:
@@ -186,7 +203,9 @@ definitions:
         example: 10
       start:
         type: integer
-        description: Starting point (offset) into the list returned by a browse or search request
+        description: >-
+          Starting point (offset) into the list returned by a browse or search
+          request
         format: int32
         example: 0
       max:
@@ -229,6 +248,8 @@ definitions:
         $ref: '#/definitions/servingSizes'
       nutrients:
         $ref: '#/definitions/nutrients'
+      inputFoods:
+        $ref: '#/definitions/inputFoods'
   servingSizes:
     properties:
       100UnitNutrientBasis:
@@ -270,3 +291,34 @@ definitions:
         type: number
         format: float
         example: 10.4
+  inputFoods:
+    description: should only be present in foods with dataSource FNDDS
+    required:
+       - Description
+    properties:
+      Description:
+         type: string
+         example: "Broccoli raw"
+      SeqNo:
+         type: integer
+         example: 1
+      Amount:
+        type: number
+        format: float
+        example: 38.4
+      SrCode:
+        type: integer
+        example: 1094
+      Unit:
+        type: string
+        example: "g"
+      Portion:
+        type: string
+      PortionDescription:
+        type: string
+      Weight:
+        type: number
+        format: float
+      
+         
+    

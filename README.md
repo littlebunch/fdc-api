@@ -1,10 +1,10 @@
 # gnutdata-api
-Provides query and retrieval REST services for USDA "Branded Food Products" datasets.  Also included are standalone admin utilities for loading USDA csv files into a datastore of your choice.  Applications are coded out of the box for a Couchbase implementation but it's possible without a great deal of effort to implement a MongoDb, ElasticSearch or whatever datastore using the ds package.  The steps below outline how to go about building and running the applications using Couchbase.
+Provides query and retrieval REST services for USDA "Food Data Central" datasets.  Also included are standalone admin utilities for loading USDA csv files into a datastore of your choice.  Couchbase is the default datastore but it's possible without a great deal of effort to implement a MongoDb, ElasticSearch or whatever by implementing the ds/DataSource interface.  The steps below outline how to go about building and running the applications using Couchbase.
 
 ### Step 1: Set up go environment if necessary  
 Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g. $GOPATH/src/github.com/littlebunch    
 
-### Step 2: Install supporting packages as needed.  Often, your editor, e.g. Atom or Visual Studio Code, will install these for you automatically.  The list includes:     
+### Step 2: Install supporting packages as needed using a dependency manager of your choice.  Often, your editor, e.g. Atom or Visual Studio Code, will install these for you automatically.  The list includes:     
 
 *[gin framework](https://github.com/gin-gonic/gin) go get github.com/gin-gonic/gin  and go get gopkg.in/appleboy/gin-jwt.v2  
 *[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK    
@@ -14,21 +14,33 @@ Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g.
 
 ### Step 3:Install the gnut-bfpd-api webserver and standalone loader into your $GOBIN:
 ```
-cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api/api; go build -o $GOBIN/bfpd main.go
-cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api//ingest go build -o $GOBIN/ingest ingest.go intestbfpd.go
+cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api/api; go build -o $GOBIN/bfpd main.go routes.go
+cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api/ingest go build -o $GOBIN/loader loader.go
 ```
 ### Step 4: Install [Couchbase](https://www.couchbase.com)     
-If you do not already have access to a CouchBase instance then you will need to download and install the Community edition.     
+If you do not already have access to a CouchBase instance then you will need to install at least the Community edition.     
 
-### Step 5:  Load the BFPD csv data
-1. From your Couchbase console or REST API, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the following roles on the bucket:  Views Reader, Query Select, Search Reader, Data Reader, Application Access, and indexes.    Sample API scripts are also provided in the couchbase path for these steps as well.
+### Step 5:  Load the USDA csv data
+1. From your Couchbase console or REST API, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the Application Access role and indexes.    Sample Couchbase API scripts are also provided in the couchbase path for these steps as well.
 2. Configure config.yml (see below) for host, bucket and user id/pw values you have selected.
-3. Download and unzip the BFPD csv file into a location of your choice.   
+3. Download and unzip the supporting data, BFPD, FNDDS and/or SR csv files into a location of your choice.   
 4. Run the loader:   
 ```
-$GOBIN/ingest -c /path/to/config.yml -i /path/to/BFFD.csv -t BFPD    
+$GOBIN/loader -c /path/to/config.yml -i /path/to/NUT/ -t NUT 
 ```
-The loader can take up to an hour for a complete load on an I5 MBP.    
+```
+$GOBIN/loader -c /path/to/config.yml -i /path/to/DERV/ -t DERV
+```
+```
+$GOBIN/loader -c /path/to/config.yml -i /path/to/BFFD/ -t BFPD    
+```
+```
+$GOBIN/loader -c /path/to/config.yml -i /path/to/FNDDS/ -t FNDDS  
+```    
+```
+$GOBIN/loader -c /path/to/config.yml -i /path/to/SR/ -t SR
+``` 
+
 5. Start the web server (see below)   
 
 ## Configuration     
@@ -38,13 +50,13 @@ Configuration is minimal and can be in a YAML file or envirnoment variables whic
 couchdb:   
   url:  localhost   
   bucket: gnutdata   //default  bucket    
-  ftsindex: fd_food  // default full-text index   
+  fts: fd_food  // default full-text index   
   user: <your_user>    
   pwd: <your_password>    
 
 ```
 
-All data is stored in [Couchbase](http://www.couchbase.com)   
+All data is stored in [Couchbase](http://www.couchbase.com) out of the box.  
 
 Environment   
 ```
@@ -69,23 +81,24 @@ where
   -r root deployment context (v1)    
   -l send stdout/stderr to named file (defaults to /tmp/bfpd.out
  ```
-## Usage
+## Usage    
+A swagger.yml document which fully describes the API is included in the dist path.     
 
-### Fetch a single food by id: 
+### Fetch a single food by Food Data Center id (fdcid): 
 ```
-curl -X GET http://localhost:8000/v1/food/45001535  
+curl -X GET http://localhost:8000/v1/food/389714 
 ```
 #### returns meta data only for a food   
 ```
-curl -X GET http://localhost:8000/v1/food/45001535?format=meta    
+curl -X GET http://localhost:8000/v1/food/389714?format=meta    
 ```
 #### returns servings data only for a food     
 ```
-curl -X GET http://localhost:8000/v1/food/45001535?format=servings     
+curl -X GET http://localhost:8000/v1/food/389714?format=servings     
 ```   
 ### returns nutrient data only for a food   
 ```
-curl -X GET http://localhost:8000/v1/food/45001535??format=nutrients   
+curl -X GET http://localhost:8000/v1/food/389714?format=nutrients   
 ```
 ### Browse foods:   
 ```
