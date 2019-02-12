@@ -32,29 +32,34 @@ type Bfpd struct {
 //		Servings.csv  -- servings sizes for each food
 //		Nutrients.csv -- nutrient values for each food
 func (p Bfpd) ProcessFiles(path string, dc ds.DataSource) error {
-
+	var errs, errn error
+	rcs, rcn := make(chan error), make(chan error)
+	c1, c2 := true, true
 	cnts.Foods, err = foods(path, dc, p.Doctype)
 	if err != nil {
 		log.Fatal(err)
 	}
-	rcs := make(chan error)
-	rcn := make(chan error)
+
 	go servings(path, dc, rcs)
 	go nutrients(path, dc, rcn)
-	for i := 0; i < 2; i++ {
+	for c1 || c2 {
 		select {
-		case errs := <-rcs:
-			if errs != nil {
-				fmt.Printf("Error from servings: %v\n", errs)
-			} else {
-				fmt.Printf("Servings ingest complete.\n")
+		case errs, c1 = <-rcs:
+			if c1 {
+				if errs != nil {
+					fmt.Printf("Error from servings: %v\n", errs)
+				} else {
+					fmt.Printf("Servings ingest complete.\n")
+				}
 			}
 
-		case errn := <-rcn:
-			if err != nil {
-				fmt.Printf("Error from nutrients: %v\n", errn)
-			} else {
-				fmt.Printf("Nutrient ingest complete.\n")
+		case errn, c2 = <-rcn:
+			if c2 {
+				if err != nil {
+					fmt.Printf("Error from nutrients: %v\n", errn)
+				} else {
+					fmt.Printf("Nutrient ingest complete.\n")
+				}
 			}
 		}
 	}
@@ -97,6 +102,7 @@ func foods(path string, dc ds.DataSource, t string) (int, error) {
 }
 
 func servings(path string, dc ds.DataSource, rc chan error) {
+	defer close(rc)
 	fn := path + "branded_food.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -156,6 +162,7 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 	return
 }
 func nutrients(path string, dc ds.DataSource, rc chan error) {
+	defer close(rc)
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {

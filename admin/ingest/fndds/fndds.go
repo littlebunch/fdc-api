@@ -32,9 +32,9 @@ type Fndds struct {
 //		food_portion.csv  -- servings sizes for each food
 //		food_nutrient.csv -- nutrient values for each food
 func (p Fndds) ProcessFiles(path string, dc ds.DataSource) error {
-	rcs := make(chan error)
-	rcn := make(chan error)
-	rci := make(chan error)
+	var errs, errn, erri error
+	rcs, rcn, rci := make(chan error), make(chan error), make(chan error)
+	c1, c2, c3 := true, true, true
 	err = foods(path, dc, p.Doctype)
 	if err != nil {
 		log.Fatal(err)
@@ -43,27 +43,33 @@ func (p Fndds) ProcessFiles(path string, dc ds.DataSource) error {
 	go servings(path, dc, rcs)
 	go nutrients(path, dc, rcn)
 	go inputFoods(path, dc, rci)
-	for i := 0; i < 3; i++ {
+
+	for c1 || c2 || c3 {
 		select {
-		case errs := <-rcs:
-			if errs != nil {
-				fmt.Printf("Error from servings: %v\n", errs)
-			} else {
-				fmt.Printf("Servings ingest complete.\n")
+		case errs, c1 = <-rcs:
+			if c1 {
+				if errs != nil {
+					fmt.Printf("Error from servings: %v\n", errs)
+				} else {
+					fmt.Printf("Servings ingest complete.\n")
+				}
+			}
+		case errn, c2 = <-rcn:
+			if c2 {
+				if err != nil {
+					fmt.Printf("Error from nutrients: %v\n", errn)
+				} else {
+					fmt.Printf("Nutrient ingest complete.\n")
+				}
 			}
 
-		case errn := <-rcn:
-			if err != nil {
-				fmt.Printf("Error from nutrients: %v\n", errn)
-			} else {
-				fmt.Printf("Nutrient ingest complete.\n")
-			}
-
-		case erri := <-rci:
-			if erri != nil {
-				fmt.Printf("Error from foodInput %v\n", erri)
-			} else {
-				fmt.Printf("Food input complete.\n")
+		case erri, c3 = <-rci:
+			if c3 {
+				if erri != nil {
+					fmt.Printf("Error from foodInput %v\n", erri)
+				} else {
+					fmt.Printf("Food input complete.\n")
+				}
 			}
 
 		}
@@ -109,7 +115,7 @@ func foods(path string, dc ds.DataSource, t string) error {
 
 // servings implements an ingest of fdc.Food.ServingSizes for FNDDS foods
 func servings(path string, dc ds.DataSource, rc chan error) {
-	//defer wg.Done()
+	defer close(rc)
 	fn := path + "food_portion.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -168,7 +174,7 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 
 // nutrients implements an ingest of fdc.Food.NutrietData for FNDDS foods
 func nutrients(path string, dc ds.DataSource, rc chan error) {
-	//defer wg.Done()
+	defer close(rc)
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -243,7 +249,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 
 // inputFoods implements an ingest of fdc.Food.InputFoods for FNDDS foods
 func inputFoods(path string, dc ds.DataSource, rc chan error) {
-	//defer wg.Done()
+	defer close(rc)
 	fn := path + "input_food.csv"
 	f, err := os.Open(fn)
 	if err != nil {
