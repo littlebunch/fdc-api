@@ -58,6 +58,7 @@ type FoodMeta struct {
 type Food struct {
 	UpdatedAt       time.Time      `json:"lastChangeDateTime,omitempty"`
 	FdcID           string         `json:"fdcId" binding:"required"`
+	NdbNo           string         `json:"ndbno,omitempty"`
 	Upc             string         `json:"upc,omitempty"`
 	Description     string         `json:"foodDescription" binding:"required"`
 	Source          string         `json:"dataSource"`

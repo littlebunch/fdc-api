@@ -69,6 +69,7 @@ func foodsBrowse(c *gin.Context) {
 		format string
 		sort   string
 		foods  []interface{}
+		dt     fdc.DocType
 	)
 	// check the format parameter which defaults to META if not set
 	if format = c.Query("format"); format == "" {
@@ -85,6 +86,11 @@ func foodsBrowse(c *gin.Context) {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'company', 'name' or 'fdcId'"})
 		return
 	}
+	source := c.Query("source")
+	if source != "" && dt.ToDocType(source) == 999 {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Unrecognized source parameter.  Must be %s, %s or %s", dt.ToString(fdc.BFPD), dt.ToString(fdc.SR), dt.ToString(fdc.FNDDS))})
+		return
+	}
 	if max, err = strconv.ParseInt(c.Query("max"), 10, 32); err != nil {
 		max = defaultListMax
 	}
@@ -99,7 +105,8 @@ func foodsBrowse(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	dc.Browse(cs.CouchDb.Bucket, offset, max, format, sort, &foods)
+	where := sourceFilter(source)
+	dc.Browse(cs.CouchDb.Bucket, where, offset, max, format, sort, &foods)
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
@@ -164,4 +171,15 @@ func errorout(c *gin.Context, status int, data gin.H) {
 	default:
 		c.JSON(status, data)
 	}
+}
+func sourceFilter(s string) string {
+	w := ""
+	if s != "" {
+		if s == "BFPD" {
+			w = fmt.Sprintf(" AND ( dataSource = '%s' OR dataSource='%s' )", "LI", "GTSN")
+		} else {
+			w = fmt.Sprintf(" AND dataSource = '%s'", s)
+		}
+	}
+	return w
 }

@@ -100,17 +100,17 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 }
 
 // Browse fills out a slice of Foods items, returns error
-func (ds *Cb) Browse(bucket string, offset int64, limit int64, format string, sort string, f *[]interface{}) error {
+func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, format string, sort string, f *[]interface{}) error {
 
 	q := ""
 	if format == fdc.FULL {
-		q = fmt.Sprintf("select gd.* from %s as gd where %s != '' offset %d limit %d", bucket, sort, offset, limit)
+		q = fmt.Sprintf("select gd.* from %s as gd where %s != ''  %s order by %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
 	} else if format == fdc.NUTRIENTS {
-		q = fmt.Sprintf("select fdcId,nutrients from %s where %s != '' offset %d limit %d", bucket, sort, offset, limit)
+		q = fmt.Sprintf("select fdcId,nutrients from %s where %s != '' %s order by %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
 	} else if format == fdc.SERVING {
-		q = fmt.Sprintf("select fdcId,servingSizes from %s where %s != '' offset %d limit %d", bucket, sort, offset, limit)
+		q = fmt.Sprintf("select fdcId,servingSizes from %s where %s != '' %s orderby %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
 	} else {
-		q = fmt.Sprintf("select gd.fdcId,gd.foodDescription,gd.upc,gd.company,gd.source,gd.ingredients from %s as gd where %s != '' offset %d limit %d", bucket, sort, offset, limit)
+		q = fmt.Sprintf("select gd.fdcId,gd.foodDescription,gd.upc,gd.company,gd.source,gd.ingredients from %s as gd where %s != '' %s order by %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
 	}
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
