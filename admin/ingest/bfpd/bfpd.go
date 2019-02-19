@@ -105,6 +105,7 @@ func foods(path string, dc ds.DataSource, t string) (int, error) {
 func servings(path string, dc ds.DataSource, rc chan error) {
 	defer close(rc)
 	fn := path + "branded_food.csv"
+	fgid := 0
 	f, err := os.Open(fn)
 	if err != nil {
 		rc <- err
@@ -139,6 +140,12 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 			food.Upc = record[2]
 			food.Ingredients = record[3]
 			food.Source = record[8]
+			if record[7] != "" {
+				fgid++
+				food.Group = &fdc.FoodGroup{ID: int32(fgid), Description: record[7], Type: "FGGPC"}
+			} else {
+				food.Group = nil
+			}
 			s = nil
 		}
 

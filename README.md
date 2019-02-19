@@ -1,6 +1,8 @@
 # gnutdata-api
 Provides query and retrieval REST services for USDA "Food Data Central" datasets.  Also included are standalone admin utilities for loading USDA csv files into a datastore of your choice.  Couchbase is the default datastore but it's possible without a great deal of effort to implement a MongoDb, ElasticSearch or whatever by implementing the ds/DataSource interface.  The steps below outline how to go about building and running the applications using Couchbase.
 
+Endpoint documentation is provided by a swagger.yaml in the api/dist path.   
+
 ### Step 1: Set up go environment if necessary  
 Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g. $GOPATH/src/github.com/littlebunch    
 
@@ -12,10 +14,10 @@ Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g.
 *[endless](https://github.com/fvbock/endless) go get github.com/fvbock/endless     
 *[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson    
 
-### Step 3:Install the gnut-bfpd-api webserver and standalone loader into your $GOBIN:
+### Step 3:Install the gnut-api webserver and standalone loader into your $GOBIN:
 ```
-cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api/api; go build -o $GOBIN/bfpd main.go routes.go
-cd $GOPATH/src/github.com/littlebunch.com/gnut-bfpd-api/ingest go build -o $GOBIN/loader loader.go
+cd $GOPATH/src/github.com/littlebunch.com/gnut-api/api; go build -o $GOBIN/fdcd main.go routes.go
+cd $GOPATH/src/github.com/littlebunch.com/gnut-api/ingest go build -o $GOBIN/loader loader.go
 ```
 ### Step 4: Install [Couchbase](https://www.couchbase.com)     
 If you do not already have access to a CouchBase instance then you will need to install at least the Community edition.     
@@ -56,15 +58,15 @@ couchdb:
 
 ```
 
-All data is stored in [Couchbase](http://www.couchbase.com) out of the box.  
+All data is stored in [Couchbase](http://www.couchbase.com) out of the boxfdc.  
 
 Environment   
 ```
 COUCHBASE_URL=localhost   
 COUCHBASE_BUCKET=gnutdata   
 COUCHBASE_FTSINDEX=fd_food   
-COUCHBASE_USER=bfpduser   
-COUCHBASE_PWD=bfpduser_password   
+COUCHBASE_USER=user_name   
+COUCHBASE_PWD=user_password   
 ```
 ## Running    
 
@@ -73,7 +75,7 @@ The instructions below assume you are deploying on a local workstation.
 
 ### Start the web server:    
 ```
-$GOBIN/bfpd -d -c /path/to/config.yml -r context   
+$GOBIN/fdcd -d -c /path/to/config.yml -r context   
 where    
   -d output debugging messages     
   -c configuration file to use (defaults to ./config.yml )      
@@ -82,7 +84,7 @@ where
   -l send stdout/stderr to named file (defaults to /tmp/bfpd.out
  ```
 ## Usage    
-A swagger.yml document which fully describes the API is included in the dist path.     
+A swagger.yaml document which fully describes the API is included in the dist path.     
 
 ### Fetch a single food by Food Data Center id (fdcid): 
 ```
