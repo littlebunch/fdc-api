@@ -155,11 +155,64 @@ func foodsSearch(c *gin.Context) {
 	}
 	offset := page * max
 
-	if count, err = dc.Search(q, f, cs.CouchDb.Fts, format, max, offset, &foods); err != nil {
+	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Format: format, Max: max, Page: offset}, &foods); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
 	results := fdc.BrowseResult{Count: int32(count), Start: int32(page), Max: int32(max), Items: foods}
+	c.JSON(http.StatusOK, results)
+}
+
+// foodsSearch runs a search as a POST and returns a BrowseResult
+func foodsSearchPost(c *gin.Context) {
+	var (
+		foods []interface{}
+		sr    fdc.SearchRequest
+	)
+	count := 0
+	// check for a query
+	err = c.BindJSON(&sr)
+	if err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		return
+	}
+	if sr.Query == "" {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
+		return
+	}
+	// check for field
+	for _, f := range sr.Fields {
+		if f != "foodDescription" && f != "upc" && f != "company" && f != "ingredients" {
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company', 'upc' or 'ingredients'"})
+			return
+		}
+	}
+	// check the format parameter which defaults to BRIEF if not set
+	if sr.Format == "" {
+		sr.Format = fdc.META
+	} else if sr.Format != fdc.FULL && sr.Format != fdc.SERVING && sr.Format != fdc.NUTRIENTS {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
+		return
+	}
+	if &sr.Max == nil {
+		sr.Max = defaultListMax
+	} else if sr.Max > maxListSize || sr.Max < 0 {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("max parameter %d must be > 0 or <=  %d", sr.Max, maxListSize)})
+		return
+	}
+	if &sr.Page == nil {
+		sr.Page = 0
+	}
+	if sr.Page < 0 {
+		sr.Page = 0
+	}
+	sr.Page = sr.Page * sr.Max
+	sr.IndexName = cs.CouchDb.Fts
+	if count, err = dc.Search(sr, &foods); err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
+		return
+	}
+	results := fdc.BrowseResult{Count: int32(count), Start: int32(sr.Page), Max: int32(sr.Max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
 

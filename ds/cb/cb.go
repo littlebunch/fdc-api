@@ -126,15 +126,15 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, for
 }
 
 // Search performs a search query, fills out a Foods slice and returns count, error
-func (ds *Cb) Search(q string, fld string, indexName string, format string, limit int, offset int, foods *[]interface{}) (int, error) {
+func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	count := 0
 
 	var query *gocb.SearchQuery
-	if fld == "" {
-		query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q)).Limit(int(limit)).Skip(offset).Fields("*")
-	} else {
-		query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q).Field(fld)).Limit(int(limit)).Skip(offset).Fields("*")
-	}
+	fmt.Printf("Query=%s", sr.Query)
+	query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+	/*} else {
+		query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q).Field(fld)).Limit(int(sr.Max)).Skip(sr.Offset).Fields("*")
+	}*/
 	result, err := ds.Conn.ExecuteSearchQuery(query)
 	count = result.TotalHits()
 	if err != nil {
@@ -149,16 +149,16 @@ func (ds *Cb) Search(q string, fld string, indexName string, format string, limi
 		if err = json.Unmarshal(jrow, &f); err != nil {
 			return 0, err
 		}
-		if format == fdc.META {
+		if sr.Format == fdc.META {
 			*foods = append(*foods, f)
 		} else {
 			food := fdc.Food{}
 			if _, err := ds.Conn.Get(r.Id, &food); err != nil {
 				return 0, err
 			}
-			if format == fdc.SERVING {
+			if sr.Format == fdc.SERVING {
 				*foods = append(*foods, fdc.SearchServings{Food: f, Servings: food.Servings})
-			} else if format == fdc.NUTRIENTS {
+			} else if sr.Format == fdc.NUTRIENTS {
 				*foods = append(*foods, fdc.SearchNutrients{Food: f, Nutrients: food.Nutrients})
 			} else {
 				*foods = append(*foods, fdc.SearchResult{Food: f, Servings: food.Servings, Nutrients: food.Nutrients})

@@ -12,7 +12,7 @@ type DataSource interface {
 	Counts(bucket string, doctype string, c *[]interface{}) error
 	GetDictionary(dsname string, doctype string, offset int64, limit int64, n *interface{}) error
 	Browse(bucket string, where string, offset int64, limit int64, format string, sort string, f *[]interface{}) error
-	Search(q string, f string, indexName string, format string, limit int, offset int, foods *[]interface{}) (int, error)
+	Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error)
 	Update(id string, r interface{})
 	CloseDs()
 }
