@@ -180,13 +180,7 @@ func foodsSearchPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
 		return
 	}
-	// check for field
-	for _, f := range sr.Fields {
-		if f != "foodDescription" && f != "upc" && f != "company" && f != "ingredients" {
-			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company', 'upc' or 'ingredients'"})
-			return
-		}
-	}
+
 	// check the format parameter which defaults to BRIEF if not set
 	if sr.Format == "" {
 		sr.Format = fdc.META

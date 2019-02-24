@@ -12,6 +12,13 @@ const (
 	NUTRIENTS = "nutrients"
 )
 
+// PHRASE etc defines values for Search Types
+const (
+	PHRASE   = "PHRASE"
+	REGEX    = "REGEX"
+	WILDCARD = "WILDCARD"
+)
+
 // SR is standard reference
 const (
 	SR DocType = iota

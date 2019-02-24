@@ -128,13 +128,19 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, for
 // Search performs a search query, fills out a Foods slice and returns count, error
 func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	count := 0
-
 	var query *gocb.SearchQuery
-	fmt.Printf("Query=%s", sr.Query)
-	query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
-	/*} else {
-		query = gocb.NewSearchQuery(indexName, cbft.NewMatchQuery(q).Field(fld)).Limit(int(sr.Max)).Skip(sr.Offset).Fields("*")
-	}*/
+	fmt.Printf("Query=%s Type=%s", sr.Query, sr.SearchType)
+	switch sr.SearchType {
+	case fdc.PHRASE:
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+	case fdc.REGEX:
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+	case fdc.WILDCARD:
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewWildcardQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+	default:
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+	}
+
 	result, err := ds.Conn.ExecuteSearchQuery(query)
 	count = result.TotalHits()
 	if err != nil {

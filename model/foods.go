@@ -27,14 +27,14 @@ type BrowseNutrients struct {
 
 // SearchRequest wraps a POST search
 type SearchRequest struct {
-	Query      string   `json:"q" binding:"required"`
-	Format     string   `json:"format,omitEmpty"`
-	Fields     []string `json:"f,omitEmpty"`
-	Page       int      `json:"page"`
-	Max        int      `json:"max"`
-	Sort       string   `json:"sort,omitEmpty"`
-	SearchType string   `json:"searchtype,omitEmpty"`
-	IndexName  string   `json:"indexname"`
+	Query       string `json:"q" binding:"required"`
+	Format      string `json:"format,omitEmpty"`
+	SearchField string `json:"searchfield,omitEmpty"`
+	Page        int    `json:"page"`
+	Max         int    `json:"max"`
+	Sort        string `json:"sort,omitEmpty"`
+	SearchType  string `json:"searchtype,omitEmpty"`
+	IndexName   string `json:"indexname"`
 }
 
 // SearchResult is returned from the search endpoints
