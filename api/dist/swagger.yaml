@@ -2,10 +2,9 @@ swagger: '2.0'
 info:
   description: >-
     REST API for the <a
-    href="https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/nutrient-data-laboratory/docs/usda-branded-food-products-database/">Branded
-    Food Products</a> dataset released by the USDA
+    href="https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/nutrient-data-laboratory/docs/usda-branded-food-products-database/">various public nutrient data  </a> released by the USDA Food Data Central site.
   version: 1.0.0
-  title: Branded Food Products API
+  title: USDA Nutrient Data API
   contact:
     name: Gary Moore
     email: gary@littlebunch.com
@@ -21,6 +20,7 @@ tags:
     description: Operations available to regular developers
 schemes:
   - http
+  - https
 paths:
   '/v1/food/{id}':
     get:
@@ -124,8 +124,8 @@ paths:
         - developers
       summary: search and browse foods data
       description: |
-        By passing in the appropriate options, you can browse for
-        available foods in the system
+        By passing in the appropriate parameters, you can find and browse for
+        foods in matching your search criteria 
       operationId: search
       produces:
         - application/json
@@ -142,8 +142,8 @@ paths:
           in: query
           description: >-
             a search query can be limited to a particular field.  Presently
-            there are three choices -- \'foodDescription\',\'company\', \'dataSource\' or
-            \'ingredients\'.
+            there are three choices -- \'foodDescription\',\'company\',
+            \'dataSource\' or \'ingredients\'.
           required: false
           type: string
         - name: format
@@ -183,6 +183,35 @@ paths:
             relevance
           type: string
           required: false
+        - name: type
+          in: query
+          description: >-
+            run the search query as one of a WILDCARD, PHRASE or REGEX search type.   This parameter is best employed for a limited set of conditions such as identifying an exact ingredient.  In most cases, a default general match query will produce optimal results.
+          type: string
+          required: false
+      responses:
+        '200':
+          description: browse results matching criteria
+          schema:
+            $ref: '#/definitions/BrowseResult'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
+    post:
+      tags:
+        - developers
+      summary: search and browse foods data
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: search
+          description: search to perform
+          schema:
+            $ref: '#/definitions/SearchRequest'    
       responses:
         '200':
           description: browse results matching criteria
@@ -193,6 +222,41 @@ paths:
         '404':
           description: no results found
 definitions:
+  SearchRequest:
+    type: object
+    required:
+      - q
+    properties:
+      q:
+        description: Search terms 
+        type: string
+        example: 'cucumber salad'
+      format:
+        description: One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'
+        type: string
+        example: 'full'
+      searchfield:
+        description: Limit search to a particular field
+        example: 'foodDescription'
+        type: string
+      page:
+        type: integer
+        format: int32
+      max:
+        type: integer
+        format: int32
+        description: The number of items in the list returned by a browse or search request
+        example: 50
+        minimum: 1
+        maximum: 150
+      sort:
+        type: string
+        description: field to sort results by
+        example: ''
+      searchtype:
+        description: One of PHRASE, WILDCARD or REGEX
+        example: PHRASE'
+        type: string
   BrowseResult:
     type: object
     properties:
@@ -204,8 +268,7 @@ definitions:
       start:
         type: integer
         description: >-
-          Starting point (offset) into the list returned by a browse or search
-          request
+          Starting point (offset) into the list returned by a browse or search request
         format: int32
         example: 0
       max:
@@ -294,14 +357,14 @@ definitions:
   inputFoods:
     description: should only be present in foods with dataSource FNDDS
     required:
-       - Description
+      - Description
     properties:
       Description:
-         type: string
-         example: "Broccoli raw"
+        type: string
+        example: Broccoli raw
       SeqNo:
-         type: integer
-         example: 1
+        type: integer
+        example: 1
       Amount:
         type: number
         format: float
@@ -311,7 +374,7 @@ definitions:
         example: 1094
       Unit:
         type: string
-        example: "g"
+        example: g
       Portion:
         type: string
       PortionDescription:
@@ -319,6 +382,3 @@ definitions:
       Weight:
         type: number
         format: float
-      
-         
-    
