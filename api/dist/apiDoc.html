@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swagger UI</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.2.2/swagger-ui.css" >
+  <style>
+    html
+    {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *,
+    *:before,
+    *:after
+    {
+      box-sizing: inherit;
+    }
+
+    body {
+      margin:0;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+
+<div id="swagger-ui"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.2.2/swagger-ui-bundle.js"> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.2.2/swagger-ui-standalone-preset.js"> </script>
+<script>
+window.onload = function() {
+
+  var spec = {"info": {"title": "USDA Nutrient Data API", "version": "1.0.0", "description": "REST API for the <a href=\"https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/nutrient-data-laboratory/docs/usda-branded-food-products-database/\">various public nutrient data  </a> released by the USDA Food Data Central site.", "license": {"url": "http://www.apache.org/licenses/LICENSE-2.0.html", "name": "Apache 2.0"}, "contact": {"name": "Gary Moore", "email": "gary@littlebunch.com"}}, "paths": {"/v1/search": {"post": {"responses": {"200": {"description": "browse results matching criteria", "schema": {"$ref": "#/definitions/BrowseResult"}}, "404": {"description": "no results found"}, "400": {"description": "bad input parameter"}}, "parameters": [{"in": "body", "description": "search to perform", "name": "search", "schema": {"$ref": "#/definitions/SearchRequest"}}], "produces": ["application/json"], "tags": ["developers"], "consumes": ["application/json"], "summary": "search and browse foods data"}, "get": {"responses": {"200": {"description": "browse results matching criteria", "schema": {"$ref": "#/definitions/BrowseResult"}}, "404": {"description": "no results found"}, "400": {"description": "bad input parameter"}}, "parameters": [{"required": true, "type": "string", "description": "search string for looking up foods.  Unless restricted to a field specified in the f parameter, the foodDescription, company, ingredients, source and upc fields are searched for matches.", "in": "query", "name": "q"}, {"required": false, "type": "string", "description": "a search query can be limited to a particular field.  Presently there are three choices -- \\'foodDescription\\',\\'company\\', \\'dataSource\\' or \\'ingredients\\'.", "in": "query", "name": "f"}, {"required": false, "type": "string", "description": "Returned food documents can be formated in 4 ways. >- 1) A value of \\'meta\\' returns only meta-data (fdcId, upc, foodDescription and company) for a food.  This is the default format. >- 2)  \\'servings\\' returns only the servings array for an item >- 3) \\'nutrients\\' returns only the nutrients array for an item. >- 4) \\'full\\' all data elements are returned", "in": "query", "name": "format"}, {"minimum": 1, "in": "query", "description": "page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc.", "format": "int32", "required": false, "type": "integer", "name": "page"}, {"description": "maximum number of records to return", "format": "int32", "required": false, "maximum": 150, "minimum": 1, "in": "query", "type": "integer", "name": "max"}, {"required": false, "type": "string", "description": "return the results list ordered by foodDescription, company, relevance", "in": "query", "name": "sort"}, {"required": false, "type": "string", "description": "run the search query as one of a WILDCARD, PHRASE or REGEX search type.   This parameter is best employed for a limited set of conditions such as identifying an exact ingredient.  In most cases, a default general match query will produce optimal results.", "in": "query", "name": "type"}], "produces": ["application/json"], "operationId": "search", "tags": ["developers"], "summary": "search and browse foods data", "description": "By passing in the appropriate parameters, you can find and browse for\nfoods in matching your search criteria \n"}}, "/v1/food/{id}": {"get": {"responses": {"200": {"description": "results matching criteria", "schema": {"$ref": "#/definitions/FoodItem"}}, "404": {"description": "no results found"}, "400": {"description": "bad input parameter"}}, "parameters": [{"required": true, "type": "string", "description": "Food Data Central ID of the food to retrieve", "in": "path", "name": "id"}, {"required": false, "type": "string", "description": "Food documents can be formated in 4 ways.     1) A value of \\'meta\\' returns only meta-data (fdcId, upc, foodDescription and company) for a food.  This is the default format. 2)  \\'servings\\' returns only the servings array for an item 3) \\'nutrients\\' returns only the nutrients array for an item. 4) \\'full\\' all data elements are returned", "in": "query", "name": "format"}], "produces": ["application/json"], "operationId": "fetch", "tags": ["developers"], "summary": "fetches one food item by fdcId in various formats", "description": "Retrieves a single food item by fdc id.  A format parameter can be specified to only return selected data elements for a food.  The default format is to return all data elements."}}, "/v1/browse": {"get": {"responses": {"200": {"description": "browse results matching criteria", "schema": {"$ref": "#/definitions/BrowseResult"}}, "404": {"description": "no results found"}, "400": {"description": "bad input parameter"}}, "parameters": [{"required": false, "type": "string", "description": "Food documents can be formated in 4 ways.     1) A value of \\'meta\\' returns only meta-data (fdcId, upc, foodDescription and company) for a food.  This is the default format. 2)  \\'servings\\' returns only the servings array for an item 3) \\'nutrients\\' returns only the nutrients array for an item. 4) \\'full\\' all data elements are returned", "in": "query", "name": "format"}, {"minimum": 0, "in": "query", "description": "page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc.", "format": "int32", "required": false, "type": "integer", "name": "page"}, {"description": "maximum number of records to return.", "format": "int32", "required": false, "maximum": 150, "minimum": 1, "in": "query", "type": "integer", "name": "max"}, {"required": false, "type": "string", "description": "return the results list ordered by foodDescription, company, or fdcId.  Default is fdcId", "in": "query", "name": "sort"}], "produces": ["application/json"], "operationId": "browse", "tags": ["developers"], "summary": "browse foods data", "description": "By passing in the appropriate options, you can browse for available foods"}}}, "schemes": ["http", "https"], "tags": [{"name": "admins", "description": "Secured Admin-only calls"}, {"name": "developers", "description": "Operations available to regular developers"}], "basePath": "/", "host": "localhost:8000", "definitions": {"inputFoods": {"required": ["Description"], "description": "should only be present in foods with dataSource FNDDS", "properties": {"Description": {"type": "string", "example": "Broccoli raw"}, "Weight": {"type": "number", "format": "float"}, "SeqNo": {"type": "integer", "example": 1}, "Amount": {"type": "number", "example": 38.4, "format": "float"}, "Portion": {"type": "string"}, "PortionDescription": {"type": "string"}, "Unit": {"type": "string", "example": "g"}, "SrCode": {"type": "integer", "example": 1094}}}, "FoodItem": {"required": ["fdcId", "foodDescription"], "type": "object", "properties": {"inputFoods": {"$ref": "#/definitions/inputFoods"}, "ingredients": {"type": "string", "example": "SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH."}, "nutrients": {"$ref": "#/definitions/nutrients"}, "company": {"type": "string", "example": "FRESH & EASY"}, "upc": {"type": "string", "example": "011150548885"}, "foodDescription": {"type": "string", "example": "HOT & SPICY BARBECUE SAUCE"}, "servingSizes": {"$ref": "#/definitions/servingSizes"}, "publicationDateTime": {"type": "string", "example": "2016-08-29T09:12:33.001Z", "format": "date-time"}, "fdcId": {"type": "string", "example": "45001529"}}}, "nutrients": {"required": ["nutrientNumber", "unit"], "properties": {"nutrientNumber": {"type": "integer", "example": 301, "format": "uint"}, "nutrientName": {"type": "string", "example": "Energy"}, "derivation": {"type": "string", "example": "LCAC"}, "unit": {"type": "string", "example": "kcal"}, "valuePer100UnitServing": {"type": "number", "example": 10.4, "format": "float"}}}, "SearchRequest": {"required": ["q"], "type": "object", "properties": {"sort": {"type": "string", "description": "field to sort results by", "example": ""}, "q": {"type": "string", "description": "Search terms", "example": "cucumber salad"}, "searchtype": {"type": "string", "description": "One of PHRASE, WILDCARD or REGEX", "example": "PHRASE'"}, "format": {"type": "string", "description": "One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'", "example": "full"}, "max": {"minimum": 1, "description": "The number of items in the list returned by a browse or search request", "format": "int32", "type": "integer", "maximum": 150, "example": 50}, "searchfield": {"type": "string", "description": "Limit search to a particular field", "example": "foodDescription"}, "page": {"type": "integer", "format": "int32"}}}, "servingSizes": {"properties": {"100UnitNutrientBasis": {"type": "string", "example": "g"}, "householdServingUom": {"type": "string", "example": "Tbsp"}, "weightInGmOrMl": {"type": "number", "example": 32, "format": "float"}, "householdServingValue": {"type": "number", "example": 10.1, "format": "float"}, "servingState": {"type": "string", "example": "PREPARED"}}}, "BrowseResult": {"type": "object", "properties": {"count": {"format": "int32", "type": "integer", "example": 10, "description": "Number of records found by a browse or search request"}, "start": {"format": "int32", "type": "integer", "example": 0, "description": "Starting point (offset) into the list returned by a browse or search request"}, "max": {"minimum": 1, "description": "The number of items in the list returned by a browse or search request", "format": "int32", "type": "integer", "maximum": 150, "example": 50}, "items": {"items": {"$ref": "#/definitions/FoodItem"}, "type": "array"}}}}, "swagger": "2.0"};
+
+  // Build a system
+  const ui = SwaggerUIBundle({
+    spec: spec,
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  })
+
+  window.ui = ui
+}
+</script>
+</body>
+
+</html>
