@@ -86,19 +86,19 @@ where
 ## Usage    
 A swagger.yaml document which fully describes the API is included in the dist path.     
 
-### Fetch a single food by Food Data Center id (fdcid): 
+### Fetch a single food  by Food Data Center id (fdcid): 
 ```
 curl -X GET http://localhost:8000/v1/food/389714 
 ```
-#### returns meta data only for a food   
+##### returns meta data only for a food   
 ```
 curl -X GET http://localhost:8000/v1/food/389714?format=meta    
 ```
-#### returns servings data only for a food     
+##### returns servings data only for a food     
 ```
 curl -X GET http://localhost:8000/v1/food/389714?format=servings     
 ```   
-### returns nutrient data only for a food   
+#### returns nutrient data only for a food   
 ```
 curl -X GET http://localhost:8000/v1/food/389714?format=nutrients   
 ```
@@ -114,13 +114,27 @@ or
 http GET localhost:8000/v1/browse max=50 page=1     
 ```
 
-### Perform a full text search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company', 'upc', or 'ingredients'.   
+### Search foods (GET): 
+Perform a simple keyword search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company', 'upc', or 'ingredients'.   
 ```
-curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100    
-curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100   
+curl -X GET http://localhost:8000/v1/search?q=bread&page=1&max=100    
+curl -X GET http://localhost:8000/v1/search?q=bread&f=foodDescription&page=1&max=100   
 ```
 or    
 ```
 http GET localhost:8000/v1/search q=bread max=50 page=1 format=servings    
 ```
 
+### Search foods (POST):
+Perform a string search for 'raw broccoli' in the foodDescription field:   
+```
+curl -XPOST http://localhost:8000/v1/search -d '{"q":"brocolli raw","searchfield":"foodDescription","max":50,"page":0}'
+```
+Perform a WILDCARD search for company names that match ro*nd*:
+```
+curl -XPOST http://localhost:8000/v1/search -d '{"q":"ro*nd*","searchfield":"company","searchtype":"WILDCARD","max":50,"page":0}'
+```
+Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
+```
+curl -XPOST http://localhost:8000/v1/search -d '{"q":"broccoli raw","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
+```

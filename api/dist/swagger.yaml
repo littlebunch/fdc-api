@@ -1,8 +1,7 @@
 swagger: '2.0'
 info:
   description: >-
-    REST API for the <a
-    href="https://fdc.nal.usda.gov/download-datasets.html>various public nutrient data  </a> released on the USDA Food Data Central site.
+    REST API for the <a href="https://fdc.nal.usda.gov/download-datasets.html>various public nutrient data  </a> released on the USDA Food Data Central site.
   version: 1.0.0
   title: Nutrient Data API
   contact:

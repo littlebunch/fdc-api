@@ -61,6 +61,7 @@ type FoodMeta struct {
 	FdcID        string `json:"fdcId" binding:"required"`
 	Upc          string `json:"upc"`
 	Description  string `json:"foodDescription" binding:"required"`
+	Ingredients  string `json:"ingredients,omitempty"`
 	Source       string `json:"dataSource"`
 	Manufacturer string `json:"company,omitempty"`
 	Type         string `json:"type"`
