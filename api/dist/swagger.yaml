@@ -308,11 +308,17 @@ definitions:
         type: string
         example: 'SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH.'
       servingSizes:
-        $ref: '#/definitions/servingSizes'
+        type: array
+        items:
+          $ref: '#/definitions/servingSizes'
       nutrients:
-        $ref: '#/definitions/nutrients'
+        type: array
+        items:
+          $ref: '#/definitions/nutrients'
       inputFoods:
-        $ref: '#/definitions/inputFoods'
+        type: array
+        items:
+          $ref: '#/definitions/inputFoods'
   servingSizes:
     properties:
       100UnitNutrientBasis:
