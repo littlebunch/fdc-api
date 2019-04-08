@@ -2,9 +2,9 @@ swagger: '2.0'
 info:
   description: >-
     REST API for the <a
-    href="https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/nutrient-data-laboratory/docs/usda-branded-food-products-database/">various public nutrient data  </a> released by the USDA Food Data Central site.
+    href="https://fdc.nal.usda.gov/download-datasets.html>various public nutrient data  </a> released on the USDA Food Data Central site.
   version: 1.0.0
-  title: USDA Nutrient Data API
+  title: Nutrient Data API
   contact:
     name: Gary Moore
     email: gary@littlebunch.com
@@ -43,11 +43,11 @@ paths:
         - name: format
           in: query
           description: >-
-            Food documents can be formated in 4 ways.     1) A value of \'meta\'
-            returns only meta-data (fdcId, upc, foodDescription and company) for
-            a food.  This is the default format. 2)  \'servings\' returns only
-            the servings array for an item 3) \'nutrients\' returns only the
-            nutrients array for an item. 4) \'full\' all data elements are
+            Food documents can be formated in 4 ways.     1) The default value is 'meta'
+            and returns only descriptive (fdcId, upc, foodDescription and company) for
+            a food. 2)  'servings' returns only
+            the servings array for an item 3) 'nutrients' returns only the
+            nutrients array for an item. 4) 'full' all data elements are
             returned
           required: false
           type: string
@@ -75,12 +75,12 @@ paths:
         - name: format
           in: query
           description: >-
-            Food documents can be formated in 4 ways.     1) A value of \'meta\'
-            returns only meta-data (fdcId, upc, foodDescription and company) for
-            a food.  This is the default format. 2)  \'servings\' returns only
-            the servings array for an item 3) \'nutrients\' returns only the
-            nutrients array for an item. 4) \'full\' all data elements are
-            returned
+            Food documents can be formated in 4 ways.     1) The default value is 'meta'
+            and returns only descriptive (fdcId, upc, foodDescription and company) for
+            a food. 2)  'servings' returns only
+            the servings array for an item 3) 'nutrients' returns only the
+            nutrients array for an item. 4) 'full' all data elements are
+            returned.
           required: false
           type: string
         - name: page
@@ -124,7 +124,7 @@ paths:
         - developers
       summary: search and browse foods data
       description: |
-        By passing in the appropriate parameters, you can find and browse for
+        By providing the appropriate parameters, you can find and browse for
         foods in matching your search criteria 
       operationId: search
       produces:
@@ -149,12 +149,12 @@ paths:
         - name: format
           in: query
           description: >-
-            Returned food documents can be formated in 4 ways. >- 1) A value of
-            \'meta\' returns only meta-data (fdcId, upc, foodDescription and
-            company) for a food.  This is the default format. >- 2) 
-            \'servings\' returns only the servings array for an item >- 3)
-            \'nutrients\' returns only the nutrients array for an item. >- 4)
-            \'full\' all data elements are returned
+            Food documents can be formated in 4 ways.     1) The default value is 'meta'
+            and returns only descriptive (fdcId, upc, foodDescription and company) for
+            a food. 2)  'servings' returns only
+            the servings array for an item 3) 'nutrients' returns only the
+            nutrients array for an item. 4) 'full' all data elements are
+            returned.
           type: string
           required: false
         - name: page
