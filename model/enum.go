@@ -15,7 +15,6 @@ const (
 // PHRASE etc defines values for Search Types
 const (
 	PHRASE   = "PHRASE"
-	REGEX    = "REGEX"
 	WILDCARD = "WILDCARD"
 )
 
