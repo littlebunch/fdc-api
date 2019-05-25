@@ -80,7 +80,7 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 		// nutrients
 		case fdc.NUT:
 			var nid int64
-			no, err := strconv.ParseInt(record[6], 10, 0)
+			no, err := strconv.ParseInt(record[3], 10, 0)
 			if err != nil {
 				no = 0
 			}
