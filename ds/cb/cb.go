@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/littlebunch/gnutdata-bfpd-api/model"
+	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
 
 	gocb "gopkg.in/couchbase/gocb.v1"
 	"gopkg.in/couchbase/gocb.v1/cbft"
@@ -132,8 +132,6 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	switch sr.SearchType {
 	case fdc.PHRASE:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
-	case fdc.REGEX:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)).Explain(true).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	case fdc.WILDCARD:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewWildcardQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	default:
@@ -141,7 +139,7 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	}
 	result, err := ds.Conn.ExecuteSearchQuery(query)
 	if err != nil {
-		fmt.Println("Regexp Query Error:", err.Error())
+		fmt.Println("Query Error:", err.Error())
 		return 0, err
 	}
 	count = result.TotalHits()
