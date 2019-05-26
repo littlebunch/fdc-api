@@ -3,6 +3,7 @@ package dictionaries
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -80,8 +81,9 @@ func (p Dictionary) ProcessFiles(path string, dc ds.DataSource) error {
 		// nutrients
 		case fdc.NUT:
 			var nid int64
-			no, err := strconv.ParseInt(record[6], 10, 0)
+			no, err := strconv.ParseInt(record[3], 10, 0)
 			if err != nil {
+				fmt.Printf("%v\n", err)
 				no = 0
 			}
 			nid, err = strconv.ParseInt(record[0], 10, 0)
