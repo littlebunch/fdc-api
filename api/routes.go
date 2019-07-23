@@ -34,56 +34,61 @@ func foodFdcID(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a FDC id in the q parameter is required"})
 		return
 	}
-	if c.Query("format") == fdc.META {
-		var f fdc.FoodMeta
-		err := dc.Get(q, &f)
-		if err != nil {
-			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
-		} else {
-			c.JSON(http.StatusOK, f)
-		}
-	} else {
-		var f fdc.Food
-		err := dc.Get(q, &f)
-		if err != nil {
-			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
-		}
-		if c.Query("format") == fdc.SERVING {
-			c.JSON(http.StatusOK, f.Servings)
-		} else if c.Query("format") == fdc.NUTRIENTS {
-			c.JSON(http.StatusOK, f.Nutrients)
-		} else {
-			c.JSON(http.StatusOK, f)
-		}
+	var f fdc.Food
+	err := dc.Get(q, &f)
+	if err != nil {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
 	}
-
+	if c.Query("format") == fdc.SERVING {
+		c.JSON(http.StatusOK, f.Servings)
+	} else {
+		c.JSON(http.StatusOK, f)
+	}
 	return
+}
+
+// nutrientsBrowse returns the nutrients list
+func nutrientsBrowse(c *gin.Context) {
+	var (
+		nutrients []interface{}
+		sort      string
+	)
+	where := "type='NUT' "
+	max := 300
+	page := 0
+	if sort = c.Query("sort"); sort == "" {
+		sort = "id"
+	}
+	if sort != "" && sort != "number" && sort != "name" && sort != "id" {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'number', 'name' or 'id'"})
+		return
+	}
+	dc.Browse(cs.CouchDb.Bucket, where, int64(page), int64(max), fdc.FULL, sort, &nutrients)
+	results := fdc.BrowseResult{Count: int32(len(nutrients)), Start: int32(page), Max: int32(max), Items: nutrients}
+	c.JSON(http.StatusOK, results)
 }
 
 // foodsBrowse returns a BrowseResult
 func foodsBrowse(c *gin.Context) {
 	var (
-		max  int64
-		page int64
-		//count  int
-		format string
-		sort   string
-		foods  []interface{}
-		dt     fdc.DocType
+		max, page   int64
+		sort, order string
+		foods       []interface{}
+		dt          fdc.DocType
 	)
-	// check the format parameter which defaults to META if not set
-	if format = c.Query("format"); format == "" {
-		format = fdc.META
-	}
-	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
-		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
-		return
-	}
+
 	if sort = c.Query("sort"); sort == "" {
 		sort = "fdcId"
 	}
 	if sort != "" && sort != "foodDescription" && sort != "company" && sort != "fdcId" {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'company', 'name' or 'fdcId'"})
+		return
+	}
+	if order = c.Query("order"); order == "" {
+		order = "asc"
+	}
+	if order != "asc" && order != "desc" {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized order parameter.  Must be 'asc' or 'desc'"})
 		return
 	}
 	source := c.Query("source")
@@ -105,8 +110,8 @@ func foodsBrowse(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	where := sourceFilter(source)
-	dc.Browse(cs.CouchDb.Bucket, where, offset, max, format, sort, &foods)
+	where := "type=\"FOOD\" " // + sourceFilter(source)
+	dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order, &foods)
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }

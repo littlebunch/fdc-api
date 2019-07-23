@@ -99,19 +99,11 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 	return nil
 }
 
-// Browse fills out a slice of Foods items, returns error
-func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, format string, sort string, f *[]interface{}) error {
+// Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
+func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string, f *[]interface{}) error {
 
-	q := ""
-	if format == fdc.FULL {
-		q = fmt.Sprintf("select gd.* from %s as gd where %s != ''  %s order by %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
-	} else if format == fdc.NUTRIENTS {
-		q = fmt.Sprintf("select fdcId,nutrients from %s where %s != '' %s order by %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
-	} else if format == fdc.SERVING {
-		q = fmt.Sprintf("select fdcId,servingSizes from %s where %s != '' %s orderby %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
-	} else {
-		q = fmt.Sprintf("select gd.fdcId,gd.foodDescription,gd.upc,gd.company,gd.source,gd.ingredients from %s as gd where %s != '' %s order by %s offset %d limit %d", bucket, sort, where, sort, offset, limit)
-	}
+	q := fmt.Sprintf("select * from %s  as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
+	fmt.Printf("QUERY=%s\n", q)
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err != nil {
@@ -161,10 +153,8 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 			}
 			if sr.Format == fdc.SERVING {
 				*foods = append(*foods, fdc.SearchServings{Food: f, Servings: food.Servings})
-			} else if sr.Format == fdc.NUTRIENTS {
-				*foods = append(*foods, fdc.SearchNutrients{Food: f, Nutrients: food.Nutrients})
 			} else {
-				*foods = append(*foods, fdc.SearchResult{Food: f, Servings: food.Servings, Nutrients: food.Nutrients})
+				*foods = append(*foods, fdc.SearchResult{Food: f})
 			}
 		}
 	}
@@ -183,3 +173,50 @@ func (ds *Cb) Update(id string, r interface{}) {
 func (ds *Cb) CloseDs() {
 	ds.Conn.Close()
 }
+
+// Bulk inserts a list of Nutrient Data items
+func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
+	var v []gocb.BulkOp
+	for _, r := range *items {
+		v = append(v, &gocb.InsertOp{Key: fmt.Sprintf("%s_%d", r.FdcID, r.Nutrientno), Value: r})
+	}
+	return ds.Conn.Do(v)
+
+}
+
+//
+func useIndex(sort string, order string) string {
+	useindex := ""
+	switch sort {
+	case "foodDescription":
+		useindex = "idx_fd"
+	case "company":
+		useindex = "idx_company"
+	case "fdcid":
+	default:
+		useindex = "idx_fdcId"
+	}
+	if order == "desc" {
+		useindex = useindex + "_desc"
+	} else {
+		useindex = useindex + "_asc"
+	}
+	return useindex
+}
+
+/* Possible nutrient report:
+*select  distinct meta(g).id,g.foodDescription,g.dataSource,n.nutrientNumber,n.valuePer100UnitServing from gnutdata n
+join gnutdata g on n.fdcId = meta(g).id
+where n.type="NUTDATA" and g.type="FOOD" and g.dataSource="SR"  and n.nutrientNumber=307 and n.valuePer100UnitServing is not missing
+order by n.valuePer100UnitServing DESC
+offset 0
+Limit 100
+*/
+/* Possible only return nutrients no
+ * select g.fdcId,g.foodDescription,
+ * ARRAY n for n in g.nutrients when n.nutrientNumber=204 end as nutrients
+ * from `gnutdata` as g
+ * where  g.type="FOOD"
+ * offset 0
+ * limit 50;
+ */

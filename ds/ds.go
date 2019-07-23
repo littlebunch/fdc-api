@@ -11,8 +11,9 @@ type DataSource interface {
 	Get(q string, f interface{}) error
 	Counts(bucket string, doctype string, c *[]interface{}) error
 	GetDictionary(dsname string, doctype string, offset int64, limit int64, n *interface{}) error
-	Browse(bucket string, where string, offset int64, limit int64, format string, sort string, f *[]interface{}) error
+	Browse(bucket string, where string, offset int64, limit int64, sort string, order string, f *[]interface{}) error
 	Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error)
 	Update(id string, r interface{})
+	Bulk(n *[]fdc.NutrientData) error
 	CloseDs()
 }

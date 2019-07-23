@@ -69,20 +69,20 @@ type FoodMeta struct {
 
 // Food reflects JSON used to transfer BFPD foods data from USDA csv
 type Food struct {
-	UpdatedAt       time.Time      `json:"lastChangeDateTime,omitempty"`
-	FdcID           string         `json:"fdcId" binding:"required"`
-	NdbNo           string         `json:"ndbno,omitempty"`
-	Upc             string         `json:"upc,omitempty"`
-	Description     string         `json:"foodDescription" binding:"required"`
-	Source          string         `json:"dataSource"`
-	PublicationDate time.Time      `json:"publicationDateTime"`
-	Ingredients     string         `json:"ingredients,omitempty"`
-	Manufacturer    string         `json:"company,omitempty"`
-	Group           *FoodGroup     `json:"foodGroup,omitempty"`
-	Servings        []Serving      `json:"servingSizes,omitempty"`
-	Nutrients       []NutrientData `json:"nutrients,omitempty"`
-	Type            string         `json:"type" binding:"required"`
-	InputFoods      []InputFood    `json:"inputfoods,omitempty"`
+	UpdatedAt       time.Time  `json:"lastChangeDateTime,omitempty"`
+	FdcID           string     `json:"fdcId" binding:"required"`
+	NdbNo           string     `json:"ndbno,omitempty"`
+	Upc             string     `json:"upc,omitempty"`
+	Description     string     `json:"foodDescription" binding:"required"`
+	Source          string     `json:"dataSource"`
+	PublicationDate time.Time  `json:"publicationDateTime"`
+	Ingredients     string     `json:"ingredients,omitempty"`
+	Manufacturer    string     `json:"company,omitempty"`
+	Group           *FoodGroup `json:"foodGroup,omitempty"`
+	Servings        []Serving  `json:"servingSizes,omitempty"`
+	//Nutrients       []NutrientData `json:"nutrients,omitempty"`
+	Type       string      `json:"type" binding:"required"`
+	InputFoods []InputFood `json:"inputfoods,omitempty"`
 }
 
 // InputFood describes an FNDDS Input Food
@@ -119,6 +119,7 @@ type Nutrient struct {
 }
 
 // Derivation is a code for describing how nutrient values are derived
+// A subdocument of NutrientData
 type Derivation struct {
 	ID          int32  `json:"id" binding:"required"`
 	Code        string `json:"code" binding:"required"`
@@ -127,8 +128,10 @@ type Derivation struct {
 }
 
 // NutrientData is the list of nutrient values
-// A subdocument of Food
+// A document of type NUTDATA
 type NutrientData struct {
+	FdcID      string      `json:"fdcId" binding:"required"`
+	Type       string      `json:"type"`
 	Value      float32     `json:"valuePer100UnitServing"`
 	Unit       string      `json:"unit"  binding:"required"`
 	Derivation *Derivation `json:"derivation,omitempty"`
@@ -137,6 +140,14 @@ type NutrientData struct {
 	Datapoints int         `json:"datapoints,omitempty"`
 	Min        float32     `json:"min,omitempty"`
 	Max        float32     `json:"max,omitempty"`
+}
+
+// NutrientDataValue
+type NutrientDataValue struct {
+	FdcID      string  `json:"fdcId" binding:"required"`
+	Value      float32 `json:"valuePer100UnitServing"`
+	Nutrientno uint    `json:"nutrientNumber"`
+	Type       string  `json:"type"`
 }
 
 // FoodGroup is the dictionary of FNDDS and SR food groups
