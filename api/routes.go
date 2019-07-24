@@ -50,7 +50,7 @@ func foodFdcID(c *gin.Context) {
 func nutrientFdcID(c *gin.Context) {
 	var q, n string
 
-	if q = c.Param("fdcid"); q == "" {
+	if q = c.Param("id"); q == "" {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a FDC id in the q parameter is required"})
 		return
 	}

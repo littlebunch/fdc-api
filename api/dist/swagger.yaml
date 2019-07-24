@@ -39,17 +39,6 @@ paths:
           description: Food Data Central ID of the food to retrieve
           required: true
           type: string
-        - name: format
-          in: query
-          description: >-
-            Food documents can be formated in 4 ways.     1) The default value is 'meta'
-            and returns only descriptive (fdcId, upc, foodDescription and company) for
-            a food. 2)  'servings' returns only
-            the servings array for an item 3) 'nutrients' returns only the
-            nutrients array for an item. 4) 'full' all data elements are
-            returned
-          required: false
-          type: string
       responses:
         '200':
           description: results matching criteria
@@ -59,7 +48,7 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
-  /v1/browse:
+  /v1/food/browse:
     get:
       tags:
         - developers
@@ -71,17 +60,6 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: format
-          in: query
-          description: >-
-            Food documents can be formated in 4 ways.     1) The default value is 'meta'
-            and returns only descriptive (fdcId, upc, foodDescription and company) for
-            a food. 2)  'servings' returns only
-            the servings array for an item 3) 'nutrients' returns only the
-            nutrients array for an item. 4) 'full' all data elements are
-            returned.
-          required: false
-          type: string
         - name: page
           in: query
           description: >-
@@ -108,15 +86,81 @@ paths:
             fdcId.  Default is fdcId
           type: string
           required: false
+        - name: order
+          in: query
+          description: >-
+            return the ordered list ordered asc(ending) or desc(ending).  Default is asc
+          type: string
+          required: false
       responses:
         '200':
           description: browse results matching criteria
           schema:
-            $ref: '#/definitions/BrowseResult'
+            $ref: '#/definitions/BrowseFoodResult'
         '400':
           description: bad input parameter
         '404':
           description: no results found
+  /v1/nutrients/food/{id}:
+    get:
+      tags:
+        - developers
+      summary: returns nutrient data elements for a food item
+      description:
+        Returns either the list of nutrient data items  or a single nutrient data item for a food item identified
+        by it's fdc id.
+      operationId: nutrient
+      produces:
+        -application/json
+      parameters:
+        - name: n
+          in: query
+          description: >-
+            return only the nutrient data element identifed by the nutrient number in n
+          required: false
+          type: integer
+        - name: id
+          in: path
+          description: >-
+            FDC ID of the food for which nutrient data is being requested
+          required: true
+      responses:
+        '200':
+          description: a single NutrientData element or a list of elements
+          schema:
+            $ref: '#/definitions/BrowseNutrientDataResult'
+        '404':
+          description: no results found
+  /v1/nutrients/browse:
+    get:
+      tags:
+        - developers
+      summary: get a list of nutrients used in the foods database
+      operationId: browse
+      parameters:
+        - name: sort
+          in: query
+          description: >-
+            return the results list ordered by name, nutrientno or
+            id.  Default is id
+          type: string
+          required: false
+        - name: order
+          in: query
+          description: >-
+            return the ordered list ordered asc(ending) or desc(ending).  Default is asc
+          type: string
+          required: false
+      responses:
+        '200':
+          description: browse results matching criteria
+          schema:
+            $ref: '#/definitions/BrowseNutrientResult'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
+
   /v1/search:
     get:
       tags:
@@ -192,7 +236,7 @@ paths:
         '200':
           description: browse results matching criteria
           schema:
-            $ref: '#/definitions/BrowseResult'
+            $ref: '#/definitions/BrowseFoodResult'
         '400':
           description: bad input parameter
         '404':
@@ -215,7 +259,7 @@ paths:
         '200':
           description: browse results matching criteria
           schema:
-            $ref: '#/definitions/BrowseResult'
+            $ref: '#/definitions/BrowseFoodResult'
         '400':
           description: bad input parameter
         '404':
@@ -256,7 +300,7 @@ definitions:
         description: One of PHRASE, WILDCARD or REGEX
         example: PHRASE'
         type: string
-  BrowseResult:
+  BrowseFoodResult:
     type: object
     properties:
       count:
@@ -281,6 +325,56 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/FoodItem'
+  BrowseNutrientResult:
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int32
+        description: Number of records found by a browse or search request
+        example: 10
+      start:
+        type: integer
+        description: >-
+          Starting point (offset) into the list returned by a browse or search request
+        format: int32
+        example: 0
+      max:
+        type: integer
+        description: The number of items in the list returned by a browse or search request
+        format: int32
+        example: 50
+        minimum: 1
+        maximum: 150
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/nutrient'
+  BrowseNutrientDataResult:
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int32
+        description: Number of records found by a browse or search request
+        example: 10
+      start:
+        type: integer
+        description: >-
+          Starting point (offset) into the list returned by a browse or search request
+        format: int32
+        example: 0
+      max:
+        type: integer
+        description: The number of items in the list returned by a browse or search request
+        format: int32
+        example: 50
+        minimum: 1
+        maximum: 150
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/nutrientData'
   FoodItem:
     type: object
     required:
@@ -293,6 +387,10 @@ definitions:
       foodDescription:
         type: string
         example: HOT & SPICY BARBECUE SAUCE
+      lastChangeDateTime:
+        type: string
+        format: date-time
+        example: '2016-08-29T09:12:33.001Z'
       publicationDateTime:
         type: string
         format: date-time
@@ -300,6 +398,9 @@ definitions:
       company:
         type: string
         example: FRESH & EASY
+      dataSource:
+        type: string
+        example: SR
       upc:
         type: string
         example: 011150548885
@@ -310,10 +411,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/servingSizes'
-      nutrients:
-        type: array
-        items:
-          $ref: '#/definitions/nutrients'
       inputFoods:
         type: array
         items:
@@ -337,11 +434,14 @@ definitions:
         type: number
         format: float
         example: 10.1
-  nutrients:
+  nutrientData:
     required:
       - nutrientNumber
       - unit
     properties:
+      fdcId:
+        type: string
+        example: 167514
       nutrientNumber:
         type: integer
         format: uint
@@ -353,12 +453,49 @@ definitions:
         type: string
         example: kcal
       derivation:
-        type: string
-        example: LCAC
+        type: array
+        items: 
+          $ref: '#/definitions/derivation'
       valuePer100UnitServing:
         type: number
         format: float
         example: 10.4
+      datapoints:
+        type: integer
+        format: uint
+  derivation:
+    description: describes how a nutrient value was derived.
+    required:
+      - id
+    properties:
+      code:
+        type: string
+        example: "A"
+      description:
+        type: string
+        exampe: "Analytical"
+      id:
+        type: integer
+        format: uint
+  nutrient:
+    description: a food nutrient
+    required:
+      - id
+      - nutrientno
+      - name
+      - unit
+    properties:
+      nutrientno:
+        type: integer
+        example: 202
+      name:
+        type: string
+        example: Nitrogen
+      unit:
+        type: string
+        example: G
+      id:
+        type: integer
   inputFoods:
     description: should only be present in foods with dataSource FNDDS
     required:
