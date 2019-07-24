@@ -95,17 +95,17 @@ where
 ## Usage    
 A swagger.yaml document which fully describes the API is included in the dist path.     
 
-### Fetch a single food  by Food Data Center id (fdcid=389714): 
+### Fetch a single food  by FoodData Central id=389714: 
 ```
 curl -X GET http://localhost:8000/v1/food/389714 
 ```
 ##### returns all nutrient data for a food   
 ```
-curl -X GET http://localhost:8000/v1/nutrient/food/389714  
+curl -X GET http://localhost:8000/v1/nutrients/food/389714  
 ```
 ##### returns nutrient data for a single nutrient for a food
 ```
-curl -X GET http://localhost:8000/v1/nutrient/food/389714?n=208 
+curl -X GET http://localhost:8000/v1/nutrients/food/389714?n=208 
 ```  
 ### Browse foods:   
 ```
