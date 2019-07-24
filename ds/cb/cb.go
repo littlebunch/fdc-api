@@ -41,6 +41,19 @@ func (ds Cb) Get(q string, f interface{}) error {
 	return err
 }
 
+// Performs an arbitrary but well-formed query
+func (ds Cb) Query(q string, f *[]interface{}) error {
+	query := gocb.NewN1qlQuery(q)
+	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
+	if err == nil {
+		var row interface{}
+		for rows.Next(&row) {
+			*f = append(*f, row)
+		}
+	}
+	return err
+}
+
 // Counts returns document counts for a specified document type
 func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
 	q := fmt.Sprintf("select type,count(*) as count from %s where type = '%s' group by type", bucket, doctype)
@@ -184,7 +197,8 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 
 }
 
-//
+// Generates a use index phrase for use by Browse
+// to speed up the sort
 func useIndex(sort string, order string) string {
 	useindex := ""
 	switch sort {

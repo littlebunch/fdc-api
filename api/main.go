@@ -74,7 +74,7 @@ func main() {
 	v1 := router.Group(fmt.Sprintf("%s", *r))
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)
-		v1.GET("/food/:id/:format", foodFdcID)
+		v1.GET("/nutrient/:fdcid", nutrientFdcID)
 		v1.GET("/food/:id", foodFdcID)
 		v1.GET("/foods/browse", foodsBrowse)
 		v1.GET("/nutrients/browse", nutrientsBrowse)

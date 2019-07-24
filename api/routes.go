@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -46,6 +47,31 @@ func foodFdcID(c *gin.Context) {
 	}
 	return
 }
+func nutrientFdcID(c *gin.Context) {
+	var q, n string
+
+	if q = c.Param("fdcid"); q == "" {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a FDC id in the q parameter is required"})
+		return
+	}
+	if n = c.Query("n"); n == "" {
+		var nd []interface{}
+		q := fmt.Sprintf("select * from %s as nutrients where type='NUTDATA' and fdcId=\"%s\"", cs.CouchDb.Bucket, q)
+		dc.Query(q, &nd)
+		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
+		c.JSON(http.StatusOK, results)
+
+	} else {
+		var nd fdc.NutrientData
+		id := fmt.Sprintf("%s_%s", q, n)
+		if err := dc.Get(id, &nd); err != nil {
+			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No nutrient data found!"})
+		}
+		c.JSON(http.StatusOK, nd)
+	}
+
+	return
+}
 
 // nutrientsBrowse returns the nutrients list
 func nutrientsBrowse(c *gin.Context) {
@@ -59,11 +85,17 @@ func nutrientsBrowse(c *gin.Context) {
 	if sort = c.Query("sort"); sort == "" {
 		sort = "id"
 	}
-	if sort != "" && sort != "number" && sort != "name" && sort != "id" {
+	if sort != "" && sort != "nutrientno" && sort != "name" && sort != "id" {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'number', 'name' or 'id'"})
 		return
 	}
-	dc.Browse(cs.CouchDb.Bucket, where, int64(page), int64(max), fdc.FULL, sort, &nutrients)
+	order, err := sortOrder(c.Query("order"))
+	if err != nil {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized order parameter.  Must be 'asc' or 'desc'"})
+		return
+	}
+
+	dc.Browse(cs.CouchDb.Bucket, where, int64(page), int64(max), sort, order, &nutrients)
 	results := fdc.BrowseResult{Count: int32(len(nutrients)), Start: int32(page), Max: int32(max), Items: nutrients}
 	c.JSON(http.StatusOK, results)
 }
@@ -84,13 +116,12 @@ func foodsBrowse(c *gin.Context) {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'company', 'name' or 'fdcId'"})
 		return
 	}
-	if order = c.Query("order"); order == "" {
-		order = "asc"
-	}
-	if order != "asc" && order != "desc" {
+	order, err := sortOrder(c.Query("order"))
+	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized order parameter.  Must be 'asc' or 'desc'"})
 		return
 	}
+
 	source := c.Query("source")
 	if source != "" && dt.ToDocType(source) == 999 {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Unrecognized source parameter.  Must be %s, %s or %s", dt.ToString(fdc.BFPD), dt.ToString(fdc.SR), dt.ToString(fdc.FNDDS))})
@@ -234,4 +265,14 @@ func sourceFilter(s string) string {
 		}
 	}
 	return w
+}
+func sortOrder(o string) (string, error) {
+	order := o
+	if order == "" {
+		order = "asc"
+	}
+	if order != "asc" && order != "desc" {
+		return "", errors.New("Unrecognized order parameter.  Must be 'asc' or 'desc'")
+	}
+	return order, nil
 }

@@ -9,6 +9,7 @@ import "github.com/littlebunch/gnutdata-bfpd-api/model"
 type DataSource interface {
 	ConnectDs(cs fdc.Config) error
 	Get(q string, f interface{}) error
+	Query(q string, f *[]interface{}) error
 	Counts(bucket string, doctype string, c *[]interface{}) error
 	GetDictionary(dsname string, doctype string, offset int64, limit int64, n *interface{}) error
 	Browse(bucket string, where string, offset int64, limit int64, sort string, order string, f *[]interface{}) error
