@@ -1,46 +1,53 @@
 # gnutdata-api
-Provides query and retrieval REST services for USDA "Food Data Central" datasets.  Also included are standalone admin utilities for loading USDA csv files into a datastore of your choice.  Couchbase is the default datastore but it's possible without a great deal of effort to implement a MongoDb, ElasticSearch or whatever by implementing the ds/DataSource interface.  The steps below outline how to go about building and running the applications using Couchbase.
+Provides query and retrieval REST services for USDA "Food Data Central" datasets.  Also included are  utilities for loading USDA csv files into a datastore of your choice.  Couchbase is the default datastore but it's possible without a great deal of effort to implement a MongoDb, ElasticSearch or even a relational database by implementing the ds/DataSource interface.  The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the api/dist path.
 
-Endpoint documentation is provided by a swagger.yaml in the api/dist path.   
+The build requires go verion 12.  If you are using couchbase then version 6 or greater is preferred.  Both the community edition or licensed edition will work.
 
-### Step 1: Set up go environment if necessary  
-Clone this repo into your [go workspace](https://golang.org/doc/code.html), e.g. $GOPATH/src/github.com/littlebunch    
-
-### Step 2: Install supporting packages as needed using a dependency manager of your choice.  Often, your editor, e.g. Atom or Visual Studio Code, will install these for you automatically.  The list includes:     
-
-*[gin framework](https://github.com/gin-gonic/gin) go get github.com/gin-gonic/gin  and go get gopkg.in/appleboy/gin-jwt.v2  
-*[gocb]("gopkg.in/couchbase/gocb.v1") CouchBase SDK    
-*[yaml](http://gopkg.in/yaml.v2) go get gopkg.in/yaml.v2       
-*[endless](https://github.com/fvbock/endless) go get github.com/fvbock/endless     
-*[simplejson](https://github.com/bitly/go-simplejson) go get github.com/bitly/go-simplejson    
-
-### Step 3:Install the gnut-api webserver and standalone loader into your $GOBIN:
+### Step 1: Clone this repo
+Clone this repo into any location other than your $GOPATH:
 ```
-cd $GOPATH/src/github.com/littlebunch.com/gnut-api/api; go build -o $GOBIN/fdcd main.go routes.go
-cd $GOPATH/src/github.com/littlebunch.com/gnut-api/ingest go build -o $GOBIN/loader loader.go
+git clone git@github.com:littlebunch/gnutdata-api.git
 ```
-### Step 4: Install [Couchbase](https://www.couchbase.com)     
-If you do not already have access to a CouchBase instance then you will need to install at least the Community edition.     
+and cd to the repo root, e.g.:
+```
+cd ~/gnutdata-api
+```
+      
+### Step 2: Build the binaries 
 
-### Step 5:  Load the USDA csv data
+For the webserver:   
+```
+go build -o gnutdataserver api/main.go api/routes.go
+```
+and for the data loader utility:   
+```
+go build -o dataloader admin/loader/loader.go
+```
+You're free to choose different names for -o binaries if you like.  
+
+
+### Step 3: Install [Couchbase](https://www.couchbase.com)     
+If you do not already have access to a CouchBase instance then you will need to install at least version 6 or greater of the Community edition.     
+
+### Step 4:  Load the USDA csv data
 1. From your Couchbase console or REST API, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the Application Access role and indexes.    Sample Couchbase API scripts are also provided in the couchbase path for these steps as well.
-2. Configure config.yml (see below) for host, bucket and user id/pw values you have selected.
+2. Configure config.yml (see below) for host, bucket and user id/pw values you have selected.  A template is provided to get you started.
 3. Download and unzip the supporting data, BFPD, FNDDS and/or SR csv files into a location of your choice.   
-4. Run the loader:   
+4. Load the data files
 ```
-$GOBIN/loader -c /path/to/config.yml -i /path/to/NUT/ -t NUT 
+$GOBIN/dataloader -c /path/to/config.yml -i /path/to/NUT/ -t NUT 
 ```
 ```
 $GOBIN/loader -c /path/to/config.yml -i /path/to/DERV/ -t DERV
 ```
 ```
-$GOBIN/loader -c /path/to/config.yml -i /path/to/BFFD/ -t BFPD    
+$GOBIN/loader -c /path/to/config.yml -i /path/to/FoodData_Central_branded_food_csv/ -t BFPD    
 ```
 ```
-$GOBIN/loader -c /path/to/config.yml -i /path/to/FNDDS/ -t FNDDS  
+$GOBIN/loader -c /path/to/config.yml -i /path/to/FoodData_Central_survey_food_csv/ -t FNDDS  
 ```    
 ```
-$GOBIN/loader -c /path/to/config.yml -i /path/to/SR/ -t SR
+$GOBIN/loader -c /path/to/config.yml -i /path/to/FoodData_Central_sr_csv_2019-04-02/ -t SR
 ``` 
 
 5. Start the web server (see below)   
