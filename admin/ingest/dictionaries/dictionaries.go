@@ -9,8 +9,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/littlebunch/gnutdata-bfpd-api/ds"
-	"github.com/littlebunch/gnutdata-bfpd-api/model"
+	"github.com/littlebunch/gnutdata-api/ds"
+	"github.com/littlebunch/gnutdata-api/model"
 )
 
 //Dictionary for implementing the interface

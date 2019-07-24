@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest"
-	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
-	"github.com/littlebunch/gnutdata-bfpd-api/ds"
-	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
+	"github.com/littlebunch/gnutdata-api/admin/ingest"
+	"github.com/littlebunch/gnutdata-api/admin/ingest/dictionaries"
+	"github.com/littlebunch/gnutdata-api/ds"
+	fdc "github.com/littlebunch/gnutdata-api/model"
 )
 
 var (

@@ -2,7 +2,7 @@
 // To add a data source simply implement the methods
 package ds
 
-import "github.com/littlebunch/gnutdata-bfpd-api/model"
+import "github.com/littlebunch/gnutdata-api/model"
 
 // DataSource wraps the basic methods used for accessing and updating a
 // data store.

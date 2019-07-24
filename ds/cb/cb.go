@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
+	fdc "github.com/littlebunch/gnutdata-api/model"
 
 	gocb "gopkg.in/couchbase/gocb.v1"
 	"gopkg.in/couchbase/gocb.v1/cbft"
