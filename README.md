@@ -109,8 +109,8 @@ curl -X GET http://localhost:8000/v1/nutrient/food/389714?n=208
 ```  
 ### Browse foods:   
 ```
-curl -X GET http://localhost:8000/v1/browse?page=1&max=50?sort=foodDescription
-curl -X GET http://localhost:8000/v1/browse?page=1&max=50?sort=company&order=desc    
+curl -X GET http://localhost:8000/v1/foods/browse?page=1&max=50?sort=foodDescription
+curl -X GET http://localhost:8000/v1/foods/browse?page=1&max=50?sort=company&order=desc    
 ```
 
 ### Search foods (GET): 
@@ -135,11 +135,11 @@ curl -XPOST http://localhost:8000/v1/search -d '{"q":"broccoli raw","searchfield
 ```
 ### Fetch the nutrients dictionary
 ```
-curl -X GET http://localhost:8000/v1/nutrients
+curl -X GET http://localhost:8000/v1/nutrients/browse
 ```
 ```
-curl -X GET http://localhost:8000/v1/nutrients?sort=nutrientno
+curl -X GET http://localhost:8000/v1/nutrients/browse?sort=nutrientno
 ```
 ```
-curl -X GET http://localhost:8000/v1/nutrients?sort=name&order=desc
+curl -X GET http://localhost:8000/v1/nutrients/browse?sort=name&order=desc
 ```
