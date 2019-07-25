@@ -43,7 +43,7 @@ func (ds Cb) Get(q string, f interface{}) error {
 
 // Counts returns document counts for a specified document type
 func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
-	q := fmt.Sprintf("select type,count(*) as count from %s where type = '%s' group by type", bucket, doctype)
+	q := fmt.Sprintf("select dataSource,count(*) as count from %s where dataSource = '%s' group by dataSource", bucket, doctype)
 
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
