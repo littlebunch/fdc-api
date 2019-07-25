@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest"
-	"github.com/littlebunch/gnutdata-bfpd-api/admin/ingest/dictionaries"
-	"github.com/littlebunch/gnutdata-bfpd-api/ds"
-	fdc "github.com/littlebunch/gnutdata-bfpd-api/model"
+	"github.com/littlebunch/gnutdata-api/admin/ingest"
+	"github.com/littlebunch/gnutdata-api/admin/ingest/dictionaries"
+	"github.com/littlebunch/gnutdata-api/ds"
+	fdc "github.com/littlebunch/gnutdata-api/model"
 )
 
 var (
@@ -225,11 +225,9 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		return
 	}
 	r := csv.NewReader(f)
-	cid := ""
 	var (
-		food fdc.Food
-		n    []fdc.NutrientData
-		il   interface{}
+		n  []fdc.NutrientData
+		il interface{}
 	)
 	if err := dc.GetDictionary("gnutdata", dt.ToString(fdc.NUT), 0, 500, &il); err != nil {
 		rc <- err
@@ -254,15 +252,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		}
 
 		id := record[1]
-		if cid != id {
-			if cid != "" {
-				food.Nutrients = n
-				dc.Update(cid, food)
-			}
-			cid = id
-			dc.Get(id, &food)
-			n = nil
-		}
+
 		cnts.Nutrients++
 		w, err := strconv.ParseFloat(record[3], 32)
 		if err != nil {
@@ -288,6 +278,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		}
 
 		n = append(n, fdc.NutrientData{
+			FdcID:      id,
 			Nutrientno: nutmap[uint(v)].Nutrientno,
 			Value:      float32(w),
 			Nutrient:   nutmap[uint(v)].Name,
@@ -296,9 +287,15 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 			Datapoints: int(p),
 			Min:        float32(min),
 			Max:        float32(max),
+			Type:       dt.ToString(fdc.NUTDATA),
 		})
-		if cnts.Nutrients%30000 == 0 {
+		if cnts.Nutrients%1000 == 0 {
 			log.Println("Nutrients Count = ", cnts.Nutrients)
+			err := dc.Bulk(&n)
+			if err != nil {
+				log.Printf("Bulk insert failed: %v\n", err)
+			}
+			n = nil
 		}
 
 	}

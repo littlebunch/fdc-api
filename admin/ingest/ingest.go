@@ -2,7 +2,7 @@
 package ingest
 
 import (
-	"github.com/littlebunch/gnutdata-bfpd-api/ds"
+	"github.com/littlebunch/gnutdata-api/ds"
 )
 
 // Counts holds counts for documents loaded during an ingest
