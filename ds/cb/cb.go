@@ -56,7 +56,7 @@ func (ds Cb) Query(q string, f *[]interface{}) error {
 
 // Counts returns document counts for a specified document type
 func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
-	q := fmt.Sprintf("select type,count(*) as count from %s where type = '%s' group by type", bucket, doctype)
+	q := fmt.Sprintf("select dataSource,count(*) as count from %s where dataSource = '%s' group by dataSource", bucket, doctype)
 
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
@@ -226,11 +226,10 @@ order by n.valuePer100UnitServing DESC
 offset 0
 Limit 100
 */
-/* Possible only return nutrients no
- * select g.fdcId,g.foodDescription,
- * ARRAY n for n in g.nutrients when n.nutrientNumber=204 end as nutrients
- * from `gnutdata` as g
- * where  g.type="FOOD"
- * offset 0
- * limit 50;
- */
+/* select n.fdcId,g.foodDescription,n.valuePer100UnitServing,n.unit from gnutdata n
+join gnutdata g on meta(g).id = n.fdcId
+where n.type="NUTDATA" and n.nutrientNumber=207
+order by n.valuePer100UnitServing DESC
+offset 0
+limit 50
+*/
