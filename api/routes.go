@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/littlebunch/gnutdata-api/model"
+	fdc "github.com/littlebunch/gnutdata-api/model"
 )
 
 func countsGet(c *gin.Context) {
@@ -150,10 +150,9 @@ func foodsBrowse(c *gin.Context) {
 // foodsSearch runs a search and returns a BrowseResult
 func foodsSearch(c *gin.Context) {
 	var (
-		max    int
-		page   int
-		format string
-		foods  []interface{}
+		max   int
+		page  int
+		foods []interface{}
 	)
 	count := 0
 	// check for a query
@@ -168,14 +167,7 @@ func foodsSearch(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company', 'upc' or 'ingredients'"})
 		return
 	}
-	// check the format parameter which defaults to BRIEF if not set
-	if format = c.Query("format"); format == "" {
-		format = fdc.META
-	}
-	if format != fdc.FULL && format != fdc.META && format != fdc.SERVING && format != fdc.NUTRIENTS {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
-		return
-	}
+
 	if max, err = strconv.Atoi(c.Query("max")); err != nil {
 		max = defaultListMax
 	}
@@ -191,7 +183,7 @@ func foodsSearch(c *gin.Context) {
 	}
 	offset := page * max
 
-	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Format: format, Max: max, Page: offset}, &foods); err != nil {
+	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Format: fdc.META, Max: max, Page: offset}, &foods); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
