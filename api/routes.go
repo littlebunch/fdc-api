@@ -243,6 +243,42 @@ func foodsSearchPost(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
+// nutrientReportPost produces a report of nutrient values and returns a BrowseResult
+func nutrientReportPost(c *gin.Context) {
+	var (
+		nutdata []interface{}
+		nr      fdc.NutrientReportRequest
+	)
+	// check for a query
+	err = c.BindJSON(&nr)
+	if err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		return
+	}
+	if &nr.Max == nil {
+		nr.Max = defaultListMax
+	} else if nr.Max > maxListSize || nr.Max < 0 {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("max parameter %d must be > 0 or <=  %d", nr.Max, maxListSize)})
+		return
+	}
+	if &nr.Page == nil {
+		nr.Page = 0
+	}
+	if nr.Page < 0 {
+		nr.Page = 0
+	}
+	nr.Page = nr.Page * nr.Max
+	n1ql := fmt.Sprintf("SELECT n.fdcId,n.nutrientName,n.valuePer100UnitServing,n.unit FROM %s n USE index(idx_nutdata_value_desc) WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing >= %d AND n.valuePer100UnitServing <= %d ORDER BY n.valuePer100UnitServing DESC OFFSET %d LIMIT %d", cs.CouchDb.Bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
+	fmt.Println("Q=", n1ql)
+	if err := dc.Query(n1ql, &nutdata); err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Data error %v", err)})
+		return
+	}
+
+	results := fdc.BrowseResult{Count: int32(len(nutdata)), Start: int32(nr.Page), Max: int32(nr.Max), Items: nutdata}
+	c.JSON(http.StatusOK, results)
+}
+
 // errorout
 func errorout(c *gin.Context, status int, data gin.H) {
 	switch c.Request.Header.Get("Accept") {

@@ -13,4 +13,5 @@ require (
 	gopkg.in/couchbase/gocbcore.v7 v7.1.13 // indirect
 	gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.3 // indirect
 	gopkg.in/couchbaselabs/jsonx.v1 v1.0.0 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 )

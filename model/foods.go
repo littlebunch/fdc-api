@@ -25,6 +25,15 @@ type BrowseNutrients struct {
 	Nutrients []NutrientData `json:"nutrients"`
 }
 
+// NutrientRequest wraps a POST nutrient report
+type NutrientReportRequest struct {
+	Page     int `json:"page"`
+	Max      int `json:"max"`
+	Nutrient int `json:"nutrientno" binding:"required"`
+	ValueGTE int `json:"valueGte"`
+	ValueLTE int `json:"valueLte`
+}
+
 // SearchRequest wraps a POST search
 type SearchRequest struct {
 	Query       string `json:"q" binding:"required"`
