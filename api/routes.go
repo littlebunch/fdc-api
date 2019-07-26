@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/littlebunch/gnutdata-api/model"
+	fdc "github.com/littlebunch/gnutdata-api/model"
 )
 
 func countsGet(c *gin.Context) {
@@ -15,7 +15,7 @@ func countsGet(c *gin.Context) {
 	t := c.Param("doctype")
 	if t == "" {
 		if t = c.Query("doctype"); t == "" {
-			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Count parameter is required!"})
+			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Datasource is required!"})
 			return
 		}
 	}
@@ -23,7 +23,12 @@ func countsGet(c *gin.Context) {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No counts found!"})
 		return
 	}
-	c.JSON(http.StatusOK, counts[0])
+	if counts != nil {
+		c.JSON(http.StatusOK, counts[0])
+	} else {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No counts found!"})
+
+	}
 	return
 }
 
