@@ -27,11 +27,12 @@ type BrowseNutrients struct {
 
 // NutrientRequest wraps a POST nutrient report
 type NutrientReportRequest struct {
-	Page     int `json:"page"`
-	Max      int `json:"max"`
-	Nutrient int `json:"nutrientno" binding:"required"`
-	ValueGTE int `json:"valueGte"`
-	ValueLTE int `json:"valueLte`
+	Page     int    `json:"page"`
+	Max      int    `json:"max"`
+	Nutrient int    `json:"nutrientno" binding:"required"`
+	Source   string `json:"source"`
+	ValueGTE int    `json:"valueGte"`
+	ValueLTE int    `json:"valueLte`
 }
 
 // SearchRequest wraps a POST search

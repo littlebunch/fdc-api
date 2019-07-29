@@ -255,7 +255,7 @@ func nutrientReportPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
 		return
 	}
-	if &nr.Max == nil {
+	if nr.Max <= 0 {
 		nr.Max = defaultListMax
 	} else if nr.Max > maxListSize || nr.Max < 0 {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("max parameter %d must be > 0 or <=  %d", nr.Max, maxListSize)})
