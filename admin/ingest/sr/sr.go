@@ -217,7 +217,11 @@ func ndbnoCw(path string, dc ds.DataSource, rc chan error) {
 }
 func nutrients(path string, dc ds.DataSource, rc chan error) {
 	defer close(rc)
-	var dt *fdc.DocType
+	var (
+		dt          *fdc.DocType
+		food        fdc.Food
+		cid, source string
+	)
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -252,7 +256,14 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		}
 
 		id := record[1]
+		if cid != id {
+			if err = dc.Get(id, &food); err != nil {
+				log.Printf("Cannot find %s %v", id, err)
+			}
+			cid = id
+			source = food.Source
 
+		}
 		cnts.Nutrients++
 		w, err := strconv.ParseFloat(record[3], 32)
 		if err != nil {
@@ -279,6 +290,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 
 		n = append(n, fdc.NutrientData{
 			FdcID:      id,
+			Source:     source,
 			Nutrientno: nutmap[uint(v)].Nutrientno,
 			Value:      float32(w),
 			Nutrient:   nutmap[uint(v)].Name,

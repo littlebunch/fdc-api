@@ -267,6 +267,23 @@ func nutrientReportPost(c *gin.Context) {
 	if nr.Page < 0 {
 		nr.Page = 0
 	}
+	// validate values
+	if nr.ValueGTE != 0 && nr.ValueLTE != 0 {
+		if nr.ValueGTE > nr.ValueLTE {
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("ValueGTE %d must be greater than or equal to ValueLTE  %d", nr.ValueGTE, nr.ValueLTE)})
+			return
+		} else if nr.ValueLTE < 0 || nr.ValueGTE < 0 {
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "ValueGTE  and ValueLTE must be greater than or equal to 0"})
+			return
+		}
+	} else if nr.ValueGTE != 0 && nr.ValueLTE == 0 {
+		nr.ValueLTE = nr.ValueGTE
+	} else if nr.ValueLTE != 0 && nr.ValueGTE != 0 {
+		nr.ValueGTE = nr.ValueLTE
+	} else {
+		nr.ValueGTE = 0
+		nr.ValueLTE = 1000000
+	}
 	nr.Page = nr.Page * nr.Max
 	n1ql := fmt.Sprintf("SELECT n.fdcId,n.nutrientName,n.valuePer100UnitServing,n.unit FROM %s n USE index(idx_nutdata_value_desc) WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing >= %d AND n.valuePer100UnitServing <= %d ORDER BY n.valuePer100UnitServing DESC OFFSET %d LIMIT %d", cs.CouchDb.Bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
 	fmt.Println("Q=", n1ql)

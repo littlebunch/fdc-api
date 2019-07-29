@@ -170,7 +170,11 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 }
 func nutrients(path string, dc ds.DataSource, rc chan error) {
 	defer close(rc)
-	var dt *fdc.DocType
+	var (
+		dt          *fdc.DocType
+		food        fdc.Food
+		cid, source string
+	)
 	fn := path + "food_nutrient.csv"
 	f, err := os.Open(fn)
 	if err != nil {
@@ -227,6 +231,15 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 		} else {
 			dv = nil
 		}
+		if cid != id {
+			if err = dc.Get(id, &food); err != nil {
+				log.Printf("Cannot find %s %v", id, err)
+			}
+			cid = id
+			source = food.Source
+
+		}
+
 		n = append(n, fdc.NutrientData{
 			FdcID:      id,
 			Nutrientno: nutmap[uint(v)].Nutrientno,
@@ -235,6 +248,7 @@ func nutrients(path string, dc ds.DataSource, rc chan error) {
 			Unit:       nutmap[uint(v)].Unit,
 			Derivation: dv,
 			Type:       dt.ToString(fdc.NUTDATA),
+			Source:     source,
 		})
 		if cnts.Nutrients%1000 == 0 {
 			log.Println("Nutrients Count = ", cnts.Nutrients)

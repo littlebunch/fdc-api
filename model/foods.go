@@ -140,6 +140,7 @@ type Derivation struct {
 // A document of type NUTDATA
 type NutrientData struct {
 	FdcID      string      `json:"fdcId" binding:"required"`
+	Source     string      `json:"Datasource"`
 	Type       string      `json:"type"`
 	Value      float32     `json:"valuePer100UnitServing"`
 	Unit       string      `json:"unit"  binding:"required"`
