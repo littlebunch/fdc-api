@@ -1,4 +1,4 @@
-module github/littlebunch/gnutdata-api
+module github.com/littlebunch/gnutdata-api
 
 go 1.12
 
