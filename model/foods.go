@@ -25,14 +25,14 @@ type BrowseNutrients struct {
 	Nutrients []NutrientData `json:"nutrients"`
 }
 
-// NutrientRequest wraps a POST nutrient report
+// NutrientReportRequest wraps a POST nutrient report
 type NutrientReportRequest struct {
 	Page     int    `json:"page"`
 	Max      int    `json:"max"`
 	Nutrient int    `json:"nutrientno" binding:"required"`
 	Source   string `json:"source"`
-	ValueGTE int    `json:"valueGte"`
-	ValueLTE int    `json:"valueLte`
+	ValueGTE int    `json:"valueGTE"`
+	ValueLTE int    `json:"valueLTE"`
 }
 
 // SearchRequest wraps a POST search
@@ -153,12 +153,15 @@ type NutrientData struct {
 	Max        float32     `json:"max,omitempty"`
 }
 
-// NutrientDataValue
-type NutrientDataValue struct {
-	FdcID      string  `json:"fdcId" binding:"required"`
-	Value      float32 `json:"valuePer100UnitServing"`
-	Nutrientno uint    `json:"nutrientNumber"`
-	Type       string  `json:"type"`
+// NutrientReportData is an item returned in a nutrient report
+type NutrientReportData struct {
+	FdcID           string  `json:"fdcId" binding:"required"`
+	FoodDescription string  `json:"foodDescription"`
+	Value           float32 `json:"valuePer100UnitServing"`
+	Nutrientno      uint    `json:"nutrientNumber"`
+	Source          string  `json:"Datasource"`
+	Unit            string  `json:"unit"`
+	Type            string  `json:"type"`
 }
 
 // FoodGroup is the dictionary of FNDDS and SR food groups

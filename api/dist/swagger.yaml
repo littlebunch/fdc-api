@@ -160,111 +160,62 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
-
-  /v1/search:
-    get:
-      tags:
-        - developers
-      summary: search and browse foods data
-      description: |
-        By providing the appropriate parameters, you can find and browse for
-        foods in matching your search criteria 
-      operationId: search
-      produces:
-        - application/json
-      parameters:
-        - name: q
-          in: query
-          description: >-
-            search string for looking up foods.  Unless restricted to a field
-            specified in the f parameter, the foodDescription, company,
-            ingredients, source and upc fields are searched for matches.
-          required: true
-          type: string
-        - name: f
-          in: query
-          description: >-
-            a search query can be limited to a particular field.  Presently
-            there are three choices -- \'foodDescription\',\'company\',
-            \'dataSource\' or \'ingredients\'.
-          required: false
-          type: string
-        - name: format
-          in: query
-          description: >-
-            Food documents can be formated in 4 ways.     1) The default value is 'meta'
-            and returns only descriptive (fdcId, upc, foodDescription and company) for
-            a food. 2)  'servings' returns only
-            the servings array for an item 3) 'nutrients' returns only the
-            nutrients array for an item. 4) 'full' all data elements are
-            returned.
-          type: string
-          required: false
-        - name: page
-          in: query
-          description: >-
-            page is used to determine a start point (offset) into the search
-            results list, i.e. offset=page*max.  Paging is zero based so page=0
-            and max=50 results in offset 0, page=3 and max=50 results in an
-            offset into the list of 150, etc.
-          required: false
-          type: integer
-          minimum: 1
-          format: int32
-        - name: max
-          in: query
-          description: maximum number of records to return
-          required: false
-          type: integer
-          maximum: 150
-          minimum: 1
-          format: int32
-        - name: sort
-          in: query
-          description: >-
-            return the results list ordered by foodDescription, company,
-            relevance
-          type: string
-          required: false
-        - name: type
-          in: query
-          description: >-
-            run the search query as one of a WILDCARD, PHRASE or REGEX search type.   This parameter is best employed for a limited set of conditions such as identifying an exact ingredient.  In most cases, a default general match query will produce optimal results.
-          type: string
-          required: false
-      responses:
-        '200':
-          description: browse results matching criteria
-          schema:
-            $ref: '#/definitions/BrowseFoodResult'
-        '400':
-          description: bad input parameter
-        '404':
-          description: no results found
+  /v1/nutrients/report:
     post:
       tags:
         - developers
-      summary: search and browse foods data
+      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
       consumes:
         - application/json
       produces:
         - application/json
       parameters:
         - in: body
-          name: search
-          description: search to perform
+          name: report
+          description: report to perform
           schema:
-            $ref: '#/definitions/SearchRequest'    
+            $ref: '#/definitions/NutrientReportRequest'    
       responses:
         '200':
           description: browse results matching criteria
           schema:
-            $ref: '#/definitions/BrowseFoodResult'
+            $ref: '#/definitions/NutrientReportItem'
         '400':
           description: bad input parameter
         '404':
           description: no results found
 definitions:
+  NutrientReportRequest:
+    type: object
+    required:
+      - nutrientno
+    properties:
+      nutrientno:
+        description: Nutrient number for which data is being requested 
+        type: integer
+        example: 401
+      source:
+        description: Filter results by Datasource.  One of 'BFPD', 'SR', 'FNDDS'
+        type: string
+        example: 'BFPD'
+      valueGTE:
+        description: Search for nutrient value greater than or equal to
+        example: 10
+        type: integer
+      valueLTE:
+        description: Search for nutrient value less than or equal to
+        example: 100
+        type: integer
+      page:
+        type: integer
+        format: int32
+      max:
+        type: integer
+        format: int32
+        description: The number of items in the list returned by a browse or search request
+        example: 50
+        minimum: 1
+        maximum: 150
   SearchRequest:
     type: object
     required:
@@ -375,6 +326,29 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/nutrientData'
+  NutrientReportItem:
+    type: object
+    properties:
+      fdcId:
+        type: string
+        example: '562423'
+      foodDescription:
+        type: string
+        exampe: 'HOT & SPICY BARBECUE SAUCE'
+      valuePer100UnitServing:
+        type: integer
+        format: float32
+        example: 0.712
+      nutrientno:
+        type: integer
+        format: uint
+        example: 203
+      Datasource:
+        type: string
+        example: "SR"
+      Unit:
+        type: string
+        example: "G"
   FoodItem:
     type: object
     required:

@@ -248,6 +248,7 @@ func nutrientReportPost(c *gin.Context) {
 	var (
 		nutdata []interface{}
 		nr      fdc.NutrientReportRequest
+		dt      *fdc.DocType
 	)
 	// check for a query
 	err = c.BindJSON(&nr)
@@ -268,30 +269,26 @@ func nutrientReportPost(c *gin.Context) {
 		nr.Page = 0
 	}
 	// validate values
-	if nr.ValueGTE != 0 && nr.ValueLTE != 0 {
-		if nr.ValueGTE > nr.ValueLTE {
-			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("ValueGTE %d must be greater than or equal to ValueLTE  %d", nr.ValueGTE, nr.ValueLTE)})
-			return
-		} else if nr.ValueLTE < 0 || nr.ValueGTE < 0 {
-			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "ValueGTE  and ValueLTE must be greater than or equal to 0"})
-			return
-		}
-	} else if nr.ValueGTE != 0 && nr.ValueLTE == 0 {
-		nr.ValueLTE = nr.ValueGTE
-	} else if nr.ValueLTE != 0 && nr.ValueGTE != 0 {
-		nr.ValueGTE = nr.ValueLTE
-	} else {
+	if nr.ValueLTE < 0 || nr.ValueGTE < 0 {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "ValueGTE  and ValueLTE must be greater than or equal to 0"})
+		return
+	} else if nr.ValueGTE == 0 && nr.ValueLTE == 0 {
 		nr.ValueGTE = 0
-		nr.ValueLTE = 1000000
+		nr.ValueLTE = 100000
+	} else if nr.ValueGTE > nr.ValueLTE {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("ValueGTE %d must be greater than or equal to ValueLTE  %d", nr.ValueGTE, nr.ValueLTE)})
+		return
 	}
 	nr.Page = nr.Page * nr.Max
-	n1ql := fmt.Sprintf("SELECT n.fdcId,n.nutrientName,n.valuePer100UnitServing,n.unit FROM %s n USE index(idx_nutdata_value_desc) WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing >= %d AND n.valuePer100UnitServing <= %d ORDER BY n.valuePer100UnitServing DESC OFFSET %d LIMIT %d", cs.CouchDb.Bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
-	fmt.Println("Q=", n1ql)
-	if err := dc.Query(n1ql, &nutdata); err != nil {
+	// Datasource filter
+	if nr.Source != "" && (dt.ToString(fdc.FNDDS) != nr.Source && dt.ToString(fdc.SR) != nr.Source && dt.ToString(fdc.BFPD) != nr.Source) {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Source must be one of BFPD, FNDDS, or SR."})
+		return
+	}
+	if err = dc.NutrientReport(cs.CouchDb.Bucket, nr, &nutdata); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Data error %v", err)})
 		return
 	}
-
 	results := fdc.BrowseResult{Count: int32(len(nutdata)), Start: int32(nr.Page), Max: int32(nr.Max), Items: nutdata}
 	c.JSON(http.StatusOK, results)
 }
@@ -309,7 +306,7 @@ func sourceFilter(s string) string {
 	w := ""
 	if s != "" {
 		if s == "BFPD" {
-			w = fmt.Sprintf(" AND ( dataSource = '%s' OR dataSource='%s' )", "LI", "GTSN")
+			w = fmt.Sprintf(" AND ( dataSource = '%s' OR dataSource='%s' )", "LI", "GDSN")
 		} else {
 			w = fmt.Sprintf(" AND dataSource = '%s'", s)
 		}
