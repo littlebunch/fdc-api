@@ -43,9 +43,8 @@ func (ds Cb) Get(q string, f interface{}) error {
 
 // Counts returns document counts for a specified document type
 func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
-	q := fmt.Sprintf("select dataSource,count(*) as count from %s where dataSource = '%s' group by dataSource", bucket, doctype)
-	err := ds.Query(q, c)
-	return err
+	q := fmt.Sprintf("SELECT dataSource,count(*) AS count from %s WHERE type='FOOD' AND dataSource = '%s' GROUP BY dataSource", bucket, doctype)
+	return ds.Query(q, c)
 }
 
 // GetDictionary returns dictionary documents, e.g. food groups, nutrients, derivations, etc.
