@@ -203,6 +203,7 @@ func foodsSearchPost(c *gin.Context) {
 		sr    fdc.SearchRequest
 	)
 	count := 0
+
 	// check for a query
 	err = c.BindJSON(&sr)
 	if err != nil {

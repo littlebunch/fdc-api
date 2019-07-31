@@ -177,7 +177,7 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 
 		s = append(s, fdc.Serving{
 			Nutrientbasis: record[5],
-			Description:   record[5],
+			Description:   record[6],
 			Servingamount: float32(a),
 			Weight:        float32(w),
 			Datapoints:    int32(p),

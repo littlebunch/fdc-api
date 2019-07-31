@@ -7,7 +7,6 @@ require (
 	github.com/gin-gonic/gin v1.4.0
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
-	github.com/littlebunch/gnutdata-api v0.0.0-20190724165318-a10cbdeafaa7
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	gopkg.in/couchbase/gocb.v1 v1.6.2
 	gopkg.in/couchbase/gocbcore.v7 v7.1.13 // indirect
