@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/littlebunch/gnutdata-api/ds"
 	"github.com/littlebunch/gnutdata-api/ds/cb"
-	"github.com/littlebunch/gnutdata-api/model"
+	fdc "github.com/littlebunch/gnutdata-api/model"
 )
 
 const (

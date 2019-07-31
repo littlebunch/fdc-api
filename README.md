@@ -142,4 +142,12 @@ curl -X GET http://localhost:8000/v1/nutrients/browse?sort=nutrientno
 ```
 ```
 curl -X GET http://localhost:8000/v1/nutrients/browse?sort=name&order=desc
+### Run a nutrient report sorted in descending order by nutrient value per 100 units of measure 
+Find foods which have a value for nutrient 208 (Energy KCAL) between 100 and 250 per 100 grams 
+```
+curl -X POST http://localhost:8000/v1/nutrients/report -d '{"nutrientno":207,"valueGTE":10,"valueLTE":50}'
+```
+Find Branded Food Products which have a nutrient value between 5 and 10 MG per 100 grams caffiene 
+```
+curl -X POST http://localhost:8000/v1/nutrients/report -d '{"nutrientno":262,"valueGTE":5,"valueLTE":10,"source":"BFPD"}'
 ```
