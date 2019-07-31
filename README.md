@@ -142,6 +142,7 @@ curl -X GET http://localhost:8000/v1/nutrients/browse?sort=nutrientno
 ```
 ```
 curl -X GET http://localhost:8000/v1/nutrients/browse?sort=name&order=desc
+```
 ### Run a nutrient report sorted in descending order by nutrient value per 100 units of measure 
 Find foods which have a value for nutrient 208 (Energy KCAL) between 100 and 250 per 100 grams 
 ```
