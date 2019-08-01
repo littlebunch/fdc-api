@@ -147,7 +147,7 @@ func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrie
 	} else if nr.Source != "" {
 		w = fmt.Sprintf(" AND n.Datasource = '%s'", nr.Source)
 	}
-	n1ql := fmt.Sprintf("SELECT g.foodDescription,n.fdcId,n.nutrientNumber,n.valuePer100UnitServing,n.unit,n.Datasource FROM %s n USE index(idx_nutdata_query_desc) join gnutdata g on meta(g).id=n.fdcId WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %d AND %d %s OFFSET %d LIMIT %d", bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, w, nr.Page, nr.Max)
+	n1ql := fmt.Sprintf("SELECT g.foodDescription,n.fdcId,n.nutrientNumber,n.valuePer100UnitServing,n.unit,n.Datasource FROM %s n USE index(idx_nutdata_query_desc) join gnutdata g on meta(g).id=n.fdcId WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f %s OFFSET %d LIMIT %d", bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, w, nr.Page, nr.Max)
 	err := ds.Query(n1ql, nutrients)
 	return err
 }

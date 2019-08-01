@@ -202,10 +202,12 @@ definitions:
         description: Search for nutrient value greater than or equal to
         example: 10
         type: integer
+        format: float32
       valueLTE:
         description: Search for nutrient value less than or equal to
         example: 100
         type: integer
+        format: float32
       page:
         type: integer
         format: int32
