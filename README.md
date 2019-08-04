@@ -1,7 +1,7 @@
 # gnutdata-api
 Provides query and retrieval REST services for USDA "FoodData Central" datasets.  You can browse foods for different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  Also included is a utility for loading the USDA csv files into a Couchbase datastore.  
 
-A quick word about Couchbase.  I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it's not bad on scability as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.   
+A quick word about Couchbase.  I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it scales pretty good as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.   
 
 The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the api/dist path.  A docker image for the web server is also available and described below.
 
