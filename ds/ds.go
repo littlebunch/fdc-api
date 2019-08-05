@@ -2,7 +2,7 @@
 // To add a data source simply implement the methods
 package ds
 
-import "github.com/littlebunch/gnutdata-api/model"
+import fdc "github.com/littlebunch/gnutdata-api/model"
 
 // DataSource wraps the basic methods used for accessing and updating a
 // data store.
@@ -14,6 +14,7 @@ type DataSource interface {
 	GetDictionary(dsname string, doctype string, offset int64, limit int64, n *interface{}) error
 	Browse(bucket string, where string, offset int64, limit int64, sort string, order string, f *[]interface{}) error
 	Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error)
+	NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error
 	Update(id string, r interface{})
 	Bulk(n *[]fdc.NutrientData) error
 	CloseDs()

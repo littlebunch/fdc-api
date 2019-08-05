@@ -35,19 +35,18 @@ func (p Bfpd) ProcessFiles(path string, dc ds.DataSource) error {
 	var errs, errn error
 	rcs, rcn := make(chan error), make(chan error)
 	c1, c2 := true, true
-	cnts.Foods, err = foods(path, dc, p.Doctype)
+	err := servings(path, dc)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	go servings(path, dc, rcs)
+	go foods(path, dc, p.Doctype, rcs)
 	go nutrients(path, dc, rcn)
 	for c1 || c2 {
 		select {
 		case errs, c1 = <-rcs:
 			if c1 {
 				if errs != nil {
-					fmt.Printf("Error from servings: %v\n", errs)
+					fmt.Printf("Error from foods: %v\n", errs)
 				} else {
 					fmt.Printf("Servings ingest complete.\n")
 				}
@@ -66,58 +65,16 @@ func (p Bfpd) ProcessFiles(path string, dc ds.DataSource) error {
 	log.Printf("Finished.  Counts: %d Foods %d Servings %d Nutrients\n", cnts.Foods, cnts.Servings, cnts.Nutrients)
 	return err
 }
-func foods(path string, dc ds.DataSource, t string) (int, error) {
-	var dt *fdc.DocType
-	fn := path + "food.csv"
-	cnt := 0
-	f, err := os.Open(fn)
-	if err != nil {
-		return 0, err
-	}
-	r := csv.NewReader(f)
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return cnt, err
-		}
-		cnts.Foods++
-		if cnts.Foods%1000 == 0 {
-			log.Println("Count = ", cnts.Foods)
-		}
-		pubdate, err := time.Parse("2006-01-02", record[4])
-		if err != nil {
-			log.Println(err)
-		}
-		dc.Update(record[0],
-			fdc.Food{
-				FdcID:           record[0],
-				Description:     record[2],
-				PublicationDate: pubdate,
-				Type:            dt.ToString(fdc.FOOD),
-			})
-	}
-	return cnts.Foods, err
-}
-
-func servings(path string, dc ds.DataSource, rc chan error) {
+func foods(path string, dc ds.DataSource, t string, rc chan error) {
 	defer close(rc)
-	fn := path + "branded_food.csv"
-	fgid := 0
+	var food fdc.Food
+	fn := path + "food.csv"
 	f, err := os.Open(fn)
 	if err != nil {
 		rc <- err
 		return
 	}
 	r := csv.NewReader(f)
-	cid := ""
-	var (
-		food fdc.Food
-		s    []fdc.Serving
-	)
-
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -127,19 +84,65 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 			rc <- err
 			return
 		}
+		cnts.Foods++
+		if cnts.Foods%1000 == 0 {
+			log.Println("Count = ", cnts.Foods)
+		}
+		pubdate, err := time.Parse("2006-01-02", record[4])
+		if err != nil {
+			log.Println(err)
+		}
+		if err = dc.Get(record[0], &food); err != nil {
+			fmt.Printf("Cannot fetch record %s", record[0])
+		}
+		food.Description = record[2]
+		food.PublicationDate = pubdate
+
+		dc.Update(record[0], food)
+	}
+	rc <- err
+	return
+}
+
+func servings(path string, dc ds.DataSource) error {
+
+	fn := path + "branded_food.csv"
+	fgid := 0
+	f, err := os.Open(fn)
+	if err != nil {
+		return err
+	}
+	r := csv.NewReader(f)
+	cid := ""
+	var (
+		food fdc.Food
+		s    []fdc.Serving
+		dt   *fdc.DocType
+	)
+
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
 
 		id := record[0]
 		if cid != id {
 			if cid != "" {
+				food.FdcID = cid
 				food.Servings = s
 				dc.Update(cid, food)
 			}
 			cid = id
-			dc.Get(id, &food)
+			//dc.Get(id, &food)
 			food.Manufacturer = record[1]
 			food.Upc = record[2]
 			food.Ingredients = record[3]
 			food.Source = record[8]
+			food.Type = dt.ToString(fdc.FOOD)
 			if record[7] != "" {
 				fgid++
 				food.Group = &fdc.FoodGroup{ID: int32(fgid), Description: record[7], Type: "FGGPC"}
@@ -165,8 +168,7 @@ func servings(path string, dc ds.DataSource, rc chan error) {
 		})
 
 	}
-	rc <- err
-	return
+	return err
 }
 func nutrients(path string, dc ds.DataSource, rc chan error) {
 	defer close(rc)

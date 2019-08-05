@@ -41,34 +41,10 @@ func (ds Cb) Get(q string, f interface{}) error {
 	return err
 }
 
-// Performs an arbitrary but well-formed query
-func (ds Cb) Query(q string, f *[]interface{}) error {
-	query := gocb.NewN1qlQuery(q)
-	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
-	if err == nil {
-		var row interface{}
-		for rows.Next(&row) {
-			*f = append(*f, row)
-		}
-	}
-	return err
-}
-
 // Counts returns document counts for a specified document type
 func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
-	q := fmt.Sprintf("select dataSource,count(*) as count from %s where dataSource = '%s' group by dataSource", bucket, doctype)
-
-	query := gocb.NewN1qlQuery(q)
-	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
-	if err != nil {
-		return err
-	}
-	var row interface{}
-	for rows.Next(&row) {
-		*c = append(*c, row)
-	}
-
-	return nil
+	q := fmt.Sprintf("SELECT dataSource,count(*) AS count from %s WHERE type='FOOD' AND dataSource = '%s' GROUP BY dataSource", bucket, doctype)
+	return ds.Query(q, c)
 }
 
 // GetDictionary returns dictionary documents, e.g. food groups, nutrients, derivations, etc.
@@ -114,20 +90,9 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 
 // Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
 func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string, f *[]interface{}) error {
-
 	q := fmt.Sprintf("select * from %s  as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
-	fmt.Printf("QUERY=%s\n", q)
-	query := gocb.NewN1qlQuery(q)
-	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
-	if err != nil {
-		return err
-	}
-	var row interface{}
-	for rows.Next(&row) {
-		*f = append(*f, row)
-	}
-
-	return nil
+	err := ds.Query(q, f)
+	return err
 }
 
 // Search performs a search query, fills out a Foods slice and returns count, error
@@ -144,7 +109,6 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	}
 	result, err := ds.Conn.ExecuteSearchQuery(query)
 	if err != nil {
-		fmt.Println("Query Error:", err.Error())
 		return 0, err
 	}
 	count = result.TotalHits()
@@ -175,6 +139,19 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	return count, nil
 }
 
+// NutrientReport Runs a NutrientReportRequest
+func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error {
+	w := ""
+	if nr.Source == "BFPD" {
+		w = fmt.Sprintf(" AND ( n.Datasource = '%s' OR n.Datasource='%s' )", "LI", "GDSN")
+	} else if nr.Source != "" {
+		w = fmt.Sprintf(" AND n.Datasource = '%s'", nr.Source)
+	}
+	n1ql := fmt.Sprintf("SELECT g.foodDescription,n.fdcId,n.nutrientNumber,n.valuePer100UnitServing,n.unit,n.Datasource FROM %s n USE index(idx_nutdata_query_desc) join gnutdata g on meta(g).id=n.fdcId WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f %s OFFSET %d LIMIT %d", bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, w, nr.Page, nr.Max)
+	err := ds.Query(n1ql, nutrients)
+	return err
+}
+
 // Update updates an existing document in the datastore using Upsert
 func (ds *Cb) Update(id string, r interface{}) {
 
@@ -195,6 +172,19 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 	}
 	return ds.Conn.Do(v)
 
+}
+
+// Query performs an arbitrary but well-formed query
+func (ds Cb) Query(q string, f *[]interface{}) error {
+	query := gocb.NewN1qlQuery(q)
+	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
+	if err == nil {
+		var row interface{}
+		for rows.Next(&row) {
+			*f = append(*f, row)
+		}
+	}
+	return err
 }
 
 // Generates a use index phrase for use by Browse
