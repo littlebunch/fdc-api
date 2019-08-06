@@ -1,35 +1,35 @@
-# gnutdata-api
+# FoodDataCentral-api
 Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  Also included is a utility for loading the USDA csv files into a Couchbase datastore.  
 
 A quick word about Couchbase.  I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it scales pretty good as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.       
 
-The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the [api/dist](https://github.com/littlebunch/gnutdata-api/tree/master/api/dist) path.  A docker image for the web server is also available and described below.
+The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the [api/dist](https://github.com/littlebunch/FoodDataCentral-api/tree/master/api/dist) path.  A docker image for the web server is also available and described below.
 
 The build requires go version 12.  If you are using Couchbase, then version 6 or greater is preferred.  Both the community edition or licensed edition will work.
 
 ### Step 1: Clone this repo
 Clone this repo into any location other than your $GOPATH:
 ```
-git clone git@github.com:littlebunch/gnutdata-api.git
+git clone git@github.com:littlebunch/FoodDataCentral-api.git
 ```
 and cd to the repo root, e.g.:
 ```
-cd ~/gnutdata-api
+cd ~/FoodDataCentral-api
 ```
       
 ### Step 2: Build the binaries 
 
 The repo contains go.mod and supporting files so a build will automatically install and version all needed libraries.  If you don't want to use go mod then rm go.mod and go.sum and have at it the old-fashioned way.  For the webserver:   
 ```
-go build -o $GOBIN/nutapi api/main.go api/routes.go
+go build -o $GOBIN/fdcapi api/main.go api/routes.go
 ```
 and for the data loader utility:   
 ```
-go build -o $GOBIN/dataloader admin/loader/loader.go
+go build -o $GOBIN/fdcloader admin/loader/loader.go
 ```
 You're free to choose different names for -o binaries as you like.  
 
-You can also use the [Docker](https://github.com/littlebunch/gnutdata-api/blob/master/docker/Dockerfile) file to create an image for the web server.
+You can also use the [Docker](https://github.com/littlebunch/FoodDataCentral-api/blob/master/docker/Dockerfile) file to create an image for the web server.
 
 ### Step 3: Install [Couchbase](https://www.couchbase.com)     
 If you do not already have access to a CouchBase instance then you will need to install at least version 6 or greater of the Community edition.  There are a number of easy deployment [options](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp) from a local workstation, docker or the public cloud.  Checkout the latter from [Google](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp), [Amazon](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp) and [Azure](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp).     
@@ -40,19 +40,19 @@ If you do not already have access to a CouchBase instance then you will need to 
 3. Download from https://fdc.nal.usda.gov/download-datasets.html and unzip the supporting data, BFPD, FNDDS and SR csv files into a location of your choice.   
 4. Load the data files
 ```
-$GOBIN/dataloader -c /path/to/config.yml -i /path/to/FoodData_Central_Supporting_Data_csv/ -t NUT 
+$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_Supporting_Data_csv/ -t NUT 
 ```
 ```
-$GOBIN/dataloader -c /path/to/config.yml -i /path/to/FoodData_Central_Supporting_Data_csv/ -t DERV
+$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_Supporting_Data_csv/ -t DERV
 ```
 ```
-$GOBIN/dataloader -c /path/to/config.yml -i /path/to/FoodData_Central_branded_food_csv/ -t BFPD    
+$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_branded_food_csv/ -t BFPD    
 ```
 ```
-$GOBIN/dataloader -c /path/to/config.yml -i /path/to/FoodData_Central_survey_food_csv/ -t FNDDS  
+$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_survey_food_csv/ -t FNDDS  
 ```    
 ```
-$GOBIN/dataloader -c /path/to/config.yml -i /path/to/FoodData_Central_sr_csv_2019-04-02/ -t SR
+$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_sr_csv_2019-04-02/ -t SR
 ``` 
 
 5. Start the web server (see below)   
@@ -98,7 +98,7 @@ where
  
 Or, run from docker.io (you will need docker installed):
  ```
- docker run --rm -it -p 8000:8000 --env-file=./docker.env littlebunch/nutapi
+ docker run --rm -it -p 8000:8000 --env-file=./docker.env littlebunch/fdcapi
 ```
 You will need to pass in the Couchbase configuration as environment variables described above.  The easiest way to do this is in a file of which a sample is provided in the repo's docker path.
    
