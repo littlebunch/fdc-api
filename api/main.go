@@ -12,9 +12,9 @@ import (
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
-	"github.com/littlebunch/gnutdata-api/ds"
-	"github.com/littlebunch/gnutdata-api/ds/cb"
-	fdc "github.com/littlebunch/gnutdata-api/model"
+	"github.com/littlebunch/fdc-api/ds"
+	"github.com/littlebunch/fdc-api/ds/cb"
+	fdc "github.com/littlebunch/fdc-api/model"
 )
 
 const (

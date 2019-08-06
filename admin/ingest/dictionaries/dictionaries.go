@@ -9,8 +9,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/littlebunch/gnutdata-api/ds"
-	"github.com/littlebunch/gnutdata-api/model"
+	"github.com/littlebunch/fdc-api/ds"
+	fdc "github.com/littlebunch/fdc-api/model"
 )
 
 //Dictionary for implementing the interface

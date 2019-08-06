@@ -7,14 +7,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/littlebunch/gnutdata-api/admin/ingest"
-	"github.com/littlebunch/gnutdata-api/admin/ingest/bfpd"
-	"github.com/littlebunch/gnutdata-api/admin/ingest/dictionaries"
-	"github.com/littlebunch/gnutdata-api/admin/ingest/fndds"
-	"github.com/littlebunch/gnutdata-api/admin/ingest/sr"
-	"github.com/littlebunch/gnutdata-api/ds"
-	"github.com/littlebunch/gnutdata-api/ds/cb"
-	"github.com/littlebunch/gnutdata-api/model"
+	"github.com/littlebunch/fdc-api/admin/ingest"
+	"github.com/littlebunch/fdc-api/admin/ingest/bfpd"
+	"github.com/littlebunch/fdc-api/admin/ingest/dictionaries"
+	"github.com/littlebunch/fdc-api/admin/ingest/fndds"
+	"github.com/littlebunch/fdc-api/admin/ingest/sr"
+	"github.com/littlebunch/fdc-api/ds"
+	"github.com/littlebunch/fdc-api/ds/cb"
+	fdc "github.com/littlebunch/fdc-api/model"
 )
 
 var (

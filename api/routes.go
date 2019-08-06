@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	fdc "github.com/littlebunch/gnutdata-api/model"
+	fdc "github.com/littlebunch/fdc-api/model"
 )
 
 func countsGet(c *gin.Context) {
