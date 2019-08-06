@@ -1,8 +1,19 @@
-# FoodDataCentral-api
+# fdc-api
 Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  Also included is a utility for loading the USDA csv files into a Couchbase datastore.  
 
-A quick word about Couchbase.  I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it scales pretty good as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.       
+# What's in the repo    
+/admin -- source for the utility which converts the USDA CSV files to JSON documents   
+/api -- source for the REST web server    
+/couchbase -- scripts for initializing a couchbase database     
+/docker -- files used for building docker images of the API server     
+/ds -- source for the data source interface.  Implementations should also go here     
+/ds/cb -- couchbase implementation of the ds interface   
+/model -- go types representing the data models     
 
+# Quick word about datastores
+I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it scales pretty good as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.       
+
+# Building   
 The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the [api/dist](https://github.com/littlebunch/FoodDataCentral-api/tree/master/api/dist) path.  A docker image for the web server is also available and described below.
 
 The build requires go version 12.  If you are using Couchbase, then version 6 or greater is preferred.  Both the community edition or licensed edition will work.
