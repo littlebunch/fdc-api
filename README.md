@@ -36,10 +36,10 @@ You're free to choose different names for -o binary as you like.
 
 You can also use the [Docker](https://github.com/littlebunch/FoodDataCentral-api/blob/master/docker/Dockerfile) file to create an image for the web server.
 
-### Step 3: Install and build [Couchbase](https://www.couchbase.com)     
-Use the ingest utility available [https://github.com/littlebunch/fdc-ingest](https://github.com/littlebunch/fdc-ingest).
+### Step 3: Install and build a datastore   
+If you want to use [Couchbase](https://www.couchbase.com) then use the ingest utility available at [https://github.com/littlebunch/fdc-ingest](https://github.com/littlebunch/fdc-ingest).     
 
-###4. Start the web server (see below)   
+### Step 4. Start the web server (see below)   
 
 ## Configuration     
 Configuration is minimal and can be in a YAML file or envirnoment variables which override the config file.   
