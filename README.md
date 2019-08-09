@@ -1,10 +1,8 @@
 # fdc-api
-Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  Also included is a utility for loading the USDA csv files into a Couchbase datastore.  
+Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.    
 
 # What's in the repo    
-/admin -- source for the utility which converts the USDA CSV files to JSON documents   
 /api -- source for the REST web server    
-/couchbase -- scripts for initializing a couchbase database     
 /docker -- files used for building docker images of the API server     
 /ds -- source for the data source interface.  Implementations should also go here     
 /ds/cb -- couchbase implementation of the ds interface   
@@ -19,54 +17,29 @@ The steps below outline how to go about building and running the applications us
 The build requires go version 12.  If you are using Couchbase, then version 6 or greater is preferred.  Both the community edition or licensed edition will work.
 
 ### Step 1: Clone this repo
-Clone this repo into any location other than your $GOPATH:
+Clone this repo into any location *other* than your $GOPATH:
 ```
-git clone git@github.com:littlebunch/FoodDataCentral-api.git
+git clone git@github.com:littlebunch/fdc-api.git
 ```
 and cd to the repo root, e.g.:
 ```
-cd ~/FoodDataCentral-api
+cd ~/fdc-api
 ```
       
-### Step 2: Build the binaries 
+### Step 2: Build the binary 
 
 The repo contains go.mod and supporting files so a build will automatically install and version all needed libraries.  If you don't want to use go mod then rm go.mod and go.sum and have at it the old-fashioned way.  For the webserver:   
 ```
 go build -o $GOBIN/fdcapi api/main.go api/routes.go
 ```
-and for the data loader utility:   
-```
-go build -o $GOBIN/fdcloader admin/loader/loader.go
-```
-You're free to choose different names for -o binaries as you like.  
+You're free to choose different names for -o binary as you like.  
 
 You can also use the [Docker](https://github.com/littlebunch/FoodDataCentral-api/blob/master/docker/Dockerfile) file to create an image for the web server.
 
-### Step 3: Install [Couchbase](https://www.couchbase.com)     
-If you do not already have access to a CouchBase instance then you will need to install at least version 6 or greater of the Community edition.  There are a number of easy deployment [options](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp) from a local workstation, docker or the public cloud.  Checkout the latter from [Google](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp), [Amazon](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp) and [Azure](https://resources.couchbase.com/cloud-partner-gcp/docs-deploy-gcp).     
+### Step 3: Install and build [Couchbase](https://www.couchbase.com)     
+Use the ingest utility available [https://github.com/littlebunch/fdc-ingest](https://github.com/littlebunch/fdc-ingest).
 
-### Step 4:  Load the USDA csv data
-1. From your Couchbase console or REST API, create a bucket, e.g. gnutdata and a user, e.g. gnutadmin with the Application Access role and indexes.    Sample Couchbase API scripts are also provided in the couchbase path for these steps as well.
-2. Configure config.yml (see below) for host, bucket and user id/pw values you have selected.  A template is provided to get you started.
-3. Download from https://fdc.nal.usda.gov/download-datasets.html and unzip the supporting data, BFPD, FNDDS and SR csv files into a location of your choice.   
-4. Load the data files
-```
-$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_Supporting_Data_csv/ -t NUT 
-```
-```
-$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_Supporting_Data_csv/ -t DERV
-```
-```
-$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_branded_food_csv/ -t BFPD    
-```
-```
-$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_survey_food_csv/ -t FNDDS  
-```    
-```
-$GOBIN/fdcloader -c /path/to/config.yml -i /path/to/FoodData_Central_sr_csv_2019-04-02/ -t SR
-``` 
-
-5. Start the web server (see below)   
+###4. Start the web server (see below)   
 
 ## Configuration     
 Configuration is minimal and can be in a YAML file or envirnoment variables which override the config file.   
@@ -80,9 +53,7 @@ couchdb:
   pwd: <your_password>    
 
 ```
-
-All data is stored in [Couchbase](http://www.couchbase.com) out of the box.  
-
+      
 Environment   
 ```
 COUCHBASE_URL=localhost   
