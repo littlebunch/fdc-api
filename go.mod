@@ -3,9 +3,9 @@ module github.com/littlebunch/fdc-api
 go 1.12
 
 require (
-	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
+	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.4.0
+	github.com/gin-gonic/gin v1.4.0 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
