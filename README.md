@@ -14,7 +14,7 @@ I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on 
 # Building   
 The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the [api/dist](https://github.com/littlebunch/FoodDataCentral-api/tree/master/api/dist) path.  A docker image for the web server is also available and described below.
 
-The build requires go version 12.  If you are using Couchbase, then version 6 or greater is preferred.  Both the community edition or licensed edition will work.
+The build requires go version 12.  If you are using Couchbase, then version 6 or greater is preferred.  Both the community edition or licensed edition will work.  Or, if you don't want to bother with the go stuff, you can launch a server from docker.io (see below under *Running*).
 
 ### Step 1: Clone this repo
 Clone this repo into any location *other* than your $GOPATH:
@@ -69,7 +69,7 @@ The instructions below assume you are deploying on a local workstation.
 
 ### Start the web server:    
 ```
-$GOBIN/nutapi -d -c /path/to/config.yml -r context   
+$GOBIN/fdcapi -c /path/to/config.yml  
 where    
   -d output debugging messages     
   -c configuration file to use (defaults to ./config.yml )      
