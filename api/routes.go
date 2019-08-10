@@ -113,7 +113,7 @@ func foodsBrowse(c *gin.Context) {
 		foods       []interface{}
 		dt          fdc.DocType
 	)
-	fmt.Println("OK")
+	fmt.Printf("OK\n")
 	if sort = c.Query("sort"); sort == "" {
 		sort = "fdcId"
 	}
@@ -150,7 +150,6 @@ func foodsBrowse(c *gin.Context) {
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
-	fmt.Println("WHERE=", where)
 	dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order, &foods)
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
@@ -218,7 +217,6 @@ func foodsSearchPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
 		return
 	}
-fmt.Println("HERE WE ARE!")
 	// check the format parameter which defaults to BRIEF if not set
 	if sr.Format == "" {
 		sr.Format = fdc.META
