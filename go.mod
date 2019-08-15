@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
+	github.com/graphql-go/graphql v0.7.8 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
@@ -23,6 +24,7 @@ require (
 	gopkg.in/couchbase/gocb.v1 v1.6.2
 	gopkg.in/couchbase/gocbcore.v7 v7.1.13 // indirect
 	gopkg.in/couchbaselabs/gocbconnstr.v1 v1.0.3 // indirect
+	gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.3 // indirect
 	gopkg.in/couchbaselabs/jsonx.v1 v1.0.0 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )

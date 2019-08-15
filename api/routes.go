@@ -81,26 +81,15 @@ func nutrientFdcID(c *gin.Context) {
 // nutrientsBrowse returns the nutrients list
 func nutrientsBrowse(c *gin.Context) {
 	var (
-		nutrients []interface{}
-		sort      string
+		dt        fdc.DocType
 	)
-	where := "type='NUT' "
 	max := 300
 	page := 0
-	if sort = c.Query("sort"); sort == "" {
-		sort = "id"
-	}
-	if sort != "" && sort != "nutrientno" && sort != "name" && sort != "id" {
-		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized sort parameter.  Must be 'number', 'name' or 'id'"})
-		return
-	}
-	order, err := sortOrder(c.Query("order"))
+	nutrients,err := dc.GetDictionary(cs.CouchDb.Bucket, dt.ToString(fdc.NUT), int64(page), int64(max))
 	if err != nil {
-		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Unrecognized order parameter.  Must be 'asc' or 'desc'"})
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Error."})
 		return
 	}
-
-	dc.Browse(cs.CouchDb.Bucket, where, int64(page), int64(max), sort, order, &nutrients)
 	results := fdc.BrowseResult{Count: int32(len(nutrients)), Start: int32(page), Max: int32(max), Items: nutrients}
 	c.JSON(http.StatusOK, results)
 }
@@ -110,10 +99,8 @@ func foodsBrowse(c *gin.Context) {
 	var (
 		max, page   int64
 		sort, order string
-		foods       []interface{}
 		dt          fdc.DocType
 	)
-	fmt.Println("OK")
 	if sort = c.Query("sort"); sort == "" {
 		sort = "fdcId"
 	}
@@ -146,12 +133,16 @@ func foodsBrowse(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	where := "type=\"FOOD\" "
+	where := fmt.Sprintf("type=\"%s\" ",dt.ToString(fdc.FOOD))
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
-	fmt.Println("WHERE=", where)
-	dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order, &foods)
+	foods,err := dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order)
+	if err != nil {
+		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Query error %v", err)})
+		return
+	}
+	
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
@@ -218,7 +209,6 @@ func foodsSearchPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
 		return
 	}
-fmt.Println("HERE WE ARE!")
 	// check the format parameter which defaults to BRIEF if not set
 	if sr.Format == "" {
 		sr.Format = fdc.META
