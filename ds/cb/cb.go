@@ -48,52 +48,55 @@ func (ds *Cb) Counts(bucket string, doctype string, c *[]interface{}) error {
 }
 
 // GetDictionary returns dictionary documents, e.g. food groups, nutrients, derivations, etc.
-func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit int64, n *interface{}) error {
+func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit int64) ([]interface{}, error) {
+	var i []interface{}
 	q := fmt.Sprintf("select gd.* from %s as gd where type='%s' offset %d limit %d", bucket, doctype, offset, limit)
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	switch doctype {
 	case "NUT":
-		var i []fdc.Nutrient
 		var row fdc.Nutrient
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-		*n = i
 	case "DERV":
-		var i []fdc.Derivation
 		var row fdc.Derivation
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-		*n = i
 	case "FGSR":
-		var i []fdc.FoodGroup
 		var row fdc.FoodGroup
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-		*n = i
 	case "FGFNDDS":
-		var i []fdc.FoodGroup
 		var row fdc.FoodGroup
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-		*n = i
 	}
-	return nil
+	return i, nil
 }
 
 // Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
-func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string, f *[]interface{}) error {
-	q := fmt.Sprintf("select * from %s  as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
-	fmt.Printf("q=%s\n", q)
-	err := ds.Query(q, f)
-	return err
+func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string) ([]interface{}, error) {
+	var (
+		row fdc.Food
+		f   []interface{}
+	)
+	q := fmt.Sprintf("select food.* from %s as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
+	query := gocb.NewN1qlQuery(q)
+	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
+	if err != nil {
+		return f, err
+	}
+	for rows.Next(&row) {
+		f = append(f, row)
+	}
+	return f, nil
 }
 
 // Search performs a search query, fills out a Foods slice and returns count, error
