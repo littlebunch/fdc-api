@@ -101,10 +101,6 @@ func foodsBrowse(c *gin.Context) {
 		sort, order string
 		dt          fdc.DocType
 	)
-<<<<<<< HEAD
-	fmt.Printf("OK\n")
-=======
->>>>>>> b080484e033cb4d4a0d99ad2503fac178aee15a4
 	if sort = c.Query("sort"); sort == "" {
 		sort = "fdcId"
 	}
@@ -141,16 +137,11 @@ func foodsBrowse(c *gin.Context) {
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
-<<<<<<< HEAD
-	dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order, &foods)
-=======
 	foods,err := dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order)
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Query error %v", err)})
 		return
 	}
-	
->>>>>>> b080484e033cb4d4a0d99ad2503fac178aee15a4
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
