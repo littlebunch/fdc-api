@@ -157,9 +157,10 @@ func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrie
 }
 
 // Update updates an existing document in the datastore using Upsert
-func (ds *Cb) Update(id string, r interface{}) {
+func (ds *Cb) Update(id string, r interface{}) error {
 
-	ds.Conn.Upsert(id, r, 0)
+	_, err := ds.Conn.Upsert(id, r, 0)
+	return err
 
 }
 

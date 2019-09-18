@@ -81,11 +81,11 @@ func nutrientFdcID(c *gin.Context) {
 // nutrientsBrowse returns the nutrients list
 func nutrientsBrowse(c *gin.Context) {
 	var (
-		dt        fdc.DocType
+		dt fdc.DocType
 	)
 	max := 300
 	page := 0
-	nutrients,err := dc.GetDictionary(cs.CouchDb.Bucket, dt.ToString(fdc.NUT), int64(page), int64(max))
+	nutrients, err := dc.GetDictionary(cs.CouchDb.Bucket, dt.ToString(fdc.NUT), int64(page), int64(max))
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Error."})
 		return
@@ -133,16 +133,16 @@ func foodsBrowse(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	where := fmt.Sprintf("type=\"%s\" ",dt.ToString(fdc.FOOD))
+	where := fmt.Sprintf("type=\"%s\" ", dt.ToString(fdc.FOOD))
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
-	foods,err := dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order)
+	foods, err := dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order)
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Query error %v", err)})
 		return
 	}
-	
+
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }

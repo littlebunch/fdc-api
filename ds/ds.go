@@ -15,7 +15,7 @@ type DataSource interface {
 	Browse(bucket string, where string, offset int64, limit int64, sort string, order string) ([]interface{}, error)
 	Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error)
 	NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error
-	Update(id string, r interface{})
+	Update(id string, r interface{}) error
 	Bulk(n *[]fdc.NutrientData) error
 	CloseDs()
 }
