@@ -2,7 +2,10 @@
 // To add a data source simply implement the methods
 package ds
 
-import fdc "github.com/littlebunch/fdc-api/model"
+import (
+	fdc "github.com/littlebunch/fdc-api/model"
+	gocb "gopkg.in/couchbase/gocb.v1"
+)
 
 // DataSource wraps the basic methods used for accessing and updating a
 // data store.
