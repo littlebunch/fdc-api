@@ -178,6 +178,11 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 	return ds.Conn.Do(v)
 
 }
+func (ds *Cb) BulkInsert(items *[]gocb.BulkOp) error {
+	
+	return ds.Conn.Do(items)
+
+}
 
 // Query performs an arbitrary but well-formed query
 func (ds Cb) Query(q string, f *[]interface{}) error {
