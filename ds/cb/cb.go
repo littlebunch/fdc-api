@@ -180,7 +180,7 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 }
 func (ds *Cb) BulkInsert(items *[]gocb.BulkOp) error {
 	
-	return ds.Conn.Do(items)
+	return ds.Conn.Do(*items)
 
 }
 
