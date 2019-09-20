@@ -178,9 +178,9 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 	return ds.Conn.Do(v)
 
 }
-func (ds *Cb) BulkInsert(items *[]gocb.BulkOp) error {
-	
-	return ds.Conn.Do(*items)
+func (ds *Cb) BulkInsert(items []gocb.BulkOp) error {
+
+	return ds.Conn.Do(items)
 
 }
 
