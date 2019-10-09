@@ -79,6 +79,7 @@ type FoodMeta struct {
 
 // Food reflects JSON used to transfer BFPD foods data from USDA csv
 type Food struct {
+	ID              string     `json:"id" binding:"required"`
 	UpdatedAt       time.Time  `json:"lastChangeDateTime,omitempty"`
 	FdcID           string     `json:"fdcId" binding:"required"`
 	NdbNo           string     `json:"ndbno,omitempty"`
