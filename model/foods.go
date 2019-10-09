@@ -140,6 +140,7 @@ type Derivation struct {
 // NutrientData is the list of nutrient values
 // A document of type NUTDATA
 type NutrientData struct {
+	ID         string      `json:"id" binding:"required"`
 	FdcID      string      `json:"fdcId" binding:"required"`
 	Source     string      `json:"Datasource"`
 	Type       string      `json:"type"`
