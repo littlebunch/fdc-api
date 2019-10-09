@@ -84,12 +84,11 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 // Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
 func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string) ([]interface{}, error) {
 	var (
-		row fdc.Food
+		row interface{}
 		f   []interface{}
 	)
 	q := fmt.Sprintf("select food.* from %s as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
 	query := gocb.NewN1qlQuery(q)
-	//query.Timeout(200000)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err != nil {
 		return f, err
