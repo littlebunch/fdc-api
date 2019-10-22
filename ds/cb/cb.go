@@ -84,7 +84,7 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 // Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
 func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string) ([]interface{}, error) {
 	var (
-		row fdc.Food
+		row interface{}
 		f   []interface{}
 	)
 	q := fmt.Sprintf("select food.* from %s as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
@@ -157,9 +157,10 @@ func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrie
 }
 
 // Update updates an existing document in the datastore using Upsert
-func (ds *Cb) Update(id string, r interface{}) {
+func (ds *Cb) Update(id string, r interface{}) error {
 
-	ds.Conn.Upsert(id, r, 0)
+	_, err := ds.Conn.Upsert(id, r, 0)
+	return err
 
 }
 
@@ -175,6 +176,11 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 		v = append(v, &gocb.InsertOp{Key: fmt.Sprintf("%s_%d", r.FdcID, r.Nutrientno), Value: r})
 	}
 	return ds.Conn.Do(v)
+
+}
+func (ds *Cb) BulkInsert(items []gocb.BulkOp) error {
+
+	return ds.Conn.Do(items)
 
 }
 

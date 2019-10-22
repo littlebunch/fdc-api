@@ -2,7 +2,10 @@
 // To add a data source simply implement the methods
 package ds
 
-import fdc "github.com/littlebunch/fdc-api/model"
+import (
+	fdc "github.com/littlebunch/fdc-api/model"
+	gocb "gopkg.in/couchbase/gocb.v1"
+)
 
 // DataSource wraps the basic methods used for accessing and updating a
 // data store.
@@ -15,7 +18,8 @@ type DataSource interface {
 	Browse(bucket string, where string, offset int64, limit int64, sort string, order string) ([]interface{}, error)
 	Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error)
 	NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error
-	Update(id string, r interface{})
+	Update(id string, r interface{}) error
 	Bulk(n *[]fdc.NutrientData) error
+	BulkInsert(v []gocb.BulkOp) error
 	CloseDs()
 }
