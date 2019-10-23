@@ -13,7 +13,7 @@ import (
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/littlebunch/fdc-api/ds"
-	"github.com/littlebunch/fdc-api/ds/cb"
+	"github.com/littlebunch/fdc-api/ds/cdb"
 	fdc "github.com/littlebunch/fdc-api/model"
 )
 
@@ -50,7 +50,7 @@ func init() {
 
 func main() {
 
-	var cb cb.Cb
+	var cb cdb.Cdb
 	flag.Parse()
 	// get configuration
 	cs.GetConfig(c)
