@@ -51,7 +51,42 @@ func (ds *Cdb) Counts(bucket string, doctype string, c *[]interface{}) error {
 // GetDictionary returns dictionary documents, e.g. food groups, nutrients, derivations, etc.
 func (ds *Cdb) GetDictionary(bucket string, doctype string, offset int64, limit int64) ([]interface{}, error) {
 
-	return nil, nil
+	var i []interface{}
+	q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\"},\"fields\":[],\"limit\":%d,\"skip\":%d}", doctype, limit, offset)
+	rows, err := ds.Conn.Find(context.Background(), q)
+	if err != nil {
+		log.Printf("%v\n", err)
+		return nil, err
+	}
+	switch doctype {
+	case "NUT":
+		var row fdc.Nutrient
+		for rows.Next() {
+			rows.ScanDoc(&row)
+			i = append(i, row)
+		}
+	case "DERV":
+		var row fdc.Derivation
+		for rows.Next() {
+			rows.ScanDoc(&row)
+			i = append(i, row)
+		}
+	case "FGSR":
+		var row fdc.FoodGroup
+		for rows.Next() {
+			rows.ScanDoc(&row)
+			i = append(i, row)
+		}
+	case "FGFNDDS":
+		var row fdc.FoodGroup
+		for rows.Next() {
+			rows.ScanDoc(&row)
+			i = append(i, row)
+		}
+	}
+
+	//curl -H "Content-type:application/json" -X POST http://localhost:5984/srlegacy/_find -d '{"selector":{"type":{"$eq":"DERV"}},"fields":["id","code","description"],"limit":200,"skip":0}'
+	return i, nil
 }
 
 // Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
