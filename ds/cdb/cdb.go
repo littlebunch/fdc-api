@@ -170,7 +170,6 @@ func (ds *Cdb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutri
 
 // Update updates an existing document in the datastore using Upsert
 func (ds *Cdb) Update(id string, r interface{}) error {
-	fmt.Printf("id=%s rev=%v\n", id, r)
 	rev, err := ds.Conn.Put(context.TODO(), id, r)
 	if err != nil {
 		log.Fatalln("Error on update: ", err)
