@@ -3,7 +3,7 @@ module github.com/littlebunch/fdc-api
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.25.17
+	github.com/aws/aws-sdk-go v1.25.18
 	github.com/flimzy/diff v0.1.6 // indirect
 	github.com/flimzy/kivik v1.8.1
 	github.com/flimzy/testy v0.1.16 // indirect
@@ -28,9 +28,9 @@ require (
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	golang.org/x/net v0.0.0-20191021144547-ec77196f6094 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/sys v0.0.0-20191023151326-f89234f9a2c2 // indirect
+	golang.org/x/sys v0.0.0-20191024073052-e66fe6eb8e0c // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20191023143423-ff611c50cd12 // indirect
+	golang.org/x/tools v0.0.0-20191024133924-9525425c6f02 // indirect
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/couchbase/gocb.v1 v1.6.4
