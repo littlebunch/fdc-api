@@ -37,7 +37,7 @@ func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 func (ds Cdb) Get(q string, f interface{}) error {
 	r, err := ds.Conn.Get(context.TODO(), q)
 	if err != nil {
-		log.Fatalln("Get failed ", err)
+		log.Println("Get failed ", err)
 	}
 	return r.ScanDoc(&f)
 }
@@ -191,7 +191,6 @@ func (ds *Cdb) Bulk(items *[]fdc.NutrientData) error {
 	if err != nil {
 		log.Fatalln("Bulk insert error", err)
 	}
-	log.Printf("%v", rev)
 	/*var v []gocb.BulkOp
 	for _, r := range *items {
 		v = append(v, &gocb.InsertOp{Key: fmt.Sprintf("%s_%d", r.FdcID, r.Nutrientno), Value: r})
