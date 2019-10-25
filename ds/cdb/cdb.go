@@ -187,7 +187,8 @@ func (ds *Cdb) CloseDs() {
 
 // Bulk inserts a list of Nutrient Data items
 func (ds *Cdb) Bulk(items *[]fdc.NutrientData) error {
-	rev, err := ds.Conn.BulkDocs(context.TODO(), items)
+	_, err := ds.Conn.BulkDocs(context.TODO(), items)
+
 	if err != nil {
 		log.Fatalln("Bulk insert error", err)
 	}
