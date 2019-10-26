@@ -21,7 +21,6 @@ type Cdb struct {
 func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	var err error
 	url := fmt.Sprintf("http://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
-	log.Println(url)
 	conn, err := kivik.New(context.TODO(), "couch", url)
 	if err != nil {
 		log.Fatalln("Cannot get a client ", err)
@@ -174,7 +173,6 @@ func (ds *Cdb) Update(id string, r interface{}) error {
 	if err != nil {
 		log.Fatalln("Error on update: ", err)
 	}
-	log.Printf("Update %s rev %s\n", id, rev)
 	//	_, err := ds.Conn.Upsert(id, r, 0)
 	return nil
 
