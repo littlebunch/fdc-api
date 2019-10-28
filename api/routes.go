@@ -142,7 +142,6 @@ func foodsBrowse(c *gin.Context) {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Query error %v", err)})
 		return
 	}
-
 	results := fdc.BrowseResult{Count: int32(len(foods)), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
