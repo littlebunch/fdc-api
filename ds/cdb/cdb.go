@@ -89,21 +89,25 @@ func (ds *Cdb) GetDictionary(bucket string, doctype string, offset int64, limit 
 }
 
 // Browse fills out a slice of Foods, Nutrients or NutrientData items, returns gocb error
-func (ds *Cdb) Browse(bucket string, where string, offset int64, limit int64, sort string, order string) ([]interface{}, error) {
-	/*var (
-		row fdc.Food
-		f   []interface{}
+func (ds *Cdb) Browse(bucket string, doctype string, offset int64, limit int64, sort string, order string) ([]interface{}, error) {
+	var (
+		i   []interface{}
+		row interface{}
 	)
-	q := fmt.Sprintf("select food.* from %s as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
-	query := gocb.NewN1qlQuery(q)
-	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
+
+	q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\"},\"fields\":[],\"limit\":%d,\"skip\":%d,\"sort\":[\"%s\"]}", doctype, limit, offset, sort)
+	rows, err := ds.Conn.Find(context.Background(), q)
 	if err != nil {
-		return f, err
+		log.Printf("%v\n", err)
+		return nil, err
 	}
-	for rows.Next(&row) {
-		f = append(f, row)
-	}*/
-	return nil, nil
+
+	for rows.Next() {
+		rows.ScanDoc(&row)
+
+		i = append(i, row)
+	}
+	return i, nil
 }
 
 // Search performs a search query, fills out a Foods slice and returns count, error
@@ -208,6 +212,16 @@ func (ds *Cdb) BulkInsert(items []gocb.BulkOp) error {
 
 // Query performs an arbitrary but well-formed query
 func (ds Cdb) Query(q string, f *[]interface{}) error {
+	var row interface{}
+	rows, err := ds.Conn.Find(context.Background(), q)
+	if err != nil {
+		log.Printf("%v\n", err)
+		return err
+	}
+	for rows.Next() {
+		rows.ScanDoc(&row)
+		*f = append(*f, row)
+	}
 	/*query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err == nil {
