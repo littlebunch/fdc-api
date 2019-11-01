@@ -38,6 +38,7 @@ func (ds Cdb) Get(q string, f interface{}) error {
 	r, err := ds.Conn.Get(context.TODO(), q)
 	if err != nil {
 		log.Println("Get failed ", err)
+		return err
 	}
 	return r.ScanDoc(&f)
 }
