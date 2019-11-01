@@ -20,7 +20,7 @@ type Cdb struct {
 // ConnectDs connects to a datastore, e.g. Couchbase, MongoDb, etc.
 func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	var err error
-	url := fmt.Sprintf("https://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
+	url := fmt.Sprintf("http://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
 	fmt.Println("url=", url)
 	conn, err := kivik.New(context.TODO(), "couch", url)
 	if err != nil {
@@ -33,7 +33,7 @@ func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	return err
 }
 
-// Get finds data for a single food
+// Get finds data for a single food/
 func (ds Cdb) Get(q string, f interface{}) error {
 	r, err := ds.Conn.Get(context.TODO(), q)
 	if err != nil {
