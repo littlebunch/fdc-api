@@ -64,7 +64,9 @@ func nutrientFdcID(c *gin.Context) {
 	}
 	if n = c.Query("n"); n == "" {
 		var nd []interface{}
-		q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
+		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		//q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
+		fmt.Println(q)
 		dc.Query(q, &nd)
 		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 		c.JSON(http.StatusOK, results)
@@ -140,7 +142,7 @@ func foodsBrowse(c *gin.Context) {
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
-	foods, err := dc.Browse(cs.CouchDb.Bucket, dt.ToString(fdc.FOOD), offset, max, sort, order)
+	foods, err := dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order)
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Query error %v", err)})
 		return

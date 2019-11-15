@@ -112,12 +112,12 @@ type InputFood struct {
 // Serving describes a list nutrients for a given state, weight and amount
 // A subdocument of Food
 type Serving struct {
-	Nutrientbasis string  `json:"100UnitNutrientBasis,omitempty"`
-	Description   string  `json:"householdServingUom"`
+	Nutrientbasis string  `json:"nutrientBasis,omitempty"`
+	Description   string  `json:"servingUnit"`
 	Servingstate  string  `json:"servingState,omitempty"`
-	Weight        float32 `json:"weightInGmOrMl"`
-	Servingamount float32 `json:"householdServingValue,omitempty"`
-	Datapoints    int32   `json:"datapoints,omitempty"`
+	Weight        float32 `json:"weight"`
+	Servingamount float32 `json:"value,omitempty"`
+	Datapoints    int32   `json:"dataPoints,omitempty"`
 }
 
 // Nutrient is metadata abount nutrients usually in a nutrients collection
