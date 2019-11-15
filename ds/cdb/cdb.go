@@ -21,7 +21,7 @@ type Cdb struct {
 func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	var err error
 	url := fmt.Sprintf("http://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
-	fmt.Println("url=", url)
+	log.Println("url=", url)
 	conn, err := kivik.New(context.TODO(), "couch", url)
 	if err != nil {
 		log.Fatalln("Cannot get a client ", err)
