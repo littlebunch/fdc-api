@@ -109,9 +109,12 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	case fdc.WILDCARD:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewWildcardQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+	case fdc.REGEX:
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	default:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	}
+
 	result, err := ds.Conn.ExecuteSearchQuery(query)
 	if err != nil {
 		return 0, err
@@ -126,19 +129,7 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 		if err = json.Unmarshal(jrow, &f); err != nil {
 			return 0, err
 		}
-		if sr.Format == fdc.META {
-			*foods = append(*foods, f)
-		} else {
-			food := fdc.Food{}
-			if _, err := ds.Conn.Get(r.Id, &food); err != nil {
-				return 0, err
-			}
-			if sr.Format == fdc.SERVING {
-				*foods = append(*foods, fdc.SearchServings{Food: f, Servings: food.Servings})
-			} else {
-				*foods = append(*foods, fdc.SearchResult{Food: f})
-			}
-		}
+		*foods = append(*foods, f)
 	}
 
 	return count, nil

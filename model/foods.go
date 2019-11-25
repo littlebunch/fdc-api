@@ -38,7 +38,6 @@ type NutrientReportRequest struct {
 // SearchRequest wraps a POST search
 type SearchRequest struct {
 	Query       string `json:"q" binding:"required"`
-	Format      string `json:"format,omitEmpty"`
 	SearchField string `json:"searchfield,omitEmpty"`
 	Page        int    `json:"page"`
 	Max         int    `json:"max"`
