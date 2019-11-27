@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	fdc "github.com/littlebunch/fdc-api/model"
@@ -162,7 +161,7 @@ func foodsBrowse(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// foodsSearch runs a search and returns a BrowseResult
+// foodsSearch runs a simple keyword search and returns a BrowseResult
 func foodsSearch(c *gin.Context) {
 	var (
 		max   int
@@ -177,13 +176,6 @@ func foodsSearch(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "A search string in the q parameter is required"})
 		return
 	}
-	// check for field
-	f := c.Query("f")
-	if f != "" && f != "foodDescription" && f != "upc" && f != "company" && f != "ingredients" {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company', 'upc' or 'ingredients'"})
-		return
-	}
-	searchtype := c.Query("t")
 	if max, err = strconv.Atoi(c.Query("max")); err != nil {
 		max = defaultListMax
 	}
@@ -198,11 +190,8 @@ func foodsSearch(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	if searchtype == fdc.REGEX {
-		f += "_kw"
-		q = strings.ToUpper(q)
-	}
-	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, SearchType: searchtype, SearchField: f, Max: max, Page: offset}, &foods); err != nil {
+
+	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Max: max, Page: offset}, &foods); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
@@ -210,7 +199,7 @@ func foodsSearch(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// foodsSearch runs a search as a POST and returns a BrowseResult
+// foodsSearch runs a SearchRequest as a POST and returns a BrowseResult
 func foodsSearchPost(c *gin.Context) {
 	var (
 		foods []interface{}
@@ -218,8 +207,9 @@ func foodsSearchPost(c *gin.Context) {
 	)
 	count := 0
 	// check for a query
-	err = c.BindJSON(&sr)
+	err := c.BindJSON(&sr)
 	if err != nil {
+		fmt.Printf("BOGUS JSON %v\n", err)
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
 		return
 	}
@@ -240,6 +230,11 @@ func foodsSearchPost(c *gin.Context) {
 	if sr.Page < 0 {
 		sr.Page = 0
 	}
+	// only run REGEX searches against a keyword index
+	if sr.SearchType == fdc.REGEX {
+		sr.SearchField += "_kw"
+	}
+	fmt.Printf("Q=%s F=%s T=%s\n", sr.Query, sr.SearchField, sr.SearchType)
 	sr.Page = sr.Page * sr.Max
 	sr.IndexName = cs.CouchDb.Fts
 	if count, err = dc.Search(sr, &foods); err != nil {

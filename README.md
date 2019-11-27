@@ -9,7 +9,7 @@ Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc
 /model -- go types representing the data models     
 
 # Quick word about datastores
-I've done versions of this API in MySQL, Elasticsearch and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it scales pretty good as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.       
+I've done versions of this API in MySQL, Elasticsearch, CouchDB and Mongo but settled on Couchbase because of [N1QL](https://www.couchbase.com/products/n1ql) and the built-in [full text search](https://docs.couchbase.com/server/6.0/fts/full-text-intro.html) engine.  I've heard it scales pretty good as well. :) It's also possible without a great deal of effort to implement a MongoDb, ElasticSearch or relational datastore by implementing the ds/DataSource interface for your preferred platform.       
 
 # Building   
 The steps below outline how to go about building and running the applications using Couchbase.  Additional endpoint documentation is provided by a swagger.yaml and a compiled apiDoc.html in the [api/dist](https://github.com/littlebunch/FoodDataCentral-api/tree/master/api/dist) path.  A docker image for the web server is also available and described below.
@@ -106,24 +106,32 @@ curl -X GET http://localhost:8000/v1/foods/browse?page=1&max=50?sort=company&ord
 ```
 
 ### Search foods (GET): 
-Perform a simple keyword search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'.  Limit a search to a particular field with the 'f' parameter which can be one of 'foodDescription', 'company', 'upc', or 'ingredients'.   
+Perform a simple keyword search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'. For more complicated and/or precise searches, use the POST method.   
 ```
-curl -X GET http://localhost:8000/v1/search?q=bread&page=1&max=100    
-curl -X GET http://localhost:8000/v1/search?q=bread&f=foodDescription&page=1&max=100   
+curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100    
+curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100   
 ```
 
 ### Search foods (POST):
 Perform a string search for 'raw broccoli' in the foodDescription field:   
 ```
-curl -XPOST http://localhost:8000/v1/search -d '{"q":"brocolli raw","searchfield":"foodDescription","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"brocolli raw","searchfield":"foodDescription","max":50,"page":0}'
 ```
 Perform a WILDCARD search for company names that match ro*nd*:
 ```
-curl -XPOST http://localhost:8000/v1/search -d '{"q":"ro*nd*","searchfield":"company","searchtype":"WILDCARD","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"ro*nd*","searchfield":"company","searchtype":"WILDCARD","max":50,"page":0}'
 ```
 Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
 ```
-curl -XPOST http://localhost:8000/v1/search -d '{"q":"broccoli raw","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"broccoli raw","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
+```
+Perform a REGEX (regular expression) search to find all foods that begin with "Olive" in the foodDescription field:
+```
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"^olive+(.*)","searchfield":"foodDesciption","searchfield":"REGEX","max":50,"page":0}'
+```
+Peform a REGEX search to find all foods that have UPC's that begin with "01111" and end with "684"
+```
+curl -XPOST http://localhost:8000/v1/foods/search -d { "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}
 ```
 ### Fetch the nutrients dictionary
 ```
