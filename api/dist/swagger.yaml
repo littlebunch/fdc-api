@@ -351,7 +351,7 @@ definitions:
       Unit:
         type: string
         example: "G"
-  FoodItem:
+  BrandedFoodItem:
     type: object
     required:
       - fdcId
@@ -360,7 +360,9 @@ definitions:
       fdcId:
         type: string
         example: '45001529'
-      foodDescription:
+      foodClass:
+      type: string
+      description:
         type: string
         example: HOT & SPICY BARBECUE SAUCE
       lastChangeDateTime:
@@ -410,7 +412,7 @@ definitions:
         type: number
         format: float
         example: 10.1
-  nutrientData:
+  foodNutrients:
     required:
       - nutrientNumber
       - unit
