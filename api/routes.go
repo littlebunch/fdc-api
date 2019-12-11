@@ -64,7 +64,9 @@ func nutrientFdcID(c *gin.Context) {
 	}
 	if n = c.Query("n"); n == "" {
 		var nd []interface{}
-		q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
+		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		//q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
+		fmt.Println(q)
 		dc.Query(q, &nd)
 		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 		c.JSON(http.StatusOK, results)
@@ -84,11 +86,21 @@ func nutrientFdcID(c *gin.Context) {
 // nutrientsBrowse returns the nutrients list
 func nutrientsBrowse(c *gin.Context) {
 	var (
-		dt fdc.DocType
+		dt        fdc.DocType
+		max, page int64
+		err       error
 	)
-	max := 300
-	page := 0
-	nutrients, err := dc.GetDictionary(cs.CouchDb.Bucket, dt.ToString(fdc.NUT), int64(page), int64(max))
+	if max, err = strconv.ParseInt(c.Query("max"), 10, 32); err != nil {
+		max = 300
+	}
+	if page, err = strconv.ParseInt(c.Query("page"), 10, 32); err != nil {
+		page = 0
+	}
+	if page < 0 {
+		page = 0
+	}
+	offset := page * max
+	nutrients, err := dc.GetDictionary(cs.CouchDb.Bucket, dt.ToString(fdc.NUT), int64(offset), int64(max))
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Error."})
 		return
@@ -140,7 +152,7 @@ func foodsBrowse(c *gin.Context) {
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
-	foods, err := dc.Browse(cs.CouchDb.Bucket, dt.ToString(fdc.FOOD), offset, max, sort, order)
+	foods, err := dc.Browse(cs.CouchDb.Bucket, where, offset, max, sort, order)
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Query error %v", err)})
 		return
@@ -149,12 +161,13 @@ func foodsBrowse(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// foodsSearch runs a search and returns a BrowseResult
+// foodsSearch runs a simple keyword search and returns a BrowseResult
 func foodsSearch(c *gin.Context) {
 	var (
 		max   int
 		page  int
 		foods []interface{}
+		err   error
 	)
 	count := 0
 	// check for a query
@@ -163,13 +176,6 @@ func foodsSearch(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "A search string in the q parameter is required"})
 		return
 	}
-	// check for field
-	f := c.Query("f")
-	if f != "" && f != "foodDescription" && f != "upc" && f != "company" && f != "ingredients" {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Unrecognized search field.  Must be one of 'foodDescription','company', 'upc' or 'ingredients'"})
-		return
-	}
-
 	if max, err = strconv.Atoi(c.Query("max")); err != nil {
 		max = defaultListMax
 	}
@@ -185,7 +191,7 @@ func foodsSearch(c *gin.Context) {
 	}
 	offset := page * max
 
-	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Format: fdc.META, Max: max, Page: offset}, &foods); err != nil {
+	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Max: max, Page: offset}, &foods); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
@@ -193,17 +199,17 @@ func foodsSearch(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// foodsSearch runs a search as a POST and returns a BrowseResult
+// foodsSearch runs a SearchRequest as a POST and returns a BrowseResult
 func foodsSearchPost(c *gin.Context) {
 	var (
 		foods []interface{}
 		sr    fdc.SearchRequest
 	)
 	count := 0
-
 	// check for a query
-	err = c.BindJSON(&sr)
+	err := c.BindJSON(&sr)
 	if err != nil {
+		fmt.Printf("BOGUS JSON %v\n", err)
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
 		return
 	}
@@ -211,13 +217,7 @@ func foodsSearchPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
 		return
 	}
-	// check the format parameter which defaults to BRIEF if not set
-	if sr.Format == "" {
-		sr.Format = fdc.META
-	} else if sr.Format != fdc.FULL && sr.Format != fdc.SERVING && sr.Format != fdc.NUTRIENTS {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("valid formats are %s, %s, %s or %s", fdc.META, fdc.FULL, fdc.SERVING, fdc.NUTRIENTS)})
-		return
-	}
+
 	if &sr.Max == nil {
 		sr.Max = defaultListMax
 	} else if sr.Max > maxListSize || sr.Max < 0 {
@@ -230,6 +230,11 @@ func foodsSearchPost(c *gin.Context) {
 	if sr.Page < 0 {
 		sr.Page = 0
 	}
+	// only run REGEX searches against a keyword index
+	if sr.SearchType == fdc.REGEX {
+		sr.SearchField += "_kw"
+	}
+	fmt.Printf("Q=%s F=%s T=%s\n", sr.Query, sr.SearchField, sr.SearchType)
 	sr.Page = sr.Page * sr.Max
 	sr.IndexName = cs.CouchDb.Fts
 	if count, err = dc.Search(sr, &foods); err != nil {

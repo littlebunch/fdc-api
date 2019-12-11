@@ -16,6 +16,7 @@ const (
 const (
 	PHRASE   = "PHRASE"
 	WILDCARD = "WILDCARD"
+	REGEX    = "REGEX"
 )
 
 // SR is standard reference

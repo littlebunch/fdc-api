@@ -20,7 +20,12 @@ type Cdb struct {
 // ConnectDs connects to a datastore, e.g. Couchbase, MongoDb, etc.
 func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	var err error
+<<<<<<< HEAD
 	url := fmt.Sprintf("https://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
+=======
+	url := fmt.Sprintf("http://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
+	log.Println("url=", url)
+>>>>>>> 98a87764d7acc0aedf3445c2e36d002c924ae588
 	conn, err := kivik.New(context.TODO(), "couch", url)
 	if err != nil {
 		log.Fatalln("Cannot get a client ", err)
@@ -32,11 +37,12 @@ func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	return err
 }
 
-// Get finds data for a single food
+// Get finds data for a single food/
 func (ds Cdb) Get(q string, f interface{}) error {
 	r, err := ds.Conn.Get(context.TODO(), q)
 	if err != nil {
 		log.Println("Get failed ", err)
+		return err
 	}
 	return r.ScanDoc(&f)
 }
@@ -95,7 +101,7 @@ func (ds *Cdb) Browse(bucket string, doctype string, offset int64, limit int64, 
 		row interface{}
 	)
 
-	q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\"},\"fields\":[],\"limit\":%d,\"skip\":%d,\"sort\":[\"%s\"]}", doctype, limit, offset, sort)
+	q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\"},\"fields\":[\"fdcId\",\"foodDescription\",\"Company\",\"upc\",\"dataSource\"],\"limit\":%d,\"skip\":%d,\"sort\":[\"%s\"]}", doctype, limit, offset, sort)
 	rows, err := ds.Conn.Find(context.Background(), q)
 	if err != nil {
 		log.Printf("%v\n", err)
@@ -113,6 +119,20 @@ func (ds *Cdb) Browse(bucket string, doctype string, offset int64, limit int64, 
 // Search performs a search query, fills out a Foods slice and returns count, error
 func (ds *Cdb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	count := 0
+	var row interface{}
+	sr.SearchField = "foodDescription"
+	sr.Sort = "foodDescription"
+	q := fmt.Sprintf("{\"selector\":{\"%s\":{\"%s\":\"%s\"}},\"fields\":[],\"limit\":%d,\"skip\":%d,\"sort\":[\"%s\"]}", sr.SearchField, "$regex", sr.Query, sr.Max, sr.Page, sr.Sort)
+	fmt.Printf("q=%s\n", q)
+	rows, err := ds.Conn.Find(context.Background(), q)
+	if err != nil {
+		log.Printf("%v\n", err)
+		return 0, err
+	}
+	for rows.Next() {
+		rows.ScanDoc(&row)
+		*foods = append(*foods, row)
+	}
 	/*selector, err := mango.New(sr)
 	if err != nil {
 		return 0, err

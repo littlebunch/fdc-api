@@ -1,7 +1,7 @@
-swagger: '2.0'
+openapi: '3.0.0'
 info:
   description: >-
-    REST API for the <a href="https://fdc.nal.usda.gov/download-datasets.html>various public nutrient data  </a> released on the USDA Food Data Central site.
+    REST API for the various public nutrient data released on the USDA [Food Data Central](<a href="https://fdc.nal.usda.gov/download-datasets.html>)  site.
   version: 1.0.0
   title: Nutrient Data API
   contact:
@@ -10,16 +10,13 @@ info:
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-host: 'localhost:8000'
-basePath: /
+servers: 
+  - url: http://localhost:8000/v1
 tags:
   - name: admins
     description: Secured Admin-only calls
   - name: developers
     description: Operations available to regular developers
-schemes:
-  - http
-  - https
 paths:
   '/v1/food/{id}':
     get:
@@ -27,23 +24,22 @@ paths:
         - developers
       summary: fetches one food item by fdcId in various formats
       description: >-
-        Retrieves a single food item by fdc id.  A format parameter can be
-        specified to only return selected data elements for a food.  The default
-        format is to return all data elements.
-      operationId: fetch
-      produces:
-        - application/json
+        Retrieves a single food item by fdc id. The default format is to return all data elements.  
+      operationId: fetchFood
       parameters:
         - name: id
           in: path
           description: Food Data Central ID of the food to retrieve
           required: true
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: results matching criteria
-          schema:
-            $ref: '#/definitions/FoodItem'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FoodItem'
         '400':
           description: bad input parameter
         '404':
@@ -56,9 +52,7 @@ paths:
       description: >-
         By passing in the appropriate options, you can browse for available
         foods
-      operationId: browse
-      produces:
-        - application/json
+      operationId: browseFoods
       parameters:
         - name: page
           in: query
@@ -68,35 +62,50 @@ paths:
             and max=50 results in offset 0, page=3 and max=50 results in an
             offset into the list of 150, etc.
           required: false
-          type: integer
-          minimum: 0
-          format: int32
+          schema:
+            type: integer
+            minimum: 0
+            format: int32
         - name: max
           in: query
           description: maximum number of records to return.
           required: false
-          type: integer
-          maximum: 150
-          minimum: 1
-          format: int32
+          schema:
+            type: integer
+            maximum: 150
+            minimum: 1
+            format: int32
         - name: sort
           in: query
           description: >-
             return the results list ordered by foodDescription, company, or
             fdcId.  Default is fdcId
-          type: string
+          schema:
+           type: string
+           enum:
+              - foodDescription
+              - company
+              - fdcId
           required: false
         - name: order
           in: query
           description: >-
             return the ordered list ordered asc(ending) or desc(ending).  Default is asc
-          type: string
+          schema:
+           type: string
+           enum:
+            - asc
+            - desc
           required: false
       responses:
         '200':
           description: browse results matching criteria
-          schema:
-            $ref: '#/definitions/BrowseFoodResult'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrowseFoodResult'
         '400':
           description: bad input parameter
         '404':
@@ -109,26 +118,29 @@ paths:
       description:
         Returns either the list of nutrient data items  or a single nutrient data item for a food item identified
         by it's fdc id.
-      operationId: nutrient
-      produces:
-        -application/json
+      operationId: nutrientFood
       parameters:
         - name: n
           in: query
           description: >-
             return only the nutrient data element identifed by the nutrient number in n
           required: false
-          type: integer
+          schema:
+            type: integer
         - name: id
           in: path
+          schema:
+            type: integer
           description: >-
             FDC ID of the food for which nutrient data is being requested
           required: true
       responses:
         '200':
           description: a single NutrientData element or a list of elements
-          schema:
-            $ref: '#/definitions/BrowseNutrientDataResult'
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/BrowseNutrientDataResult'
         '404':
           description: no results found
   /v1/nutrients/browse:
@@ -136,26 +148,32 @@ paths:
       tags:
         - developers
       summary: get a list of nutrients used in the foods database
-      operationId: browse
+      operationId: getBrowse
       parameters:
         - name: sort
           in: query
           description: >-
             return the results list ordered by name, nutrientno or
             id.  Default is id
-          type: string
+          schema:
+            type: string
           required: false
         - name: order
           in: query
           description: >-
             return the ordered list ordered asc(ending) or desc(ending).  Default is asc
-          type: string
+          schema:
+            type: string
           required: false
       responses:
         '200':
           description: browse results matching criteria
-          schema:
-            $ref: '#/definitions/BrowseNutrientResult'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrowseNutrientResult'
         '400':
           description: bad input parameter
         '404':
@@ -165,168 +183,189 @@ paths:
       tags:
         - developers
       summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: report
+      requestBody:
+          required: true
           description: report to perform
-          schema:
-            $ref: '#/definitions/NutrientReportRequest'    
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/NutrientReportRequest'    
       responses:
         '200':
           description: browse results matching criteria
-          schema:
-            $ref: '#/definitions/NutrientReportItem'
+          content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/NutrientReportItem'
         '400':
           description: bad input parameter
         '404':
           description: no results found
-definitions:
-  NutrientReportRequest:
-    type: object
-    required:
-      - nutrientno
-    properties:
-      nutrientno:
-        description: Nutrient number for which data is being requested 
-        type: integer
-        example: 401
-      source:
-        description: Filter results by Datasource.  One of 'BFPD', 'SR', 'FNDDS'
-        type: string
-        example: 'BFPD'
-      valueGTE:
-        description: Search for nutrient value greater than or equal to
-        example: 10
-        type: integer
-        format: float32
-      valueLTE:
-        description: Search for nutrient value less than or equal to
-        example: 100
-        type: integer
-        format: float32
-      page:
-        type: integer
-        format: int32
-      max:
-        type: integer
-        format: int32
-        description: The number of items in the list returned by a browse or search request
-        example: 50
-        minimum: 1
-        maximum: 150
-  SearchRequest:
-    type: object
-    required:
-      - q
-    properties:
-      q:
-        description: Search terms 
-        type: string
-        example: 'cucumber salad'
-      format:
-        description: One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'
-        type: string
-        example: 'full'
-      searchfield:
-        description: Limit search to a particular field
-        example: 'foodDescription'
-        type: string
-      page:
-        type: integer
-        format: int32
-      max:
-        type: integer
-        format: int32
-        description: The number of items in the list returned by a browse or search request
-        example: 50
-        minimum: 1
-        maximum: 150
-      sort:
-        type: string
-        description: field to sort results by
-        example: ''
-      searchtype:
-        description: One of PHRASE, WILDCARD or REGEX
-        example: PHRASE'
-        type: string
-  BrowseFoodResult:
-    type: object
-    properties:
-      count:
-        type: integer
-        format: int32
-        description: Number of records found by a browse or search request
-        example: 10
-      start:
-        type: integer
-        description: >-
-          Starting point (offset) into the list returned by a browse or search request
-        format: int32
-        example: 0
-      max:
-        type: integer
-        description: The number of items in the list returned by a browse or search request
-        format: int32
-        example: 50
-        minimum: 1
-        maximum: 150
-      items:
-        type: array
+  /v1/search:
+    get:
+      tags:
+        - developers
+      summary: Performs keyword searches against selected fields. 
+      parameters:
+        - name: q
+          in: query
+          description: >-
+            query string
+          schema:
+            type: string
+          required: true
+        - name: t
+          in: query
+          description: >-
+            Optional type of search to be performed.  Can be one of REGEX, WILDCARD, PHRASE
+          required: false
+          schema:
+            type: string
+            enum:
+              - REGXEX
+              - WILDCARD
+              - PHRASE
+        - name: f
+          description: >-
+            Limit query to a particular field 
+          required: false
+          schema:
+            type: string
+            enum:
+              - foodDescription
+              - company
+              - ingredients
+              - upc
+          in: query
+      responses:
+        '200':
+          description: List of food items matching the query
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/SearchResultItem'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
+components:
+  schemas:
+    NutrientReportRequest:
+      type: object
+      required:
+        - nutrientno
+      properties:
+        nutrientno:
+          description: Nutrient number for which data is being requested 
+          type: integer
+          example: 401
+        source:
+          description: Filter results by Datasource.  One of 'BFPD', 'SR', 'FNDDS'
+          type: string
+          example: 'BFPD'
+        valueGTE:
+          description: Search for nutrient value greater than or equal to
+          example: 10
+          type: integer
+          format: float32
+        valueLTE:
+          description: Search for nutrient value less than or equal to
+          example: 100
+          type: integer
+          format: float32
+        page:
+          type: integer
+          format: int32
+        max:
+          type: integer
+          format: int32
+          description: The number of items in the list returned by a browse or search request
+          example: 50
+          minimum: 1
+          maximum: 150
+    SearchRequest:
+      type: object
+      required:
+        - q
+      properties:
+        q:
+          description: Search terms 
+          type: string
+          example: 'cucumber salad'
+        format:
+          description: One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'
+          type: string
+          example: 'full'
+        searchfield:
+          description: Limit search to a particular field
+          example: 'foodDescription'
+          type: string
+        page:
+          type: integer
+          format: int32
+        max:
+          type: integer
+          format: int32
+          description: The number of items in the list returned by a browse or search request
+          example: 50
+          minimum: 1
+          maximum: 150
+        sort:
+          type: string
+          description: field to sort results by
+          example: ''
+        searchtype:
+          description: One of PHRASE, WILDCARD or REGEX
+          example: PHRASE'
+          type: string
+    BrowseFoodResult:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+          description: Number of records found by a browse or search request
+          example: 10
+        start:
+          type: integer
+          description: >-
+            Starting point (offset) into the list returned by a browse or search request
+          format: int32
+          example: 0
+        max:
+          type: integer
+          description: The number of items in the list returned by a browse or search request
+          format: int32
+          example: 50
+          minimum: 1
+          maximum: 150
         items:
-          $ref: '#/definitions/FoodItem'
-  BrowseNutrientResult:
-    type: object
-    properties:
-      count:
-        type: integer
-        format: int32
-        description: Number of records found by a browse or search request
-        example: 10
-      start:
-        type: integer
-        description: >-
-          Starting point (offset) into the list returned by a browse or search request
-        format: int32
-        example: 0
-      max:
-        type: integer
-        description: The number of items in the list returned by a browse or search request
-        format: int32
-        example: 50
-        minimum: 1
-        maximum: 150
-      items:
-        type: array
+          type: array
+          items:
+            $ref: '#/components/schemas/FoodItem'
+    SearchResultItem:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+          description: Number of records found by a search request
+          example: 10
+        start:
+          type: integer
+          description: >-
+            Starting point (offset) into the list returned by the search request
+          format: int32
+          example: 0
+        max:
+          type: integer
+          description: The number of items in the list returned by a search request
+          format: int32
+          example: 50
+          minimum: 1
+          maximum: 150
         items:
-          $ref: '#/definitions/nutrient'
-  BrowseNutrientDataResult:
-    type: object
-    properties:
-      count:
-        type: integer
-        format: int32
-        description: Number of records found by a browse or search request
-        example: 10
-      start:
-        type: integer
-        description: >-
-          Starting point (offset) into the list returned by a browse or search request
-        format: int32
-        example: 0
-      max:
-        type: integer
-        description: The number of items in the list returned by a browse or search request
-        format: int32
-        example: 50
-        minimum: 1
-        maximum: 150
-      items:
-        type: array
-        items:
+<<<<<<< HEAD
           $ref: '#/definitions/nutrientData'
   NutrientReportItem:
     type: object
@@ -387,11 +426,59 @@ definitions:
         example: 'SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH.'
       servingSizes:
         type: array
+=======
+          type: array
+          items:
+            $ref: '#/components/schemas/searchitem'
+    BrowseNutrientResult:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+          description: Number of records found by a browse or search request
+          example: 10
+        start:
+          type: integer
+          description: >-
+            Starting point (offset) into the list returned by a browse or search request
+          format: int32
+          example: 0
+        max:
+          type: integer
+          description: The number of items in the list returned by a browse or search request
+          format: int32
+          example: 50
+          minimum: 1
+          maximum: 150
+>>>>>>> 98a87764d7acc0aedf3445c2e36d002c924ae588
         items:
-          $ref: '#/definitions/servingSizes'
-      inputFoods:
-        type: array
+          type: array
+          items:
+            $ref: '#/components/schemas/nutrient'
+    BrowseNutrientDataResult:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+          description: Number of records found by a browse or search request
+          example: 10
+        start:
+          type: integer
+          description: >-
+            Starting point (offset) into the list returned by a browse or search request
+          format: int32
+          example: 0
+        max:
+          type: integer
+          description: The number of items in the list returned by a browse or search request
+          format: int32
+          example: 50
+          minimum: 1
+          maximum: 150
         items:
+<<<<<<< HEAD
           $ref: '#/definitions/inputFoods'
   servingSizes:
     properties:
@@ -502,3 +589,205 @@ definitions:
       Weight:
         type: number
         format: float
+=======
+          type: array
+          items:
+            $ref: '#/components/schemas/nutrientData'
+    NutrientReportItem:
+      type: object
+      properties:
+        fdcId:
+          type: string
+          example: '562423'
+        foodDescription:
+          type: string
+          example: 'HOT & SPICY BARBECUE SAUCE'
+        valuePer100UnitServing:
+          type: integer
+          format: float32
+          example: 0.712
+        nutrientno:
+          type: integer
+          format: uint
+          example: 203
+        Datasource:
+          type: string
+          example: "SR"
+        Unit:
+          type: string
+          example: "G"
+    FoodItem:
+      type: object
+      required:
+        - fdcId
+        - foodDescription
+      properties:
+        fdcId:
+          type: string
+          example: '45001529'
+        foodDescription:
+          type: string
+          example: HOT & SPICY BARBECUE SAUCE
+        lastChangeDateTime:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        publicationDateTime:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        company:
+          type: string
+          example: FRESH & EASY
+        dataSource:
+          type: string
+          example: SR
+        upc:
+          type: string
+          example: 011150548885
+        ingredients:
+          type: string
+          example: 'SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH.'
+        servingSizes:
+          type: array
+          items:
+            $ref: '#/components/schemas/servingSizes'
+        inputFoods:
+          type: array
+          items:
+            $ref: '#/components/schemas/inputFoods'
+    servingSizes:
+      properties:
+        100UnitNutrientBasis:
+          type: string
+          example: g
+        householdServingUom:
+          type: string
+          example: Tbsp
+        servingState:
+          type: string
+          example: PREPARED
+        weightInGmOrMl:
+          type: number
+          format: float
+          example: 32
+        householdServingValue:
+          type: number
+          format: float
+          example: 10.1
+    nutrientData:
+      required:
+        - nutrientNumber
+        - unit
+      properties:
+        fdcId:
+          type: string
+          example: 167514
+        nutrientNumber:
+          type: integer
+          format: uint
+          example: 301
+        nutrientName:
+          type: string
+          example: Energy
+        unit:
+          type: string
+          example: kcal
+        derivation:
+          type: array
+          items: 
+            $ref: '#/components/schemas/derivation'
+        valuePer100UnitServing:
+          type: number
+          format: float
+          example: 10.4
+        datapoints:
+          type: integer
+          format: uint
+    derivation:
+      description: describes how a nutrient value was derived.
+      required:
+        - id
+      properties:
+        code:
+          type: string
+          example: "A"
+        description:
+          type: string
+          example: "Analytical"
+        id:
+          type: integer
+          format: uint
+    nutrient:
+      description: a food nutrient
+      required:
+        - id
+        - nutrientno
+        - name
+        - unit
+      properties:
+        nutrientno:
+          type: integer
+          example: 202
+        name:
+          type: string
+          example: Nitrogen
+        unit:
+          type: string
+          example: G
+        id:
+          type: integer
+    searchitem:
+      description: a food item from the search indexes
+      properties:
+        fdcId:
+          type: string
+          example: "456281"
+        upc:
+          type: string
+          example: "076050280389"
+        foodDescription:
+          type: string
+          example: "KALAMATA OLIVES"
+        dataSource:
+          type: string
+          example: "LI"
+        company:
+          type: string
+          example: "Food Match, Inc."
+        ingredients:
+          type: string
+          example: "KALAMATA OLIVES, WATER, RED WINE VINEGAR, SEA SALT, GRAPE MUST"
+        type:
+          type: string
+          example: "FOOD"
+            
+    inputFoods:
+      description: should only be present in foods with dataSource FNDDS
+      required:
+        - Description
+      properties:
+        Description:
+          type: string
+          example: Broccoli raw
+        SeqNo:
+          type: integer
+          example: 1
+        Amount:
+          type: number
+          format: float
+          example: 38.4
+        SrCode:
+          type: integer
+          example: 1094
+        Unit:
+          type: string
+          example: g
+        Portion:
+          type: string
+        PortionDescription:
+          type: string
+        Weight:
+          type: number
+          format: float
+>>>>>>> 98a87764d7acc0aedf3445c2e36d002c924ae588
