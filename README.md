@@ -6,6 +6,7 @@ Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc
 /docker -- files used for building docker images of the API server     
 /ds -- source for the data source interface.  Implementations should also go here     
 /ds/cb -- couchbase implementation of the ds interface   
+/ds/cdb -- couchdb implementation of the ds interface (work-in-progress)
 /model -- go types representing the data models     
 
 # Quick word about datastores

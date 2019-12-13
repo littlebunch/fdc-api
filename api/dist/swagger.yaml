@@ -382,6 +382,68 @@ components:
           minimum: 1
           maximum: 150
         items:
+<<<<<<< HEAD
+          $ref: '#/definitions/nutrientData'
+  NutrientReportItem:
+    type: object
+    properties:
+      fdcId:
+        type: string
+        example: '562423'
+      foodDescription:
+        type: string
+        exampe: 'HOT & SPICY BARBECUE SAUCE'
+      valuePer100UnitServing:
+        type: integer
+        format: float32
+        example: 0.712
+      nutrientno:
+        type: integer
+        format: uint
+        example: 203
+      Datasource:
+        type: string
+        example: "SR"
+      Unit:
+        type: string
+        example: "G"
+  BrandedFoodItem:
+    type: object
+    required:
+      - fdcId
+      - foodDescription
+    properties:
+      fdcId:
+        type: string
+        example: '45001529'
+      foodClass:
+      type: string
+      description:
+        type: string
+        example: HOT & SPICY BARBECUE SAUCE
+      lastChangeDateTime:
+        type: string
+        format: date-time
+        example: '2016-08-29T09:12:33.001Z'
+      publicationDateTime:
+        type: string
+        format: date-time
+        example: '2016-08-29T09:12:33.001Z'
+      company:
+        type: string
+        example: FRESH & EASY
+      dataSource:
+        type: string
+        example: SR
+      upc:
+        type: string
+        example: 011150548885
+      ingredients:
+        type: string
+        example: 'SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH.'
+      servingSizes:
+        type: array
+=======
           type: array
           items:
             $ref: '#/components/schemas/searchitem'
@@ -406,6 +468,7 @@ components:
           example: 50
           minimum: 1
           maximum: 150
+>>>>>>> 98a87764d7acc0aedf3445c2e36d002c924ae588
         items:
           type: array
           items:
@@ -432,6 +495,118 @@ components:
           minimum: 1
           maximum: 150
         items:
+<<<<<<< HEAD
+          $ref: '#/definitions/inputFoods'
+  servingSizes:
+    properties:
+      100UnitNutrientBasis:
+        type: string
+        example: g
+      householdServingUom:
+        type: string
+        example: Tbsp
+      servingState:
+        type: string
+        example: PREPARED
+      weightInGmOrMl:
+        type: number
+        format: float
+        example: 32
+      householdServingValue:
+        type: number
+        format: float
+        example: 10.1
+  foodNutrients:
+    required:
+      - nutrientNumber
+      - unit
+    properties:
+      fdcId:
+        type: string
+        example: 167514
+      nutrientNumber:
+        type: integer
+        format: uint
+        example: 301
+      nutrientName:
+        type: string
+        example: Energy
+      unit:
+        type: string
+        example: kcal
+      derivation:
+        type: array
+        items: 
+          $ref: '#/definitions/derivation'
+      valuePer100UnitServing:
+        type: number
+        format: float
+        example: 10.4
+      datapoints:
+        type: integer
+        format: uint
+  derivation:
+    description: describes how a nutrient value was derived.
+    required:
+      - id
+    properties:
+      code:
+        type: string
+        example: "A"
+      description:
+        type: string
+        exampe: "Analytical"
+      id:
+        type: integer
+        format: uint
+  nutrient:
+    description: a food nutrient
+    required:
+      - id
+      - nutrientno
+      - name
+      - unit
+    properties:
+      nutrientno:
+        type: integer
+        example: 202
+      name:
+        type: string
+        example: Nitrogen
+      unit:
+        type: string
+        example: G
+      id:
+        type: integer
+  inputFoods:
+    description: should only be present in foods with dataSource FNDDS
+    required:
+      - Description
+    properties:
+      Description:
+        type: string
+        example: Broccoli raw
+      SeqNo:
+        type: integer
+        example: 1
+      Amount:
+        type: number
+        format: float
+        example: 38.4
+      SrCode:
+        type: integer
+        example: 1094
+      Unit:
+        type: string
+        example: g
+      Portion:
+        type: string
+      PortionDescription:
+        type: string
+      Weight:
+        type: number
+        format: float
+=======
           type: array
           items:
             $ref: '#/components/schemas/nutrientData'
@@ -642,3 +817,4 @@ components:
         Weight:
           type: number
           format: float
+>>>>>>> 98a87764d7acc0aedf3445c2e36d002c924ae588

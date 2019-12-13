@@ -20,8 +20,12 @@ type Cdb struct {
 // ConnectDs connects to a datastore, e.g. Couchbase, MongoDb, etc.
 func (ds *Cdb) ConnectDs(cs fdc.Config) error {
 	var err error
+<<<<<<< HEAD
+	url := fmt.Sprintf("https://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
+=======
 	url := fmt.Sprintf("http://%s:%s@%s", cs.CouchDb.User, cs.CouchDb.Pwd, cs.CouchDb.URL)
 	log.Println("url=", url)
+>>>>>>> 98a87764d7acc0aedf3445c2e36d002c924ae588
 	conn, err := kivik.New(context.TODO(), "couch", url)
 	if err != nil {
 		log.Fatalln("Cannot get a client ", err)
