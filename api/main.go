@@ -78,9 +78,9 @@ func main() {
 		v1.GET("/food/:id", foodFdcID)
 		v1.GET("/foods/browse", foodsBrowse)
 		v1.GET("/nutrients/browse", nutrientsBrowse)
-		v1.GET("/foods/search", foodsSearch)
+		v1.GET("/foods/search", foodsSearchGet)
 		v1.POST("/foods/search", foodsSearchPost)
-		v1.GET("/count/:doctype", countsGet)
+		v1.GET("/foods/count/:doctype", countsGet)
 		v1.POST("/nutrients/report", nutrientReportPost)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
 	}

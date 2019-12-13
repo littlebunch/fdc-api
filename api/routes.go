@@ -162,14 +162,11 @@ func foodsBrowse(c *gin.Context) {
 }
 
 // foodsSearch runs a simple keyword search and returns a BrowseResult
-func foodsSearch(c *gin.Context) {
+func foodsSearchGet(c *gin.Context) {
 	var (
-		max   int
-		page  int
-		foods []interface{}
-		err   error
+		max, page int
+		err       error
 	)
-	count := 0
 	// check for a query
 	q := c.Query("q")
 	if q == "" {
@@ -191,26 +188,23 @@ func foodsSearch(c *gin.Context) {
 	}
 	offset := page * max
 
-	if count, err = dc.Search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Max: max, Page: offset}, &foods); err != nil {
+	results, err := search(fdc.SearchRequest{Query: q, IndexName: cs.CouchDb.Fts, Max: max, Page: offset})
+	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
-	results := fdc.BrowseResult{Count: int32(count), Start: int32(page), Max: int32(max), Items: foods}
 	c.JSON(http.StatusOK, results)
 }
 
 // foodsSearch runs a SearchRequest as a POST and returns a BrowseResult
 func foodsSearchPost(c *gin.Context) {
 	var (
-		foods []interface{}
-		sr    fdc.SearchRequest
+		sr fdc.SearchRequest
 	)
-	count := 0
 	// check for a query
 	err := c.BindJSON(&sr)
 	if err != nil {
-		fmt.Printf("BOGUS JSON %v\n", err)
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Invalid JSON in request: %v", err)})
 		return
 	}
 	if sr.Query == "" {
@@ -234,15 +228,28 @@ func foodsSearchPost(c *gin.Context) {
 	if sr.SearchType == fdc.REGEX {
 		sr.SearchField += "_kw"
 	}
-	fmt.Printf("Q=%s F=%s T=%s\n", sr.Query, sr.SearchField, sr.SearchType)
 	sr.Page = sr.Page * sr.Max
 	sr.IndexName = cs.CouchDb.Fts
-	if count, err = dc.Search(sr, &foods); err != nil {
+	results, err := search(sr)
+	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Search query failed %v", err)})
 		return
 	}
-	results := fdc.BrowseResult{Count: int32(count), Start: int32(sr.Page), Max: int32(sr.Max), Items: foods}
 	c.JSON(http.StatusOK, results)
+}
+
+// search performs a SearchRequest on a datastore search and returns the result
+func search(sr fdc.SearchRequest) (fdc.BrowseResult, error) {
+	var (
+		r   []interface{}
+		err error
+	)
+	count := 0
+	if count, err = dc.Search(sr, &r); err != nil {
+		return fdc.BrowseResult{}, err
+	}
+	results := fdc.BrowseResult{Count: int32(count), Start: int32(sr.Page), Max: int32(sr.Max), Items: r}
+	return results, nil
 }
 
 // nutrientReportPost produces a report of nutrient values and returns a BrowseResult

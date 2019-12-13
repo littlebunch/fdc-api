@@ -39,12 +39,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FoodItem'
+                $ref: '#/components/schemas/BFPDFoodItem'
         '400':
           description: bad input parameter
         '404':
           description: no results found
-  /v1/food/browse:
+  /v1/foods/browse:
     get:
       tags:
         - developers
@@ -201,7 +201,7 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
-  /v1/search:
+  /v1/foods/search:
     get:
       tags:
         - developers
@@ -214,29 +214,24 @@ paths:
           schema:
             type: string
           required: true
-        - name: t
+        - name: page
           in: query
-          description: >-
-            Optional type of search to be performed.  Can be one of REGEX, WILDCARD, PHRASE
+          description: starting page number of results set 
           required: false
           schema:
-            type: string
-            enum:
-              - REGXEX
-              - WILDCARD
-              - PHRASE
-        - name: f
-          description: >-
-            Limit query to a particular field 
+            type: integer
+            format: int32
+          example: 1
+        - name: max
+          in: query
+          description: Number of items to return in a results set
           required: false
           schema:
-            type: string
-            enum:
-              - foodDescription
-              - company
-              - ingredients
-              - upc
-          in: query
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 150
+          example: 50
       responses:
         '200':
           description: List of food items matching the query
@@ -248,6 +243,28 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
+    post:
+      tags:
+          - developers
+      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
+      requestBody:
+        required: true
+        description: report to perform
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'  
+      responses:
+        '200':
+          description: List of food items matching the query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultItem'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found 
 components:
   schemas:
     NutrientReportRequest:
@@ -342,7 +359,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/FoodItem'
+            $ref: '#/components/schemas/BFPDFoodItem'
     SearchResultItem:
       type: object
       properties:
@@ -441,62 +458,69 @@ components:
         Unit:
           type: string
           example: "G"
-    FoodItem:
+    BFPDFoodItem:
       type: object
       required:
         - fdcId
         - foodDescription
       properties:
         fdcId:
+          description: Food Data Central id assigned to the time.
           type: string
           example: '45001529'
         foodDescription:
+          description: Manufacturer's name of the food item
           type: string
           example: HOT & SPICY BARBECUE SAUCE
         lastChangeDateTime:
+          description: ISO 8601 date representation of when data was last changed
           type: string
           format: date-time
           example: '2016-08-29T09:12:33.001Z'
         publicationDateTime:
+          description: ISO 8601 date representation of when data was published
           type: string
           format: date-time
           example: '2016-08-29T09:12:33.001Z'
         company:
+          description: Food item's manufacturer
           type: string
           example: FRESH & EASY
         dataSource:
+          description: Source of the reported data, either LI or GDSN
           type: string
-          example: SR
+          enum:
+              - LI
+              - GDSN
+          example: LI
         upc:
+          description: universal product code (upc), if dataSource is LI or gloabal trade item number (GTIN), if dataSource is GDSN
           type: string
           example: 011150548885
         ingredients:
+          description: ingredients list
           type: string
           example: 'SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH.'
         servingSizes:
           type: array
           items:
             $ref: '#/components/schemas/servingSizes'
-        inputFoods:
-          type: array
-          items:
-            $ref: '#/components/schemas/inputFoods'
     servingSizes:
       properties:
-        100UnitNutrientBasis:
+        nutrientBasis:
           type: string
           example: g
-        householdServingUom:
+        servingUnit:
           type: string
           example: Tbsp
         servingState:
           type: string
           example: PREPARED
-        weightInGmOrMl:
+        weight:
           type: number
           format: float
           example: 32
-        householdServingValue:
+        value:
           type: number
           format: float
           example: 10.1
@@ -576,6 +600,9 @@ components:
           example: "KALAMATA OLIVES"
         dataSource:
           type: string
+          enum:
+            - GDSN
+            - LI
           example: "LI"
         company:
           type: string
