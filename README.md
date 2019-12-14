@@ -124,15 +124,15 @@ curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"ro*nd*","searchfield
 ```
 Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"brocolli raw","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"raw brocolli ","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
 ```
 Perform a REGEX (regular expression) search to find all foods that begin with "Olive" in the foodDescription field:
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"^olive+(.*)","searchfield":"foodDesciption","searchfield":"REGEX","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"^OLIVE+(.*)","searchfield":"foodDescription","searchfield":"REGEX","max":50,"page":0}'
 ```
 Peform a REGEX search to find all foods that have UPC's that begin with "01111" and end with "684"
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d { "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}
+curl -XPOST http://localhost:8000/v1/foods/search -d '{ "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}'
 ```
 ### Fetch the nutrients dictionary
 ```
