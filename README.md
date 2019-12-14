@@ -116,7 +116,7 @@ curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page
 ### Search foods (POST):
 Perform a string search for 'raw broccoli' in the foodDescription field:   
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"brocolli raw","searchfield":"foodDescription","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"broccoli raw","searchfield":"foodDescription","max":50,"page":0}'
 ```
 Perform a WILDCARD search for company names that match ro*nd*:
 ```
@@ -124,7 +124,7 @@ curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"ro*nd*","searchfield
 ```
 Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"broccoli raw","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
+curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"brocolli raw","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
 ```
 Perform a REGEX (regular expression) search to find all foods that begin with "Olive" in the foodDescription field:
 ```
