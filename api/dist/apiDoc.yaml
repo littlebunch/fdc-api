@@ -18,7 +18,7 @@ tags:
   - name: developers
     description: Operations available to regular developers
 paths:
-  '/v1/food/{id}':
+  /v1/food/{id}:
     get:
       tags:
         - developers
@@ -110,6 +110,40 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
+  /v1/foods/get:
+    get:
+      tags:
+        - developers
+      summary: get a list of foods by FDC id
+      description: >-
+        By passing in a list of FDC id's, you can retrieve a list of foods
+      operationId: getFoods
+      parameters:
+        - name: id
+          in: query
+          description: >-
+            repeating variable of up to 24 FDC id's
+          style: form
+          explode: true
+          schema:
+           type: array
+           maxItems: 24
+           items: 
+              type: string
+          required: true
+      responses:
+        '200':
+          description: browse results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrowseFoodResult'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
   /v1/nutrients/food/{id}:
     get:
       tags:
@@ -178,6 +212,7 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
+  
   /v1/nutrients/report:
     post:
       tags:

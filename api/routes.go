@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	fdc "github.com/littlebunch/fdc-api/model"
@@ -51,6 +52,31 @@ func foodFdcID(c *gin.Context) {
 		c.JSON(http.StatusOK, f)
 	}
 	return
+}
+func foodFdcIds(c *gin.Context) {
+	var (
+		dt fdc.DocType
+		f  []interface{}
+	)
+	qids := "["
+	ids := c.QueryArray("id")
+
+	if len(ids) > 24 {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
+		return
+	}
+	for id := range ids {
+		qids += fmt.Sprintf("\"%s\",", ids[id])
+	}
+	qids = strings.Trim(qids, ",")
+	qids += "]"
+	q := fmt.Sprintf("SELECT * from %s WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.FOOD), qids)
+	dc.Query(q, &f)
+	results := fdc.BrowseResult{Count: int32(len(f)), Start: 0, Max: int32(len(f)), Items: f}
+	c.JSON(http.StatusOK, results)
+
+	return
+
 }
 func nutrientFdcID(c *gin.Context) {
 	var (
