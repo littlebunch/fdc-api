@@ -124,7 +124,7 @@ curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"ro*nd*","search
 ```
 Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
 ```
-curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"raw brocolli ","searchfield":"ingredients","searchtype":"PHRASE","max":50,"page":0}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"broccoli rabe","searchfield":"ingredients","searchtype":"PHRASE","max":50,"page":0}'
 ```
 Perform a REGEX (regular expression) search to find all foods that begin with "Olive" in the foodDescription field:
 ```
