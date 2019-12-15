@@ -104,6 +104,7 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sor
 func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	count := 0
 	var query *gocb.SearchQuery
+
 	switch sr.SearchType {
 	case fdc.PHRASE:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
