@@ -1,5 +1,5 @@
 # fdc-api
-Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.    
+Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  
 
 # What's in the repo    
 /api -- source for the REST web server    
@@ -90,66 +90,63 @@ A swagger.yaml document which fully describes the API is included in the dist pa
 
 ### Fetch a single food  by FoodData Central id=389714: 
 ```
-curl -X GET http://localhost:8000/v1/food/389714 
+curl -X GET https://go.littlebunch.com/v1/food/389714 
 ```
 ##### returns all nutrient data for a food   
 ```
-curl -X GET http://localhost:8000/v1/nutrients/food/389714  
+curl https://go.littlebunch.com/v1/nutrients/food/389714  
 ```
 ##### returns nutrient data for a single nutrient for a food
 ```
-curl -X GET http://localhost:8000/v1/nutrients/food/389714?n=208 
+curl https://go.littlebunch.com/v1/nutrients/food/389714?n=208 
 ```  
 ### Browse foods:   
 ```
-curl -X GET http://localhost:8000/v1/foods/browse?page=1&max=50?sort=foodDescription
-curl -X GET http://localhost:8000/v1/foods/browse?page=1&max=50?sort=company&order=desc    
+curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=foodDescription'
+curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=company&order=desc'    
 ```
 
 ### Search foods (GET): 
 Perform a simple keyword search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'. For more complicated and/or precise searches, use the POST method.   
 ```
-curl -X GET http://localhost:8000/v1/foods/search?q=bread&page=1&max=100    
-curl -X GET http://localhost:8000/v1/foods/search?q=bread&f=foodDescription&page=1&max=100   
+curl 'https://go.littlebunch.com/v1/foods/search?q=bread&page=1&max=100'    
+curl 'https://go.littlebunch.com/v1/foods/search?q=bread&f=foodDescription&page=1&max=100'   
 ```
 
 ### Search foods (POST):
 Perform a string search for 'raw broccoli' in the foodDescription field:   
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"broccoli raw","searchfield":"foodDescription","max":50,"page":0}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"broccoli raw","searchfield":"foodDescription","max":50,"page":0}'
 ```
 Perform a WILDCARD search for company names that match ro*nd*:
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"ro*nd*","searchfield":"company","searchtype":"WILDCARD","max":50,"page":0}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"ro*nd*","searchfield":"company","searchtype":"WILDCARD","max":50,"page":0}'
 ```
 Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"raw brocolli ","searchfield":"ingredients","searchfield":"PHRASE","max":50,"page":0}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"broccoli rabe","searchfield":"ingredients","searchtype":"PHRASE","max":50,"page":0}'
 ```
 Perform a REGEX (regular expression) search to find all foods that begin with "Olive" in the foodDescription field:
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{"q":"^OLIVE+(.*)","searchfield":"foodDescription","searchfield":"REGEX","max":50,"page":0}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"^OLIVE+(.*)","searchfield":"foodDescription","searchtype":"REGEX","max":50,"page":0}'
 ```
 Peform a REGEX search to find all foods that have UPC's that begin with "01111" and end with "684"
 ```
-curl -XPOST http://localhost:8000/v1/foods/search -d '{ "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{ "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}'
 ```
 ### Fetch the nutrients dictionary
 ```
-curl -X GET http://localhost:8000/v1/nutrients/browse
+curl https://go.littlebunch.com/v1/nutrients/browse
 ```
 ```
-curl -X GET http://localhost:8000/v1/nutrients/browse?sort=nutrientno
+curl https://go.littlebunch.com/v1/nutrients/browse?sort=nutrientno
 ```
 ```
-curl -X GET http://localhost:8000/v1/nutrients/browse?sort=name&order=desc
+curl 'https://go.littlebunch.com/v1/nutrients/browse?sort=name&order=desc'
 ```
 ### Run a nutrient report sorted in descending order by nutrient value per 100 units of measure 
 Find foods which have a value for nutrient 208 (Energy KCAL) between 100 and 250 per 100 grams 
 ```
-curl -X POST http://localhost:8000/v1/nutrients/report -d '{"nutrientno":207,"valueGTE":10,"valueLTE":50}'
+curl -X POST https://go.littlebunch.com/v1/nutrients/report -d '{"nutrientno":207,"valueGTE":10,"valueLTE":50}'
 ```
-Find Branded Food Products which have a nutrient value between 5 and 10 MG per 100 grams caffiene 
-```
-curl -X POST http://localhost:8000/v1/nutrients/report -d '{"nutrientno":262,"valueGTE":5,"valueLTE":10,"source":"BFPD"}'
-```
+
