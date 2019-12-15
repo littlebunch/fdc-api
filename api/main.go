@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/fvbock/endless"
@@ -71,6 +72,8 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	doc := router.Group("/doc")
+	router.LoadHTMLGlob("dist/*.html")
 	v1 := router.Group(fmt.Sprintf("%s", *r))
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)
@@ -81,9 +84,13 @@ func main() {
 		v1.GET("/foods/search", foodsSearchGet)
 		v1.POST("/foods/search", foodsSearchPost)
 		v1.GET("/foods/count/:doctype", countsGet)
+
 		v1.POST("/nutrients/report", nutrientReportPost)
-		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
+		//v1.POST("/user/", au thMiddleware.MiddlewareFunc(), userPost)
 	}
+	doc.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "apiDoc.html", nil)
+	})
 	endless.ListenAndServe(":"+*p, router)
 
 }
