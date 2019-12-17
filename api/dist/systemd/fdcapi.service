@@ -1,0 +1,13 @@
+[Unit]
+Description=Food Data Central REST api service
+#After=network.target nsqd.service
+[Service]
+WorkingDirectory=/opt/fdcapi
+ExecStart=/opt/fdcapi/bin/fcapi -c /opt/fdcapi/conf/config.yml -p 8001
+ExecReload=/bin/kill -HUP $MAINPID
+Type=simple
+KillMode=process
+User=fdcapi
+
+[Install]
+WantedBy=multi-user.target

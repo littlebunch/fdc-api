@@ -1,5 +1,5 @@
 # fdc-api
-Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  
+Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  OpenAPI 3.0 documentation is available at https://go.littlebunch.com/doc.
 
 # What's in the repo    
 /api -- source for the REST web server    
@@ -86,7 +86,7 @@ Or, run from docker.io (you will need docker installed):
 You will need to pass in the Couchbase configuration as environment variables described above.  The easiest way to do this is in a file of which a sample is provided in the repo's docker path.
    
 ## Usage    
-A swagger.yaml document which fully describes the API is included in the dist path.     
+A apiDoc.yaml OpenAPI 3.0 document which fully describes the API is included in the dist path.  An html version is available to view at https://go.littlebunch.com/doc.
 
 ### Fetch a single food  by FoodData Central id=389714: 
 ```
@@ -104,6 +104,11 @@ curl https://go.littlebunch.com/v1/nutrients/food/389714?n=208
 ```
 curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=foodDescription'
 curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=company&order=desc'    
+```
+### Get foods:   
+Returns list of foods identified by an exploded array of up to a maximum 24 FDC id's. 
+```
+curl 'https://go.littlebunch.com/v1/foods/get?id=344604&id=344605&id=344606'  
 ```
 
 ### Search foods (GET): 
