@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	d   = flag.Bool("d", false, "Debug")
+	s   = flag.String("s", "dist", "Path for static files")
 	i   = flag.Bool("i", false, "Initialize the authentication store")
 	c   = flag.String("c", "config.yml", "YAML Config file")
 	l   = flag.String("l", "/tmp/bfpd.out", "send log output to this file -- defaults to /tmp/bfpd.out")
@@ -73,7 +73,7 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	doc := router.Group("/doc")
-	router.LoadHTMLGlob("dist/*.html")
+	router.LoadHTMLGlob(*s + "/*.html")
 	v1 := router.Group(fmt.Sprintf("%s", *r))
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)
