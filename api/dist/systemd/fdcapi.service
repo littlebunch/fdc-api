@@ -1,13 +1,25 @@
 [Unit]
 Description=Food Data Central REST api service
-#After=network.target nsqd.service
+Wants=network.target
+After=network.target
+
 [Service]
-WorkingDirectory=/opt/fdcapi
-ExecStart=/opt/fdcapi/bin/fcapi -c /opt/fdcapi/conf/config.yml -p 8001
-ExecReload=/bin/kill -HUP $MAINPID
 Type=simple
-KillMode=process
 User=fdcapi
+Group=fdcapi
+WorkingDirectory=/opt/fdcapi
+Environment="GIN_MODE="release"
+ExecStart=/opt/fdcapi/bin/fdcapi -c /opt/fdcapi/conf/config.yml -p 8001 - /home/gmoore/fdc-api/api/dist
+Restart=always
+RestartSec=2
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+#PermissionsStartOnly=true
+#ExecStartPre=/bin/mkdir -p /var/log/fdcapi
+#ExecStartPre=/bin/chown syslog:adm /var/log/fdcapi
+#ExecStartPre=/bin/chmod 755 /var/log/fdcapi
+#StandardOutput=syslog
+#SyslogIdentifier=fdcapi
 
 [Install]
 WantedBy=multi-user.target
