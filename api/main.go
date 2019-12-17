@@ -73,7 +73,7 @@ func main() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	doc := router.Group("/doc")
-	router.LoadHTMLGlob("dist/*.html")
+	router.LoadHTMLGlob("/home/gmoore/fdc-api/api/dist/*.html")
 	v1 := router.Group(fmt.Sprintf("%s", *r))
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)

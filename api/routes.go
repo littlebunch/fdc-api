@@ -71,6 +71,7 @@ func foodFdcIds(c *gin.Context) {
 	qids = strings.Trim(qids, ",")
 	qids += "]"
 	q := fmt.Sprintf("SELECT * from %s WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.FOOD), qids)
+	fmt.Println(q)
 	dc.Query(q, &f)
 	results := fdc.BrowseResult{Count: int32(len(f)), Start: 0, Max: int32(len(f)), Items: f}
 	c.JSON(http.StatusOK, results)

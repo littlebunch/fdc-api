@@ -1,13 +1,13 @@
 [Unit]
-Description=BFPD Branded Food Products REST api service
-After=network.target nsqd.service
+Description=Food Data Central REST api service
+#After=network.target nsqd.service
 [Service]
-WorkingDirectory=/opt/bfpd
-ExecStart=/opt/bfpd/bin/bfpd -c /opt/bfpd/config.yml -p 8001
+WorkingDirectory=/opt/fdcapi
+ExecStart=/opt/fdcapi/bin/fcapi -c /opt/fdcapi/conf/config.yml -p 8001
 ExecReload=/bin/kill -HUP $MAINPID
 Type=simple
 KillMode=process
-User=bfpd
+User=fdcapi
 
 [Install]
 WantedBy=multi-user.target
