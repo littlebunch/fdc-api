@@ -8,8 +8,8 @@ Type=simple
 User=fdcapi
 Group=fdcapi
 WorkingDirectory=/opt/fdcapi
-Environment="GIN_MODE="release"
-ExecStart=/opt/fdcapi/bin/fdcapi -c /opt/fdcapi/conf/config.yml -p 8001 - /home/gmoore/fdc-api/api/dist
+Environment="GIN_MODE=release"
+ExecStart=/opt/fdcapi/bin/fdcapi -c /opt/fdcapi/conf/config.yml -p 8001 -s /opt/fdcapi/conf/html
 Restart=always
 RestartSec=2
 ExecReload=/bin/kill -HUP $MAINPID
