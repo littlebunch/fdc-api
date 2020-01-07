@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/littlebunch/gnut-bfpd-api/model"
+	fdc "github.com/littlebunch/fdc-api/model"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,15 +33,15 @@ func TestConfig(t *testing.T) {
 func TestEnvConfig(t *testing.T) {
 
 	os.Setenv("TEST_COUCHBASE_URL", "localhost")
-	os.Setenv("TEST_COUCHBASE_BUCKET", "bfpd")
-	os.Setenv("TEST_COUCHBASE_FTSINDEX", "foods")
+	os.Setenv("TEST_COUCHBASE_BUCKET", "foods")
+	os.Setenv("TEST_COUCHBASE_FTSINDEX", "fd_foods")
 	os.Setenv("TEST_COUCHBASE_USER", "tester")
 	os.Setenv("TEST_COUCHBASE_PWD", "testpw")
 	var cs fdc.Config
 	cs.CouchDb.User = os.Getenv("TEST_COUCHBASE_USER")
 	cs.CouchDb.Pwd = os.Getenv("TEST_COUCHBASE_PWD")
 	cs.CouchDb.Bucket = os.Getenv("TEST_COUCHBASE_BUCKET")
-	cs.CouchDb.FtsIndex = os.Getenv("TEST_COUCHBASE_FTSINDEX")
+	cs.CouchDb.Fts = os.Getenv("TEST_COUCHBASE_FTSINDEX")
 	rc, msg := chkConfig(&cs)
 	if rc != true {
 		t.Errorf(msg)
@@ -80,7 +80,7 @@ func TestEnvOverride(t *testing.T) {
 // check to see if the config matches the values we've assigned
 func chkConfig(cs *fdc.Config) (bool, string) {
 	if "foods" != cs.CouchDb.Bucket {
-		return false, "Wrong bucelet name " + cs.CouchDb.Bucket
+		return false, "Wrong bucket name " + cs.CouchDb.Bucket
 	} else if "tester" != cs.CouchDb.User {
 		return false, "Wrong user name " + cs.CouchDb.User
 	} else if "testpw" != cs.CouchDb.Pwd {

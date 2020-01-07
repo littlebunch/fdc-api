@@ -312,7 +312,7 @@ func nutrientReportPost(c *gin.Context) {
 		nr.ValueGTE = 0
 		nr.ValueLTE = 100000
 	} else if nr.ValueGTE > nr.ValueLTE {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("ValueGTE %d must be greater than or equal to ValueLTE  %d", nr.ValueGTE, nr.ValueLTE)})
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("ValueGTE %f must be greater than or equal to ValueLTE  %f", nr.ValueGTE, nr.ValueLTE)})
 		return
 	}
 	nr.Page = nr.Page * nr.Max

@@ -59,7 +59,7 @@ func main() {
 	dc = &cb
 	err = dc.ConnectDs(cs)
 	if err != nil {
-		log.Fatal("Cannot get datastore connection %v.", err)
+		log.Fatalf("Cannot get datastore connection %v.", err)
 	}
 	defer dc.CloseDs()
 	// initialize our jwt authentication
