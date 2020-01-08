@@ -225,9 +225,7 @@ func foodsSearchGet(c *gin.Context) {
 
 // foodsSearch runs a SearchRequest as a POST and returns a BrowseResult
 func foodsSearchPost(c *gin.Context) {
-	var (
-		sr fdc.SearchRequest
-	)
+	var sr fdc.SearchRequest
 	// check for a query
 	err := c.BindJSON(&sr)
 	if err != nil {
