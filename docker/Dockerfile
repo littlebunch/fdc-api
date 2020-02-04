@@ -20,6 +20,7 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=builder /app/fdcapi .
+ADD api/dist/ ./dist
 EXPOSE 8000
 VOLUME [${LOG_DIR}]
 CMD ["./fdcapi"]

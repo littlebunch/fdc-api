@@ -25,6 +25,7 @@ const (
 	FGSR
 	FNDDS
 	FGFNDDS
+	FGGPC
 	BFPD
 	UNIT
 	NUT
@@ -42,6 +43,8 @@ func (dt *DocType) ToDocType(t string) DocType {
 		return FGSR
 	case "FGFNDDS":
 		return FGFNDDS
+	case "FGGPC"
+		return FGGPC
 	case "FNDDS":
 		return FNDDS
 	case "BFPD":
@@ -72,6 +75,8 @@ func (dt *DocType) ToString(t DocType) string {
 		return "FGFNDDS"
 	case FNDDS:
 		return "FNDDS"
+	case FGGPC:
+		return "FGGPC"
 	case BFPD:
 		return "BFPD"
 	case UNIT:
