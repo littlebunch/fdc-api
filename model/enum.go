@@ -43,7 +43,7 @@ func (dt *DocType) ToDocType(t string) DocType {
 		return FGSR
 	case "FGFNDDS":
 		return FGFNDDS
-	case "FGGPC"
+	case "FGGPC":
 		return FGGPC
 	case "FNDDS":
 		return FNDDS
