@@ -67,12 +67,10 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-	case "FGSR":
-		var row fdc.FoodGroup
-		for rows.Next(&row) {
-			i = append(i, row)
-		}
+	
 	case "FGFNDDS":
+	case "FGGPC":
+	case "FGSR":
 		var row fdc.FoodGroup
 		for rows.Next(&row) {
 			i = append(i, row)
