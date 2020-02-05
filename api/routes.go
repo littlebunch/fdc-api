@@ -71,7 +71,6 @@ func foodFdcIds(c *gin.Context) {
 	qids = strings.Trim(qids, ",")
 	qids += "]"
 	q := fmt.Sprintf("SELECT * from %s WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.FOOD), qids)
-	fmt.Println(q)
 	dc.Query(q, &f)
 	results := fdc.BrowseResult{Count: int32(len(f)), Start: 0, Max: int32(len(f)), Items: f}
 	c.JSON(http.StatusOK, results)
@@ -89,7 +88,7 @@ func dictionaryBrowse(c *gin.Context) {
 	if t == "" {
 		t = dt.ToString(fdc.NUT)
 	}
-	if t != "NUT" && t != "DERV" && t != "FGSR" && t != "FGFNDDS" {
+	if t != "NUT" && t != "DERV" && t != "FGSR" && t != "FGFNDDS" && t != "FGGPC" {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "type parameter is required: NUT, DERV, FGSR,FGFNDDS"})
 		return
 	}
@@ -103,11 +102,12 @@ func dictionaryBrowse(c *gin.Context) {
 		page = 0
 	}
 	offset := page * max
-	items, err := dc.GetDictionary(cs.CouchDb.Bucket, t, offset, gin.New().MaxMultipartMemory)
+	items, err := dc.GetDictionary(cs.CouchDb.Bucket, t, offset, max)
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Error."})
 		return
 	}
+
 	results := fdc.BrowseResult{Count: int32(len(items)), Start: int32(offset), Max: int32(max), Items: items}
 	c.JSON(http.StatusOK, results)
 }

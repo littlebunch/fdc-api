@@ -52,6 +52,7 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 	var i []interface{}
 	q := fmt.Sprintf("select gd.* from %s as gd where type='%s' offset %d limit %d", bucket, doctype, offset, limit)
 	query := gocb.NewN1qlQuery(q)
+
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err != nil {
 		return nil, err
@@ -67,9 +68,11 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-	
+
 	case "FGFNDDS":
+		fallthrough
 	case "FGGPC":
+		fallthrough
 	case "FGSR":
 		var row fdc.FoodGroup
 		for rows.Next(&row) {
