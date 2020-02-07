@@ -171,6 +171,8 @@ func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 	return ds.Conn.Do(v)
 
 }
+
+// BulkInsert uses gocb library to insert a list of items defined in BulkOp struct
 func (ds *Cb) BulkInsert(items []gocb.BulkOp) error {
 
 	return ds.Conn.Do(items)

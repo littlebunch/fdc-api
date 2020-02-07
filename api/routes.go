@@ -89,7 +89,7 @@ func dictionaryBrowse(c *gin.Context) {
 		t = dt.ToString(fdc.NUT)
 	}
 	if t != "NUT" && t != "DERV" && t != "FGSR" && t != "FGFNDDS" && t != "FGGPC" {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "type parameter is required: NUT, DERV, FGSR,FGFNDDS"})
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "one of type parameter is required: NUT, DERV, FGSR,FGFNDDS, FGGPC"})
 		return
 	}
 	if max, err = strconv.ParseInt(c.Query("max"), 10, 32); err != nil {

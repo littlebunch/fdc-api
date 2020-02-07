@@ -18,6 +18,60 @@ tags:
   - name: developers
     description: Operations available to regular developers
 paths:
+  /v1/dictionary/{type}:
+    get:
+      tags:
+        - developers
+      summary: fetch documents from a dictionary.  A dictionary can be one of nutrients (NUT), food groups (FGGPC) or derivations (DERV)
+      operationId: fetchDictionary
+      parameters: 
+        - name: type
+          in: path
+          description: dictionary to retrieve.
+          required: true
+          schema:
+            type: string
+            enum:
+              - FGFNDDS
+              - FGGPC
+              - FGSR
+              - NUT
+              - DERV
+        - name: page
+          in: query
+          description: >-
+            page is used to determine a start point (offset) into the search
+            results list, i.e. offset=page*max.  Paging is zero based so page=0
+            and max=50 results in offset 0, page=3 and max=50 results in an
+            offset into the list of 150, etc.
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            format: int32
+        - name: max
+          in: query
+          description: maximum number of records to return.
+          required: false
+          schema:
+            type: integer
+            maximum: 300
+            minimum: 1
+            format: int32
+      responses:
+        '200':
+          description: results matching criteria
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: '#/components/schemas/foodGroup'
+                 - $ref: '#/components/schemas/derivation'
+                 - $ref: '#/components/schemas/nutrient'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
   /v1/food/{id}:
     get:
       tags:
@@ -529,6 +583,8 @@ components:
           description: universal product code (upc), if dataSource is LI or gloabal trade item number (GTIN), if dataSource is GDSN
           type: string
           example: 011150548885
+        foodGroup:
+          $ref: '#/components/schemas/foodGroup'
         ingredients:
           description: ingredients list
           type: string
@@ -575,9 +631,7 @@ components:
           type: string
           example: kcal
         derivation:
-          type: array
-          items: 
-            $ref: '#/components/schemas/derivation'
+          $ref: '#/components/schemas/derivation'
         valuePer100UnitServing:
           type: number
           format: float
@@ -599,6 +653,22 @@ components:
         id:
           type: integer
           format: uint
+    foodGroup:
+      description: category to which a food has been assigned
+      required:
+        - id
+        - description
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - FGSR
+            - FGGPC
+            - FGFNDDS
     nutrient:
       description: a food nutrient
       required:
