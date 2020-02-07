@@ -98,6 +98,40 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
+  /v1/foods:
+    get:
+      tags:
+        - developers
+      summary: get a list of foods by FDC id
+      description: >-
+        By passing in a list of FDC id's, you can retrieve a list of foods
+      operationId: getFoods
+      parameters:
+        - name: id
+          in: query
+          description: >-
+            repeating variable of up to 24 FDC id's
+          style: form
+          explode: true
+          schema:
+           type: array
+           maxItems: 24
+           items: 
+              type: string
+          required: true
+      responses:
+        '200':
+          description: browse results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrowseFoodResult'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found
   /v1/foods/browse:
     get:
       tags:
@@ -164,40 +198,70 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
-  /v1/foods/get:
+  /v1/foods/search:
     get:
       tags:
         - developers
-      summary: get a list of foods by FDC id
-      description: >-
-        By passing in a list of FDC id's, you can retrieve a list of foods
-      operationId: getFoods
+      summary: Performs keyword searches against selected fields. 
       parameters:
-        - name: id
+        - name: q
           in: query
           description: >-
-            repeating variable of up to 24 FDC id's
-          style: form
-          explode: true
+            query string
           schema:
-           type: array
-           maxItems: 24
-           items: 
-              type: string
+            type: string
           required: true
+        - name: page
+          in: query
+          description: starting page number of results set 
+          required: false
+          schema:
+            type: integer
+            format: int32
+          example: 1
+        - name: max
+          in: query
+          description: Number of items to return in a results set
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 150
+          example: 50
       responses:
         '200':
-          description: browse results matching criteria
+          description: List of food items matching the query
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BrowseFoodResult'
+                  $ref: '#/components/schemas/SearchResultItem'
         '400':
           description: bad input parameter
         '404':
           description: no results found
+    post:
+      tags:
+          - developers
+      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
+      requestBody:
+        required: true
+        description: report to perform
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'  
+      responses:
+        '200':
+          description: List of food items matching the query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultItem'
+        '400':
+          description: bad input parameter
+        '404':
+          description: no results found 
   /v1/nutrients/food/{id}:
     get:
       tags:
@@ -290,70 +354,7 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
-  /v1/foods/search:
-    get:
-      tags:
-        - developers
-      summary: Performs keyword searches against selected fields. 
-      parameters:
-        - name: q
-          in: query
-          description: >-
-            query string
-          schema:
-            type: string
-          required: true
-        - name: page
-          in: query
-          description: starting page number of results set 
-          required: false
-          schema:
-            type: integer
-            format: int32
-          example: 1
-        - name: max
-          in: query
-          description: Number of items to return in a results set
-          required: false
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            maximum: 150
-          example: 50
-      responses:
-        '200':
-          description: List of food items matching the query
-          content:
-            application/json:
-              schema:
-                  $ref: '#/components/schemas/SearchResultItem'
-        '400':
-          description: bad input parameter
-        '404':
-          description: no results found
-    post:
-      tags:
-          - developers
-      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
-      requestBody:
-        required: true
-        description: report to perform
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SearchRequest'  
-      responses:
-        '200':
-          description: List of food items matching the query
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchResultItem'
-        '400':
-          description: bad input parameter
-        '404':
-          description: no results found 
+  
 components:
   schemas:
     NutrientReportRequest:
