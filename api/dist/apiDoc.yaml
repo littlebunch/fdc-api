@@ -295,28 +295,31 @@ paths:
                  $ref: '#/components/schemas/BrowseNutrientDataResult'
         '404':
           description: no results found
-  /v1/nutrients/browse:
+  /v1/nutrients/foods:
     get:
       tags:
         - developers
-      summary: get a list of nutrients used in the foods database
-      operationId: getBrowse
+      summary: get a list of nutrients for a list food ID's
+      operationId: getNutrientBrowse
       parameters:
-        - name: sort
-          in: query
-          description: >-
-            return the results list ordered by name, nutrientno or
-            id.  Default is id
-          schema:
-            type: string
-          required: false
-        - name: order
-          in: query
-          description: >-
-            return the ordered list ordered asc(ending) or desc(ending).  Default is asc
-          schema:
-            type: string
-          required: false
+          - name: id
+            in: query
+            description: repeating variable of up to 24 FDC id's
+            style: form
+            explode: true
+            schema:
+              type: array
+              maxItems: 24
+              items: 
+                type: string
+            required: true  
+          - name: n
+            in: query
+            description: >-
+              limit nutrients returned to a specified nutrient number
+            schema:
+              type: integer
+            required: false
       responses:
         '200':
           description: browse results matching criteria

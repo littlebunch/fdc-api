@@ -58,18 +58,12 @@ func foodFdcIds(c *gin.Context) {
 		dt fdc.DocType
 		f  []interface{}
 	)
-	qids := "["
 	ids := c.QueryArray("id")
-
-	if len(ids) > 24 {
+	qids, err := buildIdList(ids)
+	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
 		return
 	}
-	for id := range ids {
-		qids += fmt.Sprintf("\"%s\",", ids[id])
-	}
-	qids = strings.Trim(qids, ",")
-	qids += "]"
 	q := fmt.Sprintf("SELECT * from %s WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.FOOD), qids)
 	dc.Query(q, &f)
 	results := fdc.BrowseResult{Count: int32(len(f)), Start: 0, Max: int32(len(f)), Items: f}
@@ -124,7 +118,7 @@ func nutrientFdcID(c *gin.Context) {
 
 	if n = c.Query("n"); n == "" {
 		var nd []interface{}
-		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 		//q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
 		dc.Query(q, &nd)
 		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
@@ -138,6 +132,39 @@ func nutrientFdcID(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, nd)
 	}
+
+	return
+}
+
+// returns nutrients for a specified list of foods identified by fdcId
+// if an optional n parameter is provided then limit nutrients returned to the
+// nutrientno in the n paramter
+func nutrientFdcIDs(c *gin.Context) {
+	var (
+		q, n string
+		dt   fdc.DocType
+		nd   []interface{}
+	)
+	ids := c.QueryArray("id")
+	qids, err := buildIdList(ids)
+	if err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
+		return
+	}
+	if n = c.Query("n"); n != "" {
+		var nids []string
+		for id := range ids {
+			nids = append(nids, fmt.Sprintf("%s_%s", ids[id], n))
+		}
+		qids, err = buildIdList(nids)
+		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+
+	} else {
+		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+	}
+	dc.Query(q, &nd)
+	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
+	c.JSON(http.StatusOK, results)
 
 	return
 }
@@ -362,4 +389,21 @@ func sortOrder(o string) (string, error) {
 		return "", errors.New("Unrecognized order parameter.  Must be 'asc' or 'desc'")
 	}
 	return order, nil
+}
+func buildIdList(ids []string) (string, error) {
+	var (
+		err  error
+		qids string
+	)
+	if len(ids) > 24 {
+		err = errors.New("Cannot request more than 24 id's")
+	} else {
+		qids = "["
+		for id := range ids {
+			qids += fmt.Sprintf("\"%s\",", ids[id])
+		}
+		qids = strings.Trim(qids, ",")
+		qids += "]"
+	}
+	return qids, err
 }

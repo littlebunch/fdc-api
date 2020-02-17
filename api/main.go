@@ -78,10 +78,10 @@ func main() {
 	{
 		//v1.POST("/login", authMiddleware.LoginHandler)
 		v1.GET("/nutrients/food/:id", nutrientFdcID)
+		v1.GET("/nutrients/foods", nutrientFdcIDs)
 		v1.GET("/food/:id", foodFdcID)
 		v1.GET("/foods", foodFdcIds)
 		v1.GET("/foods/browse", foodsBrowse)
-		v1.GET("/nutrients/browse", dictionaryBrowse)
 		v1.GET("/foods/search", foodsSearchGet)
 		v1.POST("/foods/search", foodsSearchPost)
 		v1.GET("/foods/count/:doctype", countsGet)
