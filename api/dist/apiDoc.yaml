@@ -328,7 +328,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BrowseNutrientResult'
+                  $ref: '#/components/schemas/BrowseNutrientDataResult'
         '400':
           description: bad input parameter
         '404':
