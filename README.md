@@ -6,7 +6,7 @@ Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc
 /docker -- files used for building docker images of the API server     
 /ds -- source for the data source interface.  Implementations should also go here     
 /ds/cb -- couchbase implementation of the ds interface   
-/ds/cdb -- couchdb implementation of the ds interface (work-in-progress)
+/ds/cdb -- couchdb implementation of the ds interface (work-in-progress)     
 /model -- go types representing the data models     
 
 # Quick word about datastores
@@ -92,24 +92,33 @@ A apiDoc.yaml OpenAPI 3.0 document which fully describes the API is included in 
 ```
 curl -X GET https://go.littlebunch.com/v1/food/389714 
 ```
-##### returns all nutrient data for a food   
+### Fetch all nutrient data for a food   
 ```
 curl https://go.littlebunch.com/v1/nutrients/food/389714  
 ```
-##### returns nutrient data for a single nutrient for a food
+### Fetch nutrient data for a single nutrient for a food
 ```
 curl https://go.littlebunch.com/v1/nutrients/food/389714?n=208 
 ```  
+### Fetch food data for a list of FoodData Central ids:   
+Returns list of foods identified by an exploded array of up to a maximum 24 FDC id's. 
+```
+curl 'https://go.littlebunch.com/v1/foods?id=344604&id=344605&id=344606'  
+```
+### Fetch nutrient data for a list of FoodData Central ids
+```
+curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=344605&id=344606'  
+```
+### Fetch nutrient data for a single nutrient for a list of FoodData Central ids
+```
+curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=344605&id=344606?n=208'  
+```
 ### Browse foods:   
 ```
 curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=foodDescription'
 curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=company&order=desc'    
 ```
-### Get foods:   
-Returns list of foods identified by an exploded array of up to a maximum 24 FDC id's. 
-```
-curl 'https://go.littlebunch.com/v1/foods/get?id=344604&id=344605&id=344606'  
-```
+
 
 ### Search foods (GET): 
 Perform a simple keyword search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'. For more complicated and/or precise searches, use the POST method.   
@@ -122,6 +131,10 @@ curl 'https://go.littlebunch.com/v1/foods/search?q=bread&f=foodDescription&page=
 Perform a string search for 'raw broccoli' in the foodDescription field:   
 ```
 curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"broccoli raw","searchfield":"foodDescription","max":50,"page":0}'
+```  
+Perform a string search for 'cereal' in the foodGroup.description field:   
+```
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"cereal","searchfield":"foodGroup.description","max":50,"page":0}'
 ```
 Perform a WILDCARD search for company names that match ro*nd*:
 ```
