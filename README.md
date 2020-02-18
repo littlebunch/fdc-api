@@ -152,15 +152,18 @@ Peform a REGEX search to find all foods that have UPC's that begin with "01111" 
 ```
 curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{ "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}'
 ```
-### Fetch the nutrients dictionary
+### Fetch dictionary lists
+#### Nutrient List
 ```
-curl https://go.littlebunch.com/v1/nutrients/browse
+curl https://go.littlebunch.com/v1/dictionary/NUT
 ```
+#### Food Group list
 ```
-curl https://go.littlebunch.com/v1/nutrients/browse?sort=nutrientno
+curl https://go.littlebunch.com/v1/dictionary/FGGPC
 ```
+#### Derivation codes
 ```
-curl 'https://go.littlebunch.com/v1/nutrients/browse?sort=name&order=desc'
+curl 'https://go.littlebunch.com/v1/dictionary/DERV'
 ```
 ### Run a nutrient report sorted in descending order by nutrient value per 100 units of measure 
 Find foods which have a value for nutrient 208 (Energy KCAL) between 100 and 250 per 100 grams 
