@@ -113,7 +113,7 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	case fdc.REGEX:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	default:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query).Field(sr.SearchField).Fuzziness(2)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewTermQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	}
 
 	result, err := ds.Conn.ExecuteSearchQuery(query)
@@ -124,6 +124,7 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	f := fdc.FoodMeta{}
 	for _, r := range result.Hits() {
 		jrow, err := json.Marshal(&r.Fields)
+
 		if err != nil {
 			return 0, err
 		}

@@ -118,7 +118,7 @@ func nutrientFdcID(c *gin.Context) {
 
 	if n = c.Query("n"); n == "" {
 		var nd []interface{}
-		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 		//q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
 		dc.Query(q, &nd)
 		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
@@ -269,7 +269,6 @@ func foodsSearchPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
 		return
 	}
-
 	if &sr.Max == nil {
 		sr.Max = defaultListMax
 	} else if sr.Max > maxListSize || sr.Max < 0 {
