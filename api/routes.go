@@ -269,14 +269,11 @@ func foodsSearchPost(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Search query is required."})
 		return
 	}
-	if &sr.Max == nil {
+	if sr.Max == 0 {
 		sr.Max = defaultListMax
 	} else if sr.Max > maxListSize || sr.Max < 0 {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("max parameter %d must be > 0 or <=  %d", sr.Max, maxListSize)})
 		return
-	}
-	if &sr.Page == nil {
-		sr.Page = 0
 	}
 	if sr.Page < 0 {
 		sr.Page = 0
