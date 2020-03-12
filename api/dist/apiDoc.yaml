@@ -23,7 +23,7 @@ paths:
       tags:
         - developers
       summary: fetch documents from a dictionary.  A dictionary can be one of nutrients (NUT), food groups (FGGPC) or derivations (DERV)
-      operationId: fetchDictionary
+      operationId: getDictionary
       parameters: 
         - name: type
           in: path
@@ -79,7 +79,7 @@ paths:
       summary: fetches one food item by fdcId in various formats
       description: >-
         Retrieves a single food item by fdc id. The default format is to return all data elements.  
-      operationId: fetchFood
+      operationId: getFood
       parameters:
         - name: id
           in: path
@@ -202,6 +202,7 @@ paths:
     get:
       tags:
         - developers
+      operationId: searchFoods
       summary: Performs keyword searches against selected fields. 
       parameters:
         - name: q
@@ -243,10 +244,9 @@ paths:
     post:
       tags:
           - developers
-      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
+      summary: Performs searches using the SearchRequest type. 
       requestBody:
         required: true
-        description: report to perform
         content:
           application/json:
             schema:
@@ -270,7 +270,7 @@ paths:
       description:
         Returns either the list of nutrient data items  or a single nutrient data item for a food item identified
         by it's fdc id.
-      operationId: nutrientFood
+      operationId: getFoodNutrients
       parameters:
         - name: n
           in: query
@@ -300,7 +300,7 @@ paths:
       tags:
         - developers
       summary: get a list of nutrients for a list food ID's
-      operationId: getNutrientBrowse
+      operationId: getFoodsNutrients
       parameters:
           - name: id
             in: query
@@ -338,6 +338,7 @@ paths:
     post:
       tags:
         - developers
+      operationId: getNutrientReport
       summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
       requestBody:
           required: true

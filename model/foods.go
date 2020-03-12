@@ -67,14 +67,14 @@ type SearchNutrients struct {
 
 // FoodMeta abbreviated Food containing only meta-data
 type FoodMeta struct {
-	FdcID        string     `json:"fdcId" binding:"required"`
-	Upc          string     `json:"upc"`
-	Description  string     `json:"foodDescription" binding:"required"`
-	Ingredients  string     `json:"ingredients,omitempty"`
-	Source       string     `json:"dataSource"`
-	Manufacturer string     `json:"company,omitempty"`
-	Type         string     `json:"type"`
-	FoodGroup    *FoodGroup `json:"foodgroup,omitempty"`
+	FdcID        string `json:"fdcId" binding:"required"`
+	Upc          string `json:"upc"`
+	Description  string `json:"foodDescription" binding:"required"`
+	Ingredients  string `json:"ingredients,omitempty"`
+	Source       string `json:"dataSource"`
+	Manufacturer string `json:"company,omitempty"`
+	Type         string `json:"type"`
+	Category     string `json:"foodgroup.description,omitempty"`
 }
 
 // Food reflects JSON used to transfer BFPD foods data from USDA csv
