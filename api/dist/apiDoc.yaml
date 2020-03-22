@@ -79,7 +79,7 @@ paths:
       summary: fetches one food item by fdcId in various formats
       description: >-
         Retrieves a single food item by fdc id. The default format is to return all data elements.  
-      operationId: getFood
+      operationId: getFoodById
       parameters:
         - name: id
           in: path
@@ -105,7 +105,7 @@ paths:
       summary: get a list of foods by FDC id
       description: >-
         By passing in a list of FDC id's, you can retrieve a list of foods
-      operationId: getFoods
+      operationId: getFoodsByIds
       parameters:
         - name: id
           in: query
@@ -202,7 +202,7 @@ paths:
     get:
       tags:
         - developers
-      operationId: searchFoods
+      operationId: getSearchForFoods
       summary: Performs keyword searches against selected fields. 
       parameters:
         - name: q
@@ -244,6 +244,7 @@ paths:
     post:
       tags:
           - developers
+      operationId: "postSearchForFoods"
       summary: Performs searches using the SearchRequest type. 
       requestBody:
         required: true
@@ -338,7 +339,7 @@ paths:
     post:
       tags:
         - developers
-      operationId: getNutrientReport
+      operationId: nutrientReport
       summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
       requestBody:
           required: true
@@ -423,7 +424,7 @@ components:
           example: ''
         searchtype:
           description: One of PHRASE, WILDCARD or REGEX
-          example: PHRASE'
+          example: PHRASE
           type: string
     BrowseFoodResult:
       type: object

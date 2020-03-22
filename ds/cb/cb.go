@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	fdc "github.com/littlebunch/fdc-api/model"
 
@@ -104,7 +105,7 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sor
 func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	count := 0
 	var query *gocb.SearchQuery
-
+	sr.Query = strings.Replace(sr.Query, "\"", "", -1)
 	switch sr.SearchType {
 	case fdc.PHRASE:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
@@ -113,7 +114,7 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	case fdc.REGEX:
 		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	default:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewTermQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
 	}
 
 	result, err := ds.Conn.ExecuteSearchQuery(query)
