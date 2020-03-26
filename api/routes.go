@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	fdc "github.com/littlebunch/fdc-api/model"
-	"gopkg.in/yaml.v2"
 )
 
 func countsGet(c *gin.Context) {
@@ -295,7 +294,6 @@ func foodsSearchPost(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 func specDoc(c *gin.Context) {
-	var results string
 	t := c.Param("type")
 	if t == "" || (t != "yaml" && t != "json") {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a doc type is required: yaml or json"})
@@ -308,9 +306,6 @@ func specDoc(c *gin.Context) {
 			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot retrieve YAML doc"})
 			return
 		}
-		if err = yaml.Unmarshal(raw, cs); err != nil {
-			log.Println(err.Error())
-		}
 		c.Data(http.StatusOK, gin.MIMEYAML, raw)
 	} else {
 		raw, err := ioutil.ReadFile(JSONSPEC)
@@ -321,9 +316,7 @@ func specDoc(c *gin.Context) {
 		}
 		c.Data(http.StatusOK, gin.MIMEJSON, raw)
 	}
-
-	cs.Defaults()
-	c.JSON(http.StatusOK, results)
+	return
 }
 
 // search performs a SearchRequest on a datastore search and returns the result
