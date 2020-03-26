@@ -72,6 +72,28 @@ paths:
           description: bad input parameter
         '404':
           description: no results found
+  /v1/docs/{type}:
+    get:
+      tags:
+        - developers
+      summary: fetches openapi spec in json or yaml format as specified by the {type} parameter
+      operationId: getSpecByType
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - json
+              - yaml
+      responses:
+        '200':
+          description: openApi spec rendered as json or yaml
+        '400':
+          description: bad input parameter
+        '404':
+          description: no output found
   /v1/food/{id}:
     get:
       tags:

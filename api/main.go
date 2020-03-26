@@ -22,6 +22,8 @@ const (
 	maxListSize    = 150
 	defaultListMax = 50
 	apiVersion     = "1.0.0 Beta"
+	JSONSPEC       = "./dist/apiDoc.json"
+	YAMLSPEC       = "./dist/apiDoc.yaml"
 )
 
 var (
@@ -86,6 +88,7 @@ func main() {
 		v1.POST("/foods/search", foodsSearchPost)
 		v1.GET("/foods/count/:doctype", countsGet)
 		v1.GET("/dictionary/:type", dictionaryBrowse)
+		v1.GET("/docs/:type", specDoc)
 
 		v1.POST("/nutrients/report", nutrientReportPost)
 		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)

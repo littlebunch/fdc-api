@@ -3,12 +3,15 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	fdc "github.com/littlebunch/fdc-api/model"
+	"gopkg.in/yaml.v2"
 )
 
 func countsGet(c *gin.Context) {
@@ -59,7 +62,7 @@ func foodFdcIds(c *gin.Context) {
 		f  []interface{}
 	)
 	ids := c.QueryArray("id")
-	qids, err := buildIdList(ids)
+	qids, err := buildIDList(ids)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
 		return
@@ -146,7 +149,7 @@ func nutrientFdcIDs(c *gin.Context) {
 		nd   []interface{}
 	)
 	ids := c.QueryArray("id")
-	qids, err := buildIdList(ids)
+	qids, err := buildIDList(ids)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
 		return
@@ -156,7 +159,7 @@ func nutrientFdcIDs(c *gin.Context) {
 		for id := range ids {
 			nids = append(nids, fmt.Sprintf("%s_%s", ids[id], n))
 		}
-		qids, err = buildIdList(nids)
+		qids, err = buildIDList(nids)
 		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 
 	} else {
@@ -291,6 +294,37 @@ func foodsSearchPost(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, results)
 }
+func specDoc(c *gin.Context) {
+	var results string
+	t := c.Param("type")
+	if t == "" || (t != "yaml" && t != "json") {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a doc type is required: yaml or json"})
+		return
+	}
+	if t == "yaml" {
+		raw, err := ioutil.ReadFile(YAMLSPEC)
+		if err != nil {
+			log.Println(err.Error())
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot retrieve YAML doc"})
+			return
+		}
+		if err = yaml.Unmarshal(raw, cs); err != nil {
+			log.Println(err.Error())
+		}
+		c.Data(http.StatusOK, gin.MIMEYAML, raw)
+	} else {
+		raw, err := ioutil.ReadFile(JSONSPEC)
+		if err != nil {
+			log.Println(err.Error())
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot retrieve JSON doc"})
+			return
+		}
+		c.Data(http.StatusOK, gin.MIMEJSON, raw)
+	}
+
+	cs.Defaults()
+	c.JSON(http.StatusOK, results)
+}
 
 // search performs a SearchRequest on a datastore search and returns the result
 func search(sr fdc.SearchRequest) (fdc.BrowseResult, error) {
@@ -386,7 +420,7 @@ func sortOrder(o string) (string, error) {
 	}
 	return order, nil
 }
-func buildIdList(ids []string) (string, error) {
+func buildIDList(ids []string) (string, error) {
 	var (
 		err  error
 		qids string
