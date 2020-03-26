@@ -1,0 +1,1064 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "REST API for the various public nutrient data released on the USDA [Food Data Central](<a href=\"https://fdc.nal.usda.gov/download-datasets.html>)  site.",
+    "version": "1.0.0",
+    "title": "Nutrient Data API",
+    "contact": {
+      "name": "Gary Moore",
+      "email": "gary@littlebunch.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://go.littlebunch.com"
+    }
+  ],
+  "tags": [
+    {
+      "name": "admins",
+      "description": "Secured Admin-only calls"
+    },
+    {
+      "name": "developers",
+      "description": "Operations available to regular developers"
+    }
+  ],
+  "paths": {
+    "/v1/dictionary/{type}": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "fetch documents from a dictionary.  A dictionary can be one of nutrients (NUT), food groups (FGGPC) or derivations (DERV)",
+        "operationId": "getDictionary",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "description": "dictionary to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FGFNDDS",
+                "FGGPC",
+                "FGSR",
+                "NUT",
+                "DERV"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "format": "int32"
+            }
+          },
+          {
+            "name": "max",
+            "in": "query",
+            "description": "maximum number of records to return.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 1,
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "results matching criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/foodGroup"
+                    },
+                    {
+                      "$ref": "#/components/schemas/derivation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/nutrient"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/docs/{type}": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "fetches openapi spec in json or yaml format as specified by the {type} parameter",
+        "operationId": "getSpecByType",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "yaml"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "openApi spec rendered as json or yaml"
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no output found"
+          }
+        }
+      }
+    },
+    "/v1/food/{id}": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "fetches one food item by fdcId in various formats",
+        "description": "Retrieves a single food item by fdc id. The default format is to return all data elements.  ",
+        "operationId": "getFoodById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Food Data Central ID of the food to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "results matching criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BFPDFoodItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/foods": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "get a list of foods by FDC id",
+        "description": "By passing in a list of FDC id's, you can retrieve a list of foods",
+        "operationId": "getFoodsByIds",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "repeating variable of up to 24 FDC id's",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "maxItems": 24,
+              "items": {
+                "type": "string"
+              }
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "browse results matching criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BrowseFoodResult"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/foods/browse": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "browse foods data",
+        "description": "By passing in the appropriate options, you can browse for available foods",
+        "operationId": "browseFoods",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page is used to determine a start point (offset) into the search results list, i.e. offset=page*max.  Paging is zero based so page=0 and max=50 results in offset 0, page=3 and max=50 results in an offset into the list of 150, etc.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "format": "int32"
+            }
+          },
+          {
+            "name": "max",
+            "in": "query",
+            "description": "maximum number of records to return.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 150,
+              "minimum": 1,
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "return the results list ordered by foodDescription, company, or fdcId.  Default is fdcId",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "foodDescription",
+                "company",
+                "fdcId"
+              ]
+            },
+            "required": false
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "return the ordered list ordered asc(ending) or desc(ending).  Default is asc",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "browse results matching criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BrowseFoodResult"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/foods/search": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "operationId": "getSearchForFoods",
+        "summary": "Performs keyword searches against selected fields.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "query string",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "starting page number of results set",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 1
+          },
+          {
+            "name": "max",
+            "in": "query",
+            "description": "Number of items to return in a results set",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 150
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of food items matching the query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "developers"
+        ],
+        "operationId": "postSearchForFoods",
+        "summary": "Performs searches using the SearchRequest type.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of food items matching the query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/nutrients/food/{id}": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "returns nutrient data elements for a food item",
+        "description": "Returns either the list of nutrient data items  or a single nutrient data item for a food item identified by it's fdc id.",
+        "operationId": "getFoodNutrients",
+        "parameters": [
+          {
+            "name": "n",
+            "in": "query",
+            "description": "return only the nutrient data element identifed by the nutrient number in n",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "FDC ID of the food for which nutrient data is being requested",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "a single NutrientData element or a list of elements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseNutrientDataResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/nutrients/foods": {
+      "get": {
+        "tags": [
+          "developers"
+        ],
+        "summary": "get a list of nutrients for a list food ID's",
+        "operationId": "getFoodsNutrients",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "repeating variable of up to 24 FDC id's",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "maxItems": 24,
+              "items": {
+                "type": "string"
+              }
+            },
+            "required": true
+          },
+          {
+            "name": "n",
+            "in": "query",
+            "description": "limit nutrients returned to a specified nutrient number",
+            "schema": {
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "browse results matching criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BrowseNutrientDataResult"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    },
+    "/v1/nutrients/report": {
+      "post": {
+        "tags": [
+          "developers"
+        ],
+        "operationId": "nutrientReport",
+        "summary": "Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource",
+        "requestBody": {
+          "required": true,
+          "description": "report to perform",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NutrientReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "browse results matching criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NutrientReportItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad input parameter"
+          },
+          "404": {
+            "description": "no results found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NutrientReportRequest": {
+        "type": "object",
+        "required": [
+          "nutrientno"
+        ],
+        "properties": {
+          "nutrientno": {
+            "description": "Nutrient number for which data is being requested",
+            "type": "integer",
+            "example": 208
+          },
+          "valueGTE": {
+            "description": "Search for nutrient value greater than or equal to",
+            "example": 10,
+            "type": "integer",
+            "format": "float32"
+          },
+          "valueLTE": {
+            "description": "Search for nutrient value less than or equal to",
+            "example": 100,
+            "type": "integer",
+            "format": "float32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "max": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of items in the list returned by a browse or search request",
+            "example": 50,
+            "minimum": 1,
+            "maximum": 150
+          }
+        }
+      },
+      "SearchRequest": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "properties": {
+          "q": {
+            "description": "Search terms",
+            "type": "string",
+            "example": "cucumber salad"
+          },
+          "format": {
+            "description": "One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'",
+            "type": "string",
+            "example": "full"
+          },
+          "searchfield": {
+            "description": "Limit search to a particular field",
+            "example": "foodDescription",
+            "type": "string"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "max": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of items in the list returned by a browse or search request",
+            "example": 50,
+            "minimum": 1,
+            "maximum": 150
+          },
+          "sort": {
+            "type": "string",
+            "description": "field to sort results by",
+            "example": ""
+          },
+          "searchtype": {
+            "description": "One of PHRASE, WILDCARD or REGEX",
+            "example": "PHRASE",
+            "type": "string"
+          }
+        }
+      },
+      "BrowseFoodResult": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of records found by a browse or search request",
+            "example": 10
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting point (offset) into the list returned by a browse or search request",
+            "format": "int32",
+            "example": 0
+          },
+          "max": {
+            "type": "integer",
+            "description": "The number of items in the list returned by a browse or search request",
+            "format": "int32",
+            "example": 50,
+            "minimum": 1,
+            "maximum": 150
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BFPDFoodItem"
+            }
+          }
+        }
+      },
+      "SearchResultItem": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of records found by a search request",
+            "example": 10
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting point (offset) into the list returned by the search request",
+            "format": "int32",
+            "example": 0
+          },
+          "max": {
+            "type": "integer",
+            "description": "The number of items in the list returned by a search request",
+            "format": "int32",
+            "example": 50,
+            "minimum": 1,
+            "maximum": 150
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/searchitem"
+            }
+          }
+        }
+      },
+      "BrowseNutrientResult": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of records found by a browse or search request",
+            "example": 10
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting point (offset) into the list returned by a browse or search request",
+            "format": "int32",
+            "example": 0
+          },
+          "max": {
+            "type": "integer",
+            "description": "The number of items in the list returned by a browse or search request",
+            "format": "int32",
+            "example": 50,
+            "minimum": 1,
+            "maximum": 150
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/nutrient"
+            }
+          }
+        }
+      },
+      "BrowseNutrientDataResult": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of records found by a browse or search request",
+            "example": 10
+          },
+          "start": {
+            "type": "integer",
+            "description": "Starting point (offset) into the list returned by a browse or search request",
+            "format": "int32",
+            "example": 0
+          },
+          "max": {
+            "type": "integer",
+            "description": "The number of items in the list returned by a browse or search request",
+            "format": "int32",
+            "example": 50,
+            "minimum": 1,
+            "maximum": 150
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/nutrientData"
+            }
+          }
+        }
+      },
+      "NutrientReportItem": {
+        "type": "object",
+        "properties": {
+          "fdcId": {
+            "type": "string",
+            "example": "562423"
+          },
+          "foodDescription": {
+            "type": "string",
+            "example": "HOT & SPICY BARBECUE SAUCE"
+          },
+          "valuePer100UnitServing": {
+            "type": "integer",
+            "format": "float32",
+            "example": 0.712
+          },
+          "nutrientno": {
+            "type": "integer",
+            "format": "uint",
+            "example": 203
+          },
+          "Datasource": {
+            "type": "string",
+            "example": "SR"
+          },
+          "Unit": {
+            "type": "string",
+            "example": "G"
+          }
+        }
+      },
+      "BFPDFoodItem": {
+        "type": "object",
+        "required": [
+          "fdcId",
+          "foodDescription"
+        ],
+        "properties": {
+          "fdcId": {
+            "description": "Food Data Central id assigned to the time.",
+            "type": "string",
+            "example": "45001529"
+          },
+          "foodDescription": {
+            "description": "Manufacturer's name of the food item",
+            "type": "string",
+            "example": "HOT & SPICY BARBECUE SAUCE"
+          },
+          "lastChangeDateTime": {
+            "description": "ISO 8601 date representation of when data was last changed",
+            "type": "string",
+            "format": "date-time",
+            "example": "2016-08-29T09:12:33.001Z"
+          },
+          "publicationDateTime": {
+            "description": "ISO 8601 date representation of when data was published",
+            "type": "string",
+            "format": "date-time",
+            "example": "2016-08-29T09:12:33.001Z"
+          },
+          "company": {
+            "description": "Food item's manufacturer",
+            "type": "string",
+            "example": "FRESH & EASY"
+          },
+          "dataSource": {
+            "description": "Source of the reported data, either LI or GDSN",
+            "type": "string",
+            "enum": [
+              "LI",
+              "GDSN"
+            ],
+            "example": "LI"
+          },
+          "upc": {
+            "description": "universal product code (upc), if dataSource is LI or gloabal trade item number (GTIN), if dataSource is GDSN",
+            "type": "string",
+            "example": "011150548885"
+          },
+          "foodGroup": {
+            "$ref": "#/components/schemas/foodGroup"
+          },
+          "ingredients": {
+            "description": "ingredients list",
+            "type": "string",
+            "example": "SUGAR, DISTILLED VINEGAR, WATER, TOMATO PASTE, MODIFIED CORN STARCH."
+          },
+          "servingSizes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/servingSizes"
+            }
+          }
+        }
+      },
+      "servingSizes": {
+        "properties": {
+          "nutrientBasis": {
+            "type": "string",
+            "example": "g"
+          },
+          "servingUnit": {
+            "type": "string",
+            "example": "Tbsp"
+          },
+          "servingState": {
+            "type": "string",
+            "example": "PREPARED"
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "example": 32
+          },
+          "value": {
+            "type": "number",
+            "format": "float",
+            "example": 10.1
+          }
+        }
+      },
+      "nutrientData": {
+        "required": [
+          "nutrientNumber",
+          "unit"
+        ],
+        "properties": {
+          "fdcId": {
+            "type": "string",
+            "example": 167514
+          },
+          "nutrientNumber": {
+            "type": "integer",
+            "format": "uint",
+            "example": 301
+          },
+          "nutrientName": {
+            "type": "string",
+            "example": "Energy"
+          },
+          "unit": {
+            "type": "string",
+            "example": "kcal"
+          },
+          "derivation": {
+            "$ref": "#/components/schemas/derivation"
+          },
+          "valuePer100UnitServing": {
+            "type": "number",
+            "format": "float",
+            "example": 10.4
+          },
+          "datapoints": {
+            "type": "integer",
+            "format": "uint"
+          }
+        }
+      },
+      "derivation": {
+        "description": "describes how a nutrient value was derived.",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "A"
+          },
+          "description": {
+            "type": "string",
+            "example": "Analytical"
+          },
+          "id": {
+            "type": "integer",
+            "format": "uint"
+          }
+        }
+      },
+      "foodGroup": {
+        "description": "category to which a food has been assigned",
+        "required": [
+          "id",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FGSR",
+              "FGGPC",
+              "FGFNDDS"
+            ]
+          }
+        }
+      },
+      "nutrient": {
+        "description": "a food nutrient",
+        "required": [
+          "id",
+          "nutrientno",
+          "name",
+          "unit"
+        ],
+        "properties": {
+          "nutrientno": {
+            "type": "integer",
+            "example": 202
+          },
+          "name": {
+            "type": "string",
+            "example": "Nitrogen"
+          },
+          "unit": {
+            "type": "string",
+            "example": "G"
+          },
+          "id": {
+            "type": "integer"
+          }
+        }
+      },
+      "searchitem": {
+        "description": "a food item from the search indexes",
+        "properties": {
+          "fdcId": {
+            "type": "string",
+            "example": "456281"
+          },
+          "upc": {
+            "type": "string",
+            "example": "076050280389"
+          },
+          "foodDescription": {
+            "type": "string",
+            "example": "KALAMATA OLIVES"
+          },
+          "dataSource": {
+            "type": "string",
+            "enum": [
+              "GDSN",
+              "LI"
+            ],
+            "example": "LI"
+          },
+          "company": {
+            "type": "string",
+            "example": "Food Match, Inc."
+          },
+          "ingredients": {
+            "type": "string",
+            "example": "KALAMATA OLIVES, WATER, RED WINE VINEGAR, SEA SALT, GRAPE MUST"
+          },
+          "type": {
+            "type": "string",
+            "example": "FOOD"
+          }
+        }
+      },
+      "inputFoods": {
+        "description": "should only be present in foods with dataSource FNDDS",
+        "required": [
+          "Description"
+        ],
+        "properties": {
+          "Description": {
+            "type": "string",
+            "example": "Broccoli raw"
+          },
+          "SeqNo": {
+            "type": "integer",
+            "example": 1
+          },
+          "Amount": {
+            "type": "number",
+            "format": "float",
+            "example": 38.4
+          },
+          "SrCode": {
+            "type": "integer",
+            "example": 1094
+          },
+          "Unit": {
+            "type": "string",
+            "example": "g"
+          },
+          "Portion": {
+            "type": "string"
+          },
+          "PortionDescription": {
+            "type": "string"
+          },
+          "Weight": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    }
+  }
+}
