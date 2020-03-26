@@ -1,5 +1,5 @@
 # fdc-api
-Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  OpenAPI 3.0 documentation is available at https://go.littlebunch.com/doc.
+Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  OpenAPI 3.0 documentation is available as HTML at https://go.littlebunch.com/doc.  The specification can also be retrieved as JSON or YAML from the /docs endpoint described below.
 
 # What's in the repo    
 /api -- source for the REST web server    
@@ -151,6 +151,14 @@ curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"^OLIVE+(.*)","s
 Peform a REGEX search to find all foods that have UPC's that begin with "01111" and end with "684"
 ```
 curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{ "q":"^01111\\d{2,4}684","searchtype":"REGEX","searchfield":"upc"}'
+```
+### Fetch documentation
+Download OpenAPI 3.0 specification rendered as JSON or YAML
+```
+curl https://go.littlebunch.com/v1/docs/json
+```
+```
+curl https://go.littlebunch.com/v1/docs/yaml
 ```
 ### Fetch dictionary lists
 #### Nutrient List
