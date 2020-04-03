@@ -159,6 +159,12 @@ func (ds *Cb) Update(id string, r interface{}) error {
 
 }
 
+// Remove removes a document in the datastore
+func (ds *Cb) Remove(id string) error {
+	_, err := ds.Conn.Remove(id, 0)
+	return err
+}
+
 // CloseDs is a wrapper for the connection close func
 func (ds *Cb) CloseDs() {
 	ds.Conn.Close()
