@@ -88,11 +88,15 @@ type Food struct {
 	Description     string      `json:"foodDescription" binding:"required"`
 	Source          string      `json:"dataSource"`
 	PublicationDate time.Time   `json:"publicationDateTime"`
+	ModifiedDate    time.Time   `json:"modifiedDate,omitempty"`
+	AvailableDate   time.Time   `json:"availableDate,omitempty"`
+	DiscontinueDate time.Time   `json:"discontinueDate,omitempty"`
 	Ingredients     string      `json:"ingredients,omitempty"`
 	Manufacturer    string      `json:"company,omitempty"`
 	Group           *FoodGroup  `json:"foodGroup,omitempty"`
 	Servings        []Serving   `json:"servingSizes,omitempty"`
 	Type            string      `json:"type" binding:"required"`
+	Country         string      `json:"marketCountry,omitempty"`
 	InputFoods      []InputFood `json:"inputfoods,omitempty"`
 }
 
