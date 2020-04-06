@@ -60,7 +60,7 @@ func (dt *DocType) ToDocType(t string) DocType {
 		return DERV
 	case "FOOD":
 		return FOOD
-	case "FOOD_DEL"
+	case "FOOD_DEL":
 		return FOOD_DEL
 	default:
 		return 999
