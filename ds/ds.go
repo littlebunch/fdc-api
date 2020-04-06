@@ -20,6 +20,7 @@ type DataSource interface {
 	NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error
 	Update(id string, r interface{}) error
 	Remove(id string) error
+	FoodExists(id string) bool
 	Bulk(n *[]fdc.NutrientData) error
 	BulkInsert(v []gocb.BulkOp) error
 	CloseDs()

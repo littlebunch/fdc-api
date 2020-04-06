@@ -200,6 +200,17 @@ func (ds Cb) Query(q string, f *[]interface{}) error {
 	return err
 }
 
+// FoodExists uses Couchbase subdoc API to determine if a key exists or not
+func (ds Cb) FoodExists(id string) bool {
+	rc := true
+	_, err := ds.Conn.LookupIn(id).
+		Exists("FdcID").Execute()
+	if err != nil && err == gocb.ErrKeyNotFound {
+		rc = false
+	}
+	return rc
+}
+
 // Generates a use index phrase for use by Browse
 // to speed up the sort
 func useIndex(sort string, order string) string {
