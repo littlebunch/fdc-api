@@ -159,6 +159,12 @@ func (ds *Cb) Update(id string, r interface{}) error {
 
 }
 
+// Remove removes a document in the datastore
+func (ds *Cb) Remove(id string) error {
+	_, err := ds.Conn.Remove(id, 0)
+	return err
+}
+
 // CloseDs is a wrapper for the connection close func
 func (ds *Cb) CloseDs() {
 	ds.Conn.Close()
@@ -192,6 +198,17 @@ func (ds Cb) Query(q string, f *[]interface{}) error {
 		}
 	}
 	return err
+}
+
+// FoodExists uses Couchbase subdoc API to determine if a key exists or not
+func (ds Cb) FoodExists(id string) bool {
+	rc := true
+	_, err := ds.Conn.LookupIn(id).
+		Exists("FdcID").Execute()
+	if err != nil && err == gocb.ErrKeyNotFound {
+		rc = false
+	}
+	return rc
 }
 
 // Generates a use index phrase for use by Browse

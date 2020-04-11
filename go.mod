@@ -19,6 +19,7 @@ require (
 	github.com/graphql-go/graphql v0.7.8 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
+	github.com/littlebunch/fdc-ingest v0.0.0-20200408225511-f4e118a08324 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect

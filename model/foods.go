@@ -79,22 +79,25 @@ type FoodMeta struct {
 
 // Food reflects JSON used to transfer BFPD foods data from USDA csv
 type Food struct {
-	ID              string     `json:"_id,omitempty"`
-	Rev             string     `json:"_rev,omitempty"`
-	UpdatedAt       time.Time  `json:"lastChangeDateTime,omitempty"`
-	FdcID           string     `json:"fdcId" binding:"required"`
-	NdbNo           string     `json:"ndbno,omitempty"`
-	Upc             string     `json:"upc,omitempty"`
-	Description     string     `json:"foodDescription" binding:"required"`
-	Source          string     `json:"dataSource"`
-	PublicationDate time.Time  `json:"publicationDateTime"`
-	Ingredients     string     `json:"ingredients,omitempty"`
-	Manufacturer    string     `json:"company,omitempty"`
-	Group           *FoodGroup `json:"foodGroup,omitempty"`
-	Servings        []Serving  `json:"servingSizes,omitempty"`
-	//Nutrients       []NutrientData `json:"nutrients,omitempty"`
-	Type       string      `json:"type" binding:"required"`
-	InputFoods []InputFood `json:"inputfoods,omitempty"`
+	ID              string      `json:"_id,omitempty"`
+	Rev             string      `json:"_rev,omitempty"`
+	UpdatedAt       time.Time   `json:"lastChangeDateTime,omitempty"`
+	FdcID           string      `json:"fdcId" binding:"required"`
+	NdbNo           string      `json:"ndbno,omitempty"`
+	Upc             string      `json:"upc,omitempty"`
+	Description     string      `json:"foodDescription" binding:"required"`
+	Source          string      `json:"dataSource"`
+	PublicationDate time.Time   `json:"publicationDateTime"`
+	ModifiedDate    time.Time   `json:"modifiedDate,omitempty"`
+	AvailableDate   time.Time   `json:"availableDate,omitempty"`
+	DiscontinueDate time.Time   `json:"discontinueDate,omitempty"`
+	Ingredients     string      `json:"ingredients,omitempty"`
+	Manufacturer    string      `json:"company,omitempty"`
+	Group           *FoodGroup  `json:"foodGroup,omitempty"`
+	Servings        []Serving   `json:"servingSizes,omitempty"`
+	Type            string      `json:"type" binding:"required"`
+	Country         string      `json:"marketCountry,omitempty"`
+	InputFoods      []InputFood `json:"inputfoods,omitempty"`
 }
 
 // InputFood describes an FNDDS Input Food

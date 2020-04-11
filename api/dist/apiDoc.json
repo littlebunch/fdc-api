@@ -147,7 +147,7 @@
           "developers"
         ],
         "summary": "fetches one food item by fdcId in various formats",
-        "description": "Retrieves a single food item by fdc id. The default format is to return all data elements.  ",
+        "description": "Retrieves a single food item by FDC id or GTIN/UPC. The default format is to return all data elements.  ",
         "operationId": "getFoodById",
         "parameters": [
           {
@@ -166,7 +166,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BFPDFoodItem"
+                  "$ref": "#/components/schemas/BrowseFoodResult"
                 }
               }
             }
@@ -185,14 +185,14 @@
         "tags": [
           "developers"
         ],
-        "summary": "get a list of foods by FDC id",
+        "summary": "get a list of foods by FDC id or GTIN/UPC code.",
         "description": "By passing in a list of FDC id's, you can retrieve a list of foods",
         "operationId": "getFoodsByIds",
         "parameters": [
           {
             "name": "id",
             "in": "query",
-            "description": "repeating variable of up to 24 FDC id's",
+            "description": "repeating variable of up to 24 FDC id's or GTIN/UPC codes",
             "style": "form",
             "explode": true,
             "schema": {
