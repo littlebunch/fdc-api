@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -35,32 +36,41 @@ func countsGet(c *gin.Context) {
 	return
 }
 
-// foodFdcID returns a single food based on a key value constructed from the fdcid
-// If the format parameter equals 'meta' then only the food's meta-data is returned.
+// foodFdcID returns a single food based on a key value constructed from the fdcId
+// or upc.  Any id that looks like a upc gets converted to a fdcId
 func foodFdcID(c *gin.Context) {
+	var (
+		f     fdc.Food
+		items []interface{}
+	)
 	q := c.Param("id")
 	if q == "" {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a FDC id in the q parameter is required"})
 		return
 	}
-	var f fdc.Food
+	// convert anything that looks a upc to an fdcId
+	if len(q) > 7 {
+		q, _ = upcTofdcid(q, cs.CouchDb.Bucket)
+	}
 	err := dc.Get(q, &f)
 	if err != nil {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No food found!"})
 	}
-	if c.Query("format") == fdc.SERVING {
-		c.JSON(http.StatusOK, f.Servings)
-	} else {
-		c.JSON(http.StatusOK, f)
-	}
+	items = append(items, f)
+	results := fdc.BrowseResult{Count: 1, Start: 0, Max: 1, Items: items}
+	c.JSON(http.StatusOK, results)
 	return
 }
+
+// returns foods for a list of fdcIds or upcs.  If an id looks like a upc it is converted
+// to a fdcId.
 func foodFdcIds(c *gin.Context) {
 	var (
 		dt fdc.DocType
 		f  []interface{}
 	)
 	ids := c.QueryArray("id")
+
 	qids, err := buildIDList(ids)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
@@ -117,10 +127,12 @@ func nutrientFdcID(c *gin.Context) {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a FDC id in the q parameter is required"})
 		return
 	}
-
+	if len(q) > 7 {
+		q, _ = upcTofdcid(q, cs.CouchDb.Bucket)
+	}
 	if n = c.Query("n"); n == "" {
 		var nd []interface{}
-		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId= \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 		//q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
 		dc.Query(q, &nd)
 		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
@@ -148,6 +160,7 @@ func nutrientFdcIDs(c *gin.Context) {
 		nd   []interface{}
 	)
 	ids := c.QueryArray("id")
+
 	qids, err := buildIDList(ids)
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
@@ -159,6 +172,7 @@ func nutrientFdcIDs(c *gin.Context) {
 			nids = append(nids, fmt.Sprintf("%s_%s", ids[id], n))
 		}
 		qids, err = buildIDList(nids)
+		fmt.Println(qids)
 		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 
 	} else {
@@ -413,6 +427,9 @@ func sortOrder(o string) (string, error) {
 	}
 	return order, nil
 }
+
+// converts an array of ids to a query string of the form ["12345",23456",...]  Any element
+// looks like a upc is converted to a fdcId
 func buildIDList(ids []string) (string, error) {
 	var (
 		err  error
@@ -423,10 +440,40 @@ func buildIDList(ids []string) (string, error) {
 	} else {
 		qids = "["
 		for id := range ids {
+			if len(ids[id]) > 7 {
+				ids[id], _ = upcTofdcid(ids[id], cs.CouchDb.Bucket)
+			}
 			qids += fmt.Sprintf("\"%s\",", ids[id])
 		}
 		qids = strings.Trim(qids, ",")
 		qids += "]"
 	}
 	return qids, err
+}
+func upcTofdcid(upc string, bucket string) (string, error) {
+	type f struct {
+		FdcID string `json:"fdcId" binding:"required"`
+	}
+	var (
+		r   []interface{}
+		fid f
+		j   []byte
+	)
+	q := fmt.Sprintf("SELECT fdcId from %s where upc = \"%s\" AND type=\"FOOD\"", bucket, upc)
+	if err := dc.Query(q, &r); err != nil {
+		log.Printf("%v\n", err)
+		return "", err
+	}
+	for i := range r {
+		if j, err = json.Marshal(r[i]); err != nil {
+			log.Printf("%s %v %v\n", upc, j, err)
+			return "", err
+		}
+		if err = json.Unmarshal(j, &fid); err != nil {
+			log.Printf("%s %s %v\n", upc, string(j), err)
+			return "", err
+		}
+
+	}
+	return fid.FdcID, nil
 }

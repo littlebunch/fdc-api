@@ -100,7 +100,7 @@ paths:
         - developers
       summary: fetches one food item by fdcId in various formats
       description: >-
-        Retrieves a single food item by fdc id. The default format is to return all data elements.  
+        Retrieves a single food item by FDC id or GTIN/UPC. The default format is to return all data elements.  
       operationId: getFoodById
       parameters:
         - name: id
@@ -115,7 +115,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BFPDFoodItem'
+                $ref: '#/components/schemas/BrowseFoodResult'
         '400':
           description: bad input parameter
         '404':
@@ -124,15 +124,15 @@ paths:
     get:
       tags:
         - developers
-      summary: get a list of foods by FDC id
+      summary: get a list of foods by FDC id or GTIN/UPC code.
       description: >-
-        By passing in a list of FDC id's, you can retrieve a list of foods
+        By passing in a list of FDC id' or GTIN/UPC codes, you can retrieve a list of foods
       operationId: getFoodsByIds
       parameters:
         - name: id
           in: query
           description: >-
-            repeating variable of up to 24 FDC id's
+            repeating variable of up to 24 FDC id' or GTIN/UPC codes or GTIN/UPC codes
           style: form
           explode: true
           schema:
@@ -292,7 +292,7 @@ paths:
       summary: returns nutrient data elements for a food item
       description:
         Returns either the list of nutrient data items  or a single nutrient data item for a food item identified
-        by it's fdc id.
+        by it' or GTIN/UPC codes fdc id.
       operationId: getFoodNutrients
       parameters:
         - name: n
@@ -322,12 +322,12 @@ paths:
     get:
       tags:
         - developers
-      summary: get a list of nutrients for a list food ID's
+      summary: get a list of nutrients for a list food ID' or GTIN/UPC codes
       operationId: getFoodsNutrients
       parameters:
           - name: id
             in: query
-            description: repeating variable of up to 24 FDC id's
+            description: repeating variable of up to 24 FDC id' or GTIN/UPC codes
             style: form
             explode: true
             schema:
@@ -583,7 +583,7 @@ components:
           type: string
           example: '45001529'
         foodDescription:
-          description: Manufacturer's name of the food item
+          description: Manufacturer' or GTIN/UPC codes name of the food item
           type: string
           example: HOT & SPICY BARBECUE SAUCE
         lastChangeDateTime:
@@ -597,7 +597,7 @@ components:
           format: date-time
           example: '2016-08-29T09:12:33.001Z'
         company:
-          description: Food item's manufacturer
+          description: Food item' or GTIN/UPC codes manufacturer
           type: string
           example: FRESH & EASY
         dataSource:

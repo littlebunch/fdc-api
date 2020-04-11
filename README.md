@@ -92,26 +92,30 @@ A apiDoc.yaml OpenAPI 3.0 document which fully describes the API is included in 
 ```
 curl -X GET https://go.littlebunch.com/v1/food/389714 
 ```
+### Fetch a single food  by GTIN/UPC 042222850325
+```
+curl -X GET https://go.littlebunch.com/v1/food/042222850325
+``` 
 ### Fetch all nutrient data for a food   
 ```
 curl https://go.littlebunch.com/v1/nutrients/food/389714  
 ```
-### Fetch nutrient data for a single nutrient for a food
+### Fetch nutrient data for a single nutrient for a food identified by GTIN/UPC 
 ```
-curl https://go.littlebunch.com/v1/nutrients/food/389714?n=208 
+curl https://go.littlebunch.com/v1/nutrients/food/042222850325?n=208 
 ```  
 ### Fetch food data for a list of FoodData Central ids:   
-Returns list of foods identified by an exploded array of up to a maximum 24 FDC id's. 
+Returns list of foods identified by an exploded array of up to a maximum 24 id's.  The array may contain a mix of GTIN/UPC codes and FDC IDs.
 ```
-curl 'https://go.littlebunch.com/v1/foods?id=344604&id=344605&id=344606'  
+curl 'https://go.littlebunch.com/v1/foods?id=344604&id=042222850325&id=344606'  
 ```
 ### Fetch nutrient data for a list of FoodData Central ids
 ```
-curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=344605&id=344606'  
+curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=042222850325&id=344606'  
 ```
 ### Fetch nutrient data for a single nutrient for a list of FoodData Central ids
 ```
-curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=344605&id=344606?n=208'  
+curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=042222850325&id=344606?n=208'  
 ```
 ### Browse foods:   
 ```
