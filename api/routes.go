@@ -169,7 +169,7 @@ func nutrientFdcIDs(c *gin.Context) {
 		return
 	}
 	// create nutrient data ids
-	if n := c.QueryArray("n"); n != nil {
+	if n := c.QueryArray("n"); len(n) > 0 {
 		var nids []string
 		for id := range ids {
 			for i := range n {
@@ -183,6 +183,7 @@ func nutrientFdcIDs(c *gin.Context) {
 		qids, _ := buildIDList(ids)
 		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	}
+	fmt.Printf("Q=%s\n", q)
 	dc.Query(q, &nd)
 	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 	c.JSON(http.StatusOK, results)
