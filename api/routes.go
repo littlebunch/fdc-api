@@ -7,12 +7,15 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	fdc "github.com/littlebunch/fdc-api/model"
 )
+
+var isUpc = regexp.MustCompile(`^[0-9]+$`)
 
 func countsGet(c *gin.Context) {
 	var counts []interface{}
@@ -69,9 +72,7 @@ func foodFdcIds(c *gin.Context) {
 		dt fdc.DocType
 		f  []interface{}
 	)
-	ids := c.QueryArray("id")
-
-	qids, err := buildIDList(ids)
+	qids, err := buildIDList(getFdcIDs(c.QueryArray("id")))
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
 		return
@@ -141,8 +142,10 @@ func nutrientFdcID(c *gin.Context) {
 	} else {
 		var nd fdc.NutrientData
 		id := fmt.Sprintf("%s_%s", q, n)
+		fmt.Printf("id=%s\n", id)
 		if err := dc.Get(id, &nd); err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No nutrient data found!"})
+			return
 		}
 		c.JSON(http.StatusOK, nd)
 	}
@@ -155,33 +158,34 @@ func nutrientFdcID(c *gin.Context) {
 // nutrientno in the n paramter
 func nutrientFdcIDs(c *gin.Context) {
 	var (
-		q, n string
-		dt   fdc.DocType
-		nd   []interface{}
+		q  string
+		dt fdc.DocType
+		nd []interface{}
 	)
-	ids := c.QueryArray("id")
-
-	qids, err := buildIDList(ids)
+	// replace any UPC's with FdcID's
+	ids := getFdcIDs(c.QueryArray("id"))
 	if err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot request more than 24 id's"})
 		return
 	}
-	if n = c.Query("n"); n != "" {
+	// create nutrient data ids
+	if n := c.QueryArray("n"); n != nil {
 		var nids []string
 		for id := range ids {
-			nids = append(nids, fmt.Sprintf("%s_%s", ids[id], n))
+			for i := range n {
+				nids = append(nids, fmt.Sprintf("%s_%s", ids[id], n[i]))
+			}
 		}
-		qids, err = buildIDList(nids)
-		fmt.Println(qids)
+		qids, _ := buildIDList(nids)
 		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 
 	} else {
+		qids, _ := buildIDList(ids)
 		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	}
 	dc.Query(q, &nd)
 	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 	c.JSON(http.StatusOK, results)
-
 	return
 }
 
@@ -428,8 +432,7 @@ func sortOrder(o string) (string, error) {
 	return order, nil
 }
 
-// converts an array of ids to a query string of the form ["12345",23456",...]  Any element
-// looks like a upc is converted to a fdcId
+// converts an array of ids to a query string of the form ["12345",23456",...]
 func buildIDList(ids []string) (string, error) {
 	var (
 		err  error
@@ -440,9 +443,6 @@ func buildIDList(ids []string) (string, error) {
 	} else {
 		qids = "["
 		for id := range ids {
-			if len(ids[id]) > 7 {
-				ids[id], _ = upcTofdcid(ids[id], cs.CouchDb.Bucket)
-			}
 			qids += fmt.Sprintf("\"%s\",", ids[id])
 		}
 		qids = strings.Trim(qids, ",")
@@ -450,6 +450,25 @@ func buildIDList(ids []string) (string, error) {
 	}
 	return qids, err
 }
+
+// convert UPC codes to fdc ids as necessary and return transformed array
+func getFdcIDs(ids []string) []string {
+	var (
+		ids2 []string
+		nid  string
+	)
+	for id := range ids {
+		if len(ids[id]) > 7 && isUpc.MatchString(ids[id]) {
+			nid, _ = upcTofdcid(ids[id], cs.CouchDb.Bucket)
+			ids2 = append(ids2, nid)
+		} else {
+			ids2 = append(ids2, ids[id])
+		}
+	}
+	return ids2
+}
+
+// return fdcId from UPC look-up
 func upcTofdcid(upc string, bucket string) (string, error) {
 	type f struct {
 		FdcID string `json:"fdcId" binding:"required"`
