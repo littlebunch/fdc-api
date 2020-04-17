@@ -146,8 +146,8 @@
         "tags": [
           "developers"
         ],
-        "summary": "fetches one food item by fdcId in various formats",
-        "description": "Retrieves a single food item by FDC id or GTIN/UPC. The default format is to return all data elements.  ",
+        "summary": "fetches one food item by fdcId or UPC",
+        "description": "Retrieves a single food item by FDC id or GTIN/UPC.",
         "operationId": "getFoodById",
         "parameters": [
           {
@@ -186,13 +186,13 @@
           "developers"
         ],
         "summary": "get a list of foods by FDC id or GTIN/UPC code.",
-        "description": "By passing in a list of FDC id's, you can retrieve a list of foods",
+        "description": "By passing in a list of FDC ids or GTIN/UPC codes, you can retrieve a list of foods.",
         "operationId": "getFoodsByIds",
         "parameters": [
           {
             "name": "id",
             "in": "query",
-            "description": "repeating variable of up to 24 FDC id's or GTIN/UPC codes",
+            "description": "repeating variable of up to 24 FDC id' or GTIN/UPC codes",
             "style": "form",
             "explode": true,
             "schema": {
@@ -414,16 +414,19 @@
           "developers"
         ],
         "summary": "returns nutrient data elements for a food item",
-        "description": "Returns either the list of nutrient data items  or a single nutrient data item for a food item identified by it's fdc id.",
+        "description": "Returns either the list of nutrient data items  or a single nutrient data item for a food item identified by it' or GTIN/UPC codes fdc id.",
         "operationId": "getFoodNutrients",
         "parameters": [
           {
             "name": "n",
             "in": "query",
-            "description": "return only the nutrient data element identifed by the nutrient number in n",
+            "description": "return only the nutrient data identifed by the nutrient numbers in n",
             "required": false,
             "schema": {
-              "type": "integer"
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
             }
           },
           {
@@ -458,13 +461,13 @@
         "tags": [
           "developers"
         ],
-        "summary": "get a list of nutrients for a list food ID's",
+        "summary": "get a list of nutrients for a list food ID's or GTIN/UPC codes",
         "operationId": "getFoodsNutrients",
         "parameters": [
           {
             "name": "id",
             "in": "query",
-            "description": "repeating variable of up to 24 FDC id's",
+            "description": "repeating variable of up to 24 FDC id' or GTIN/UPC codes",
             "style": "form",
             "explode": true,
             "schema": {
@@ -481,7 +484,10 @@
             "in": "query",
             "description": "limit nutrients returned to a specified nutrient number",
             "schema": {
-              "type": "integer"
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
             },
             "required": false
           }
@@ -800,7 +806,7 @@
             "example": "45001529"
           },
           "foodDescription": {
-            "description": "Manufacturer's name of the food item",
+            "description": "Manufacturer' or GTIN/UPC codes name of the food item",
             "type": "string",
             "example": "HOT & SPICY BARBECUE SAUCE"
           },
@@ -817,7 +823,7 @@
             "example": "2016-08-29T09:12:33.001Z"
           },
           "company": {
-            "description": "Food item's manufacturer",
+            "description": "Food item' or GTIN/UPC codes manufacturer",
             "type": "string",
             "example": "FRESH & EASY"
           },
