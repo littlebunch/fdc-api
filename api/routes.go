@@ -118,23 +118,33 @@ func dictionaryBrowse(c *gin.Context) {
 	results := fdc.BrowseResult{Count: int32(len(items)), Start: int32(offset), Max: int32(max), Items: items}
 	c.JSON(http.StatusOK, results)
 }
+
+// returns nutrients for a specified foods identified by fdcId or UPC
+// if an optional n parameter is provided then limit nutrients returned to the
+// nutrientno's in the n paramter array
 func nutrientFdcID(c *gin.Context) {
 	var (
-		q, n string
-		dt   fdc.DocType
+		q  string
+		dt fdc.DocType
 	)
 
 	if q = c.Param("id"); q == "" {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "a FDC id in the q parameter is required"})
 		return
 	}
+	// replace UPC with fdcId
 	if len(q) > 7 {
 		q, _ = upcTofdcid(q, cs.CouchDb.Bucket)
 	}
-	if n = c.Query("n"); n == "" {
+
+	if n := c.QueryArray("n"); len(n) > 0 {
 		var nd []interface{}
-		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId= \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
-		//q := fmt.Sprintf("{\"selector\":{\"type\":\"%s\",\"fdcId\":\"%s\"},\"fields\":[\"unit\",\"nutrientNumber\",\"nutrientName\",\"valuePer100UnitServing\",\"derivation.code\"]}", dt.ToString(fdc.NUTDATA), q)
+		var nids []string
+		for i := range n {
+			nids = append(nids, fmt.Sprintf("%s_%s", q, n[i]))
+		}
+		qids, _ := buildIDList(nids)
+		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 		dc.Query(q, &nd)
 		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 		c.JSON(http.StatusOK, results)
@@ -142,7 +152,6 @@ func nutrientFdcID(c *gin.Context) {
 	} else {
 		var nd fdc.NutrientData
 		id := fmt.Sprintf("%s_%s", q, n)
-		fmt.Printf("id=%s\n", id)
 		if err := dc.Get(id, &nd); err != nil {
 			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No nutrient data found!"})
 			return

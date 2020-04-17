@@ -23,7 +23,7 @@ paths:
       tags:
         - developers
       summary: fetch documents from a dictionary.  A dictionary can be one of nutrients (NUT), food groups (FGGPC) or derivations (DERV)
-      operationId: getDictionary
+      operationId: Dictionary
       parameters: 
         - name: type
           in: path
@@ -77,7 +77,7 @@ paths:
       tags:
         - developers
       summary: fetches openapi spec in json or yaml format as specified by the {type} parameter
-      operationId: getSpecByType
+      operationId: docs
       parameters:
         - name: type
           in: path
@@ -98,10 +98,10 @@ paths:
     get:
       tags:
         - developers
-      summary: fetches one food item by fdcId in various formats
+      summary: fetches one food item by fdcId or UPC 
       description: >-
-        Retrieves a single food item by FDC id or GTIN/UPC. The default format is to return all data elements.  
-      operationId: getFoodById
+        Retrieves a single food item by FDC id or GTIN/UPC.
+      operationId: FoodById
       parameters:
         - name: id
           in: path
@@ -126,13 +126,13 @@ paths:
         - developers
       summary: get a list of foods by FDC id or GTIN/UPC code.
       description: >-
-        By passing in a list of FDC id' or GTIN/UPC codes, you can retrieve a list of foods
-      operationId: getFoodsByIds
+        By passing in a list of FDC ids or GTIN/UPC codes, you can retrieve a list of foods.
+      operationId: foodsByIds
       parameters:
         - name: id
           in: query
           description: >-
-            repeating variable of up to 24 FDC id' or GTIN/UPC codes or GTIN/UPC codes
+            repeating variable of up to 24 FDC id' or GTIN/UPC codes
           style: form
           explode: true
           schema:
@@ -162,7 +162,7 @@ paths:
       description: >-
         By passing in the appropriate options, you can browse for available
         foods
-      operationId: browseFoods
+      operationId: foodsBrowse
       parameters:
         - name: page
           in: query
@@ -224,7 +224,7 @@ paths:
     get:
       tags:
         - developers
-      operationId: getSearchForFoods
+      operationId: FoodsSearch
       summary: Performs keyword searches against selected fields. 
       parameters:
         - name: q
@@ -266,7 +266,7 @@ paths:
     post:
       tags:
           - developers
-      operationId: "postSearchForFoods"
+      operationId: "FoodsSearchPost"
       summary: Performs searches using the SearchRequest type. 
       requestBody:
         required: true
@@ -293,15 +293,17 @@ paths:
       description:
         Returns either the list of nutrient data items  or a single nutrient data item for a food item identified
         by it' or GTIN/UPC codes fdc id.
-      operationId: getFoodNutrients
+      operationId: NutrientsFood
       parameters:
         - name: n
           in: query
           description: >-
-            return only the nutrient data element identifed by the nutrient number in n
+            return only the nutrient data identifed by the nutrient numbers in n
           required: false
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
         - name: id
           in: path
           schema:
@@ -322,8 +324,8 @@ paths:
     get:
       tags:
         - developers
-      summary: get a list of nutrients for a list food ID' or GTIN/UPC codes
-      operationId: getFoodsNutrients
+      summary: get a list of nutrients for a list food ID's or GTIN/UPC codes
+      operationId: NutrientsFood
       parameters:
           - name: id
             in: query
@@ -338,10 +340,11 @@ paths:
             required: true  
           - name: n
             in: query
-            description: >-
-              limit nutrients returned to a specified nutrient number
+            description: limit nutrients returned to a specified nutrient number
             schema:
-              type: integer
+              type: array
+              items:
+                type: integer
             required: false
       responses:
         '200':
