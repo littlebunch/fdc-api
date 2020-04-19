@@ -126,6 +126,7 @@ func nutrientFdcID(c *gin.Context) {
 	var (
 		q  string
 		dt fdc.DocType
+		nd []interface{}
 	)
 
 	if q = c.Param("id"); q == "" {
@@ -136,28 +137,21 @@ func nutrientFdcID(c *gin.Context) {
 	if len(q) > 7 {
 		q, _ = upcTofdcid(q, cs.CouchDb.Bucket)
 	}
-
 	if n := c.QueryArray("n"); len(n) > 0 {
-		var nd []interface{}
+
 		var nids []string
 		for i := range n {
 			nids = append(nids, fmt.Sprintf("%s_%s", q, n[i]))
 		}
 		qids, _ := buildIDList(nids)
-		q := fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
-		dc.Query(q, &nd)
-		results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
-		c.JSON(http.StatusOK, results)
+		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 
 	} else {
-		var nd fdc.NutrientData
-		id := fmt.Sprintf("%s_%s", q, n)
-		if err := dc.Get(id, &nd); err != nil {
-			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No nutrient data found!"})
-			return
-		}
-		c.JSON(http.StatusOK, nd)
+		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 	}
+	dc.Query(q, &nd)
+	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
+	c.JSON(http.StatusOK, results)
 
 	return
 }
