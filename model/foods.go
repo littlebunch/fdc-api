@@ -43,6 +43,7 @@ type SearchRequest struct {
 	Max         int    `json:"max"`
 	Sort        string `json:"sort,omitEmpty"`
 	SearchType  string `json:"searchtype,omitEmpty"`
+	FoodGroup   string `json:"foodgroup,omitEmpty"`
 	IndexName   string `json:"indexname"`
 }
 

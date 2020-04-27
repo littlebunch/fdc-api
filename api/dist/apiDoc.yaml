@@ -164,6 +164,15 @@ paths:
         foods
       operationId: foodsBrowse
       parameters:
+        - name: fg
+          in: query
+          description: >-
+            filter on food group description or food group id.  A list of valid food group descriptions
+            and ids can be obtained from the /v1/dictionary/FGGPC endpoint.
+          required: false
+          schema:
+            type: string
+            example: Plant Based Water
         - name: page
           in: query
           description: >-
@@ -325,7 +334,7 @@ paths:
       tags:
         - developers
       summary: get a list of nutrients for a list food ID's or GTIN/UPC codes
-      operationId: NutrientsFood
+      operationId: NutrientsFoods
       parameters:
           - name: id
             in: query
@@ -424,7 +433,11 @@ components:
         q:
           description: Search terms 
           type: string
-          example: 'cucumber salad'
+          example: 'corn flakes'
+        foodgroup:
+          description: restrict results to a specific food group
+          type: string
+          example: 'Cereal'
         format:
           description: One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'
           type: string
@@ -443,10 +456,6 @@ components:
           example: 50
           minimum: 1
           maximum: 150
-        sort:
-          type: string
-          description: field to sort results by
-          example: ''
         searchtype:
           description: One of PHRASE, WILDCARD or REGEX
           example: PHRASE

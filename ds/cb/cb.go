@@ -89,7 +89,7 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sor
 		row interface{}
 		f   []interface{}
 	)
-	q := fmt.Sprintf("select food.* from %s as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
+	q := fmt.Sprintf("select food.* from %s as food where %s is not missing and %s order by %s %s offset %d limit %d", bucket, sort, where, sort, order, offset, limit)
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err != nil {
@@ -104,20 +104,28 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sor
 // Search performs a search query, fills out a Foods slice and returns count, error
 func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 	count := 0
-	var query *gocb.SearchQuery
+	var (
+		sq     cbft.FtsQuery
+		err    error
+		result gocb.SearchResults
+	)
 	sr.Query = strings.Replace(sr.Query, "\"", "", -1)
 	switch sr.SearchType {
 	case fdc.PHRASE:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+		sq = cbft.NewMatchPhraseQuery(sr.Query).Field(sr.SearchField)
 	case fdc.WILDCARD:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewWildcardQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+		sq = cbft.NewWildcardQuery(sr.Query).Field(sr.SearchField)
 	case fdc.REGEX:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+		sq = cbft.NewRegexpQuery(sr.Query).Field(sr.SearchField)
 	default:
-		query = gocb.NewSearchQuery(sr.IndexName, cbft.NewMatchQuery(sr.Query).Field(sr.SearchField)).Limit(int(sr.Max)).Skip(sr.Page).Fields("*")
+		sq = cbft.NewMatchQuery(sr.Query).Field(sr.SearchField)
 	}
-
-	result, err := ds.Conn.ExecuteSearchQuery(query)
+	// add a foodgroup filter if we have one, otherwise run a standard search
+	if sr.FoodGroup != "" {
+		result, err = ds.Conn.ExecuteSearchQuery(gocb.NewSearchQuery(sr.IndexName, cbft.NewConjunctionQuery(sq, cbft.NewMatchQuery(sr.FoodGroup).Field("foodGroup.description"))).Limit(int(sr.Max)).Skip(sr.Page).Fields("*"))
+	} else {
+		result, err = ds.Conn.ExecuteSearchQuery(gocb.NewSearchQuery(sr.IndexName, sq).Limit(int(sr.Max)).Skip(sr.Page).Fields("*"))
+	}
 	if err != nil {
 		return 0, err
 	}

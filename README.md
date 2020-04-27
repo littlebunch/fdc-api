@@ -136,15 +136,15 @@ Perform a string search for 'raw broccoli' in the foodDescription field:
 ```
 curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"broccoli raw","searchfield":"foodDescription","max":50,"page":0}'
 ```  
-Perform a string search for 'cereal' in the foodGroup.description field:   
+Perform a string search for 'corn flakes' in the foodDescription field and limit results to the cereal foodgroup:   
 ```
-curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"cereal","searchfield":"foodGroup.description","max":50,"page":0}'
+curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"corn flakes","searchfield":"foodDescription","foodgroup":"cereal","max":50,"page":0}'
 ```
 Perform a WILDCARD search for company names that match ro*nd*:
 ```
 curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"ro*nd*","searchfield":"company","searchtype":"WILDCARD","max":50,"page":0}'
 ```
-Perform a PHRASE search for an exact match on "broccoli florets" in the "ingredients field:
+Perform a PHRASE search for an exact match on "broccoli rabe" in the "ingredients field:
 ```
 curl -XPOST https://go.littlebunch.com/v1/foods/search -d '{"q":"broccoli rabe","searchfield":"ingredients","searchtype":"PHRASE","max":50,"page":0}'
 ```
