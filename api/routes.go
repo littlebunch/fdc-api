@@ -39,7 +39,7 @@ func countsGet(c *gin.Context) {
 	return
 }
 
-// foodFdcID returns a single food based on a key value constructed from the fdcId
+// foodFdcID returns a single food in a BrowseResult based on a key value constructed from the fdcId
 // or upc.  Any id that looks like a upc gets converted to a fdcId
 func foodFdcID(c *gin.Context) {
 	var (
@@ -65,7 +65,7 @@ func foodFdcID(c *gin.Context) {
 	return
 }
 
-// returns foods for a list of fdcIds or upcs.  If an id looks like a upc it is converted
+// returns foods in a BrowseResult for a list of fdcIds or upcs.  If an id looks like a upc it is converted
 // to a fdcId.
 func foodFdcIds(c *gin.Context) {
 	var (
@@ -85,6 +85,8 @@ func foodFdcIds(c *gin.Context) {
 	return
 
 }
+
+// returns a dictionary list which can be nutrients (NUT), derivations (DERV), food categories (FGGPC)
 func dictionaryBrowse(c *gin.Context) {
 	var (
 		dt        fdc.DocType
@@ -137,6 +139,7 @@ func nutrientFdcID(c *gin.Context) {
 	if len(q) > 7 {
 		q, _ = upcTofdcid(q, cs.CouchDb.Bucket)
 	}
+	// build query for one or more nutrient #'s otherwise build a query to return all nutrients
 	if n := c.QueryArray("n"); len(n) > 0 {
 
 		var nids []string
@@ -186,7 +189,6 @@ func nutrientFdcIDs(c *gin.Context) {
 		qids, _ := buildIDList(ids)
 		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	}
-	fmt.Printf("Q=%s\n", q)
 	dc.Query(q, &nd)
 	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 	c.JSON(http.StatusOK, results)
@@ -218,6 +220,7 @@ func foodsBrowse(c *gin.Context) {
 		errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": fmt.Sprintf("Unrecognized source parameter.  Must be %s, %s or %s", dt.ToString(fdc.BFPD), dt.ToString(fdc.SR), dt.ToString(fdc.FNDDS))})
 		return
 	}
+
 	if max, err = strconv.ParseInt(c.Query("max"), 10, 32); err != nil {
 		max = defaultListMax
 	}
@@ -233,6 +236,16 @@ func foodsBrowse(c *gin.Context) {
 	}
 	offset := page * max
 	where := fmt.Sprintf("type=\"%s\" ", dt.ToString(fdc.FOOD))
+	// Check for filter on food group description or id.  Add to query if present
+	if fg := c.Query("fg"); fg != "" {
+		if i, err := strconv.ParseInt(fg, 0, 32); err == nil {
+			where += fmt.Sprintf(" AND foodGroup.id=%d", i)
+		} else {
+			where += fmt.Sprintf(" AND foodGroup.description=\"%s\"", fg)
+		}
+
+	}
+	fmt.Printf("WHERE = %s\n", where)
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
@@ -315,6 +328,8 @@ func foodsSearchPost(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, results)
 }
+
+// returns openapi spec in either json or yaml format
 func specDoc(c *gin.Context) {
 	t := c.Param("type")
 	if t == "" || (t != "yaml" && t != "json") {
