@@ -13,8 +13,6 @@ info:
 servers: 
   - url: https://go.littlebunch.com
 tags:
-  - name: admins
-    description: Secured Admin-only calls
   - name: developers
     description: Operations available to regular developers
 paths:
@@ -77,7 +75,7 @@ paths:
       tags:
         - developers
       summary: fetches openapi spec in json or yaml format as specified by the {type} parameter
-      operationId: docs
+      operationId: Docs
       parameters:
         - name: type
           in: path
@@ -373,7 +371,7 @@ paths:
     post:
       tags:
         - developers
-      operationId: nutrientReport
+      operationId: NutrientReport
       summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
       requestBody:
           required: true
@@ -756,31 +754,4 @@ components:
           type: string
           example: "FOOD"
             
-    inputFoods:
-      description: should only be present in foods with dataSource FNDDS
-      required:
-        - Description
-      properties:
-        Description:
-          type: string
-          example: Broccoli raw
-        SeqNo:
-          type: integer
-          example: 1
-        Amount:
-          type: number
-          format: float
-          example: 38.4
-        SrCode:
-          type: integer
-          example: 1094
-        Unit:
-          type: string
-          example: g
-        Portion:
-          type: string
-        PortionDescription:
-          type: string
-        Weight:
-          type: number
-          format: float
+   

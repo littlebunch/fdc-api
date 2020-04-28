@@ -20,10 +20,6 @@
   ],
   "tags": [
     {
-      "name": "admins",
-      "description": "Secured Admin-only calls"
-    },
-    {
       "name": "developers",
       "description": "Operations available to regular developers"
     }
@@ -35,7 +31,7 @@
           "developers"
         ],
         "summary": "fetch documents from a dictionary.  A dictionary can be one of nutrients (NUT), food groups (FGGPC) or derivations (DERV)",
-        "operationId": "getDictionary",
+        "operationId": "Dictionary",
         "parameters": [
           {
             "name": "type",
@@ -113,7 +109,7 @@
           "developers"
         ],
         "summary": "fetches openapi spec in json or yaml format as specified by the {type} parameter",
-        "operationId": "getSpecByType",
+        "operationId": "docs",
         "parameters": [
           {
             "name": "type",
@@ -148,7 +144,7 @@
         ],
         "summary": "fetches one food item by fdcId or UPC",
         "description": "Retrieves a single food item by FDC id or GTIN/UPC.",
-        "operationId": "getFoodById",
+        "operationId": "FoodById",
         "parameters": [
           {
             "name": "id",
@@ -187,7 +183,7 @@
         ],
         "summary": "get a list of foods by FDC id or GTIN/UPC code.",
         "description": "By passing in a list of FDC ids or GTIN/UPC codes, you can retrieve a list of foods.",
-        "operationId": "getFoodsByIds",
+        "operationId": "foodsByIds",
         "parameters": [
           {
             "name": "id",
@@ -235,8 +231,18 @@
         ],
         "summary": "browse foods data",
         "description": "By passing in the appropriate options, you can browse for available foods",
-        "operationId": "browseFoods",
+        "operationId": "foodsBrowse",
         "parameters": [
+          {
+            "name": "fg",
+            "in": "query",
+            "description": "filter on food group description or food group id.  A list of valid food group descriptions and ids can be obtained from the /v1/dictionary/FGGPC endpoint.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Plant Based Water"
+            }
+          },
           {
             "name": "page",
             "in": "query",
@@ -316,7 +322,7 @@
         "tags": [
           "developers"
         ],
-        "operationId": "getSearchForFoods",
+        "operationId": "FoodsSearch",
         "summary": "Performs keyword searches against selected fields.",
         "parameters": [
           {
@@ -376,7 +382,7 @@
         "tags": [
           "developers"
         ],
-        "operationId": "postSearchForFoods",
+        "operationId": "FoodsSearchPost",
         "summary": "Performs searches using the SearchRequest type.",
         "requestBody": {
           "required": true,
@@ -415,7 +421,7 @@
         ],
         "summary": "returns nutrient data elements for a food item",
         "description": "Returns either the list of nutrient data items  or a single nutrient data item for a food item identified by it' or GTIN/UPC codes fdc id.",
-        "operationId": "getFoodNutrients",
+        "operationId": "NutrientsFood",
         "parameters": [
           {
             "name": "n",
@@ -462,7 +468,7 @@
           "developers"
         ],
         "summary": "get a list of nutrients for a list food ID's or GTIN/UPC codes",
-        "operationId": "getFoodsNutrients",
+        "operationId": "NutrientsFoods",
         "parameters": [
           {
             "name": "id",
@@ -602,7 +608,12 @@
           "q": {
             "description": "Search terms",
             "type": "string",
-            "example": "cucumber salad"
+            "example": "corn flakes"
+          },
+          "foodgroup": {
+            "description": "restrict results to a specific food group",
+            "type": "string",
+            "example": "Cereal"
           },
           "format": {
             "description": "One of 'full', 'servings', 'meta' or 'nutrients'.  Default is 'meta'",
@@ -625,11 +636,6 @@
             "example": 50,
             "minimum": 1,
             "maximum": 150
-          },
-          "sort": {
-            "type": "string",
-            "description": "field to sort results by",
-            "example": ""
           },
           "searchtype": {
             "description": "One of PHRASE, WILDCARD or REGEX",
@@ -1023,45 +1029,6 @@
           "type": {
             "type": "string",
             "example": "FOOD"
-          }
-        }
-      },
-      "inputFoods": {
-        "description": "should only be present in foods with dataSource FNDDS",
-        "required": [
-          "Description"
-        ],
-        "properties": {
-          "Description": {
-            "type": "string",
-            "example": "Broccoli raw"
-          },
-          "SeqNo": {
-            "type": "integer",
-            "example": 1
-          },
-          "Amount": {
-            "type": "number",
-            "format": "float",
-            "example": 38.4
-          },
-          "SrCode": {
-            "type": "integer",
-            "example": 1094
-          },
-          "Unit": {
-            "type": "string",
-            "example": "g"
-          },
-          "Portion": {
-            "type": "string"
-          },
-          "PortionDescription": {
-            "type": "string"
-          },
-          "Weight": {
-            "type": "number",
-            "format": "float"
           }
         }
       }
