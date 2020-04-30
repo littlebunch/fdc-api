@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "description": "REST API for the various public nutrient data released on the USDA [Food Data Central](<a href=\"https://fdc.nal.usda.gov/download-datasets.html>)  site.",
+    "description": "REST API for the Branded Food Products nutrient data released on the USDA [Food Data Central](https://fdc.nal.usda.gov/download-datasets.html) site.",
     "version": "1.1.0",
-    "title": "Nutrient Data API",
+    "title": "Branded Food Products API",
     "contact": {
       "name": "Gary Moore",
       "email": "gary@littlebunch.com"
@@ -109,7 +109,7 @@
           "developers"
         ],
         "summary": "fetches openapi spec in json or yaml format as specified by the {type} parameter",
-        "operationId": "docs",
+        "operationId": "Docs",
         "parameters": [
           {
             "name": "type",
@@ -526,7 +526,7 @@
         "tags": [
           "developers"
         ],
-        "operationId": "nutrientReport",
+        "operationId": "NutrientReport",
         "summary": "Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource",
         "requestBody": {
           "required": true,
