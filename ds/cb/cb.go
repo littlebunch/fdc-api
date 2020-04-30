@@ -154,7 +154,11 @@ func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrie
 	} else if nr.Source != "" {
 		w = fmt.Sprintf(" AND n.Datasource = '%s'", nr.Source)
 	}*/
-	n1ql := fmt.Sprintf("SELECT g.foodDescription,n.fdcId,n.nutrientNumber,n.valuePer100UnitServing,n.unit,n.Datasource FROM %s n USE index(idx_nutdata_query_desc) join %s g on meta(g).id=n.fdcId WHERE n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f %s OFFSET %d LIMIT %d", bucket, bucket, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, w, nr.Page, nr.Max)
+	if nr.FoodGroup != "" {
+		w = fmt.Sprintf(" f.foodGroup.description=\"%s\" AND ", nr.FoodGroup)
+	}
+	//SELECT f.foodDescription,f.upc,n.fdcId,n.valuePer100UnitServing,n.unit FROM bfpd n USE index(idx_nutdata_query_desc) inner join bfpd f on meta(f).id=n.fdcId where f.foodGroup.description="Cereal" and n.type="NUTDATA" and n.nutrientNumber=208 AND n.valuePer100UnitServing between 0.000000 AND 5000.000000 OFFSET 0 LIMIT 50
+	n1ql := fmt.Sprintf("SELECT f.foodDescription,f.upc,n.fdcId,n.valuePer100UnitServing,n.unit FROM %s n USE index(idx_nutdata_query_desc) inner join %s f on meta(f).id=n.fdcId WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f OFFSET %d LIMIT %d", bucket, bucket, w, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
 	err := ds.Query(n1ql, nutrients)
 	return err
 }

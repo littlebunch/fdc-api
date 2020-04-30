@@ -245,7 +245,6 @@ func foodsBrowse(c *gin.Context) {
 		}
 
 	}
-	fmt.Printf("WHERE = %s\n", where)
 	if source != "" {
 		where = where + sourceFilter(source)
 	}
@@ -375,7 +374,6 @@ func nutrientReportPost(c *gin.Context) {
 	var (
 		nutdata []interface{}
 		nr      fdc.NutrientReportRequest
-		dt      *fdc.DocType
 	)
 	// check for a query
 	err = c.BindJSON(&nr)
@@ -407,16 +405,12 @@ func nutrientReportPost(c *gin.Context) {
 		return
 	}
 	nr.Page = nr.Page * nr.Max
-	// Datasource filter
-	if nr.Source != "" && (dt.ToString(fdc.FNDDS) != nr.Source && dt.ToString(fdc.SR) != nr.Source && dt.ToString(fdc.BFPD) != nr.Source) {
-		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Source must be one of BFPD, FNDDS, or SR."})
-		return
-	}
+
 	if err = dc.NutrientReport(cs.CouchDb.Bucket, nr, &nutdata); err != nil {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": fmt.Sprintf("Data error %v", err)})
 		return
 	}
-	results := fdc.BrowseResult{Count: int32(len(nutdata)), Start: int32(nr.Page), Max: int32(nr.Max), Items: nutdata}
+	results := fdc.BrowseNutrientReport{Request: nr, Items: nutdata}
 	c.JSON(http.StatusOK, results)
 }
 

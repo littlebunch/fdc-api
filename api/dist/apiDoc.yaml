@@ -372,7 +372,7 @@ paths:
       tags:
         - developers
       operationId: NutrientReport
-      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by Datasource
+      summary: Return a list of values in descending order for a specified nutrient number.  Optionally filter by FoodGroup description
       requestBody:
           required: true
           description: report to perform
@@ -386,7 +386,7 @@ paths:
           content:
             application/json:
              schema:
-               $ref: '#/components/schemas/NutrientReportItem'
+               $ref: '#/components/schemas/BrowseNutrientReport'
         '400':
           description: bad input parameter
         '404':
@@ -394,6 +394,16 @@ paths:
   
 components:
   schemas:
+    BrowseNutrientReport:
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/NutrientReportRequest'
+        foods:
+          type: array
+          items:
+            $ref: '#/components/schemas/NutrientReportItem'
+        
     NutrientReportRequest:
       type: object
       required:
@@ -403,6 +413,10 @@ components:
           description: Nutrient number for which data is being requested 
           type: integer
           example: 208
+        foodGroup:
+          description: Filter foods on food group description
+          type: string
+          example: Cereal
         valueGTE:
           description: Search for nutrient value greater than or equal to
           example: 10
@@ -567,21 +581,17 @@ components:
           example: '562423'
         foodDescription:
           type: string
-          example: 'HOT & SPICY BARBECUE SAUCE'
+          example: 'BEEF RAVIOLI'
+        upc:
+          type: string
+          example: "070038591559"
         valuePer100UnitServing:
           type: integer
           format: float32
-          example: 0.712
-        nutrientno:
-          type: integer
-          format: uint
-          example: 203
-        Datasource:
-          type: string
-          example: "SR"
+          example: 206
         Unit:
           type: string
-          example: "G"
+          example: "KCAL"
     BFPDFoodItem:
       type: object
       required:

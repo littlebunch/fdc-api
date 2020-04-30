@@ -13,6 +13,12 @@ type BrowseResult struct {
 	Items []interface{} `json:"items"`
 }
 
+// BrowseNutrientReport is returned from the nutrients report endpoing
+type BrowseNutrientReport struct {
+	Request NutrientReportRequest `json:"request"`
+	Items   []interface{}         `json:"foods"`
+}
+
 // BrowseServings is returned from the browse endpoints
 type BrowseServings struct {
 	FdcID    string    `json:"fdcId" binding:"required"`
@@ -27,12 +33,12 @@ type BrowseNutrients struct {
 
 // NutrientReportRequest wraps a POST nutrient report
 type NutrientReportRequest struct {
-	Page     int     `json:"page"`
-	Max      int     `json:"max"`
-	Nutrient int     `json:"nutrientno" binding:"required"`
-	Source   string  `json:"source"`
-	ValueGTE float32 `json:"valueGTE"`
-	ValueLTE float32 `json:"valueLTE"`
+	Page      int     `json:"page"`
+	Max       int     `json:"max"`
+	Nutrient  int     `json:"nutrientno" binding:"required"`
+	FoodGroup string  `json:"foodGroup,omitEmpty"`
+	ValueGTE  float32 `json:"valueGTE"`
+	ValueLTE  float32 `json:"valueLTE"`
 }
 
 // SearchRequest wraps a POST search
@@ -164,10 +170,9 @@ type NutrientData struct {
 // NutrientReportData is an item returned in a nutrient report
 type NutrientReportData struct {
 	FdcID           string  `json:"fdcId" binding:"required"`
+	Upc             string  `json:"upc"`
 	FoodDescription string  `json:"foodDescription"`
 	Value           float32 `json:"valuePer100UnitServing"`
-	Nutrientno      uint    `json:"nutrientNumber"`
-	Source          string  `json:"Datasource"`
 	Unit            string  `json:"unit"`
 	Type            string  `json:"type"`
 }
