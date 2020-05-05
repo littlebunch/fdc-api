@@ -90,6 +90,7 @@ func (ds *Cb) Browse(bucket string, where string, offset int64, limit int64, sor
 		f   []interface{}
 	)
 	q := fmt.Sprintf("select food.* from %s as food use index(%s) where %s is not missing and %s order by %s %s offset %d limit %d", bucket, useIndex(sort, order), sort, where, sort, order, offset, limit)
+	fmt.Printf("q=%s\n", q)
 	query := gocb.NewN1qlQuery(q)
 	rows, err := ds.Conn.ExecuteN1qlQuery(query, nil)
 	if err != nil {

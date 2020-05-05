@@ -152,19 +152,23 @@ type Derivation struct {
 // NutrientData is the list of nutrient values
 // A document of type NUTDATA
 type NutrientData struct {
-	ID         string      `json:"_id" binding:"required"`
-	Rev        string      `json:"_rev,omitempty"`
-	FdcID      string      `json:"fdcId" binding:"required"`
-	Source     string      `json:"Datasource"`
-	Type       string      `json:"type"`
-	Value      float32     `json:"valuePer100UnitServing"`
-	Unit       string      `json:"unit"  binding:"required"`
-	Derivation *Derivation `json:"derivation,omitempty"`
-	Nutrientno uint        `json:"nutrientNumber"`
-	Nutrient   string      `json:"nutrientName"`
-	Datapoints int         `json:"datapoints,omitempty"`
-	Min        float32     `json:"min,omitempty"`
-	Max        float32     `json:"max,omitempty"`
+	ID           string      `json:"_id" binding:"required"`
+	Rev          string      `json:"_rev,omitempty"`
+	FdcID        string      `json:"fdcId" binding:"required"`
+	Upc          string      `json:"upc,omitempty"`
+	Description  string      `json:"foodDescription" binding:"required"`
+	Manufacturer string      `json:"company,omitempty"`
+	Category     string      `json:"category,omitempty"`
+	Source       string      `json:"Datasource"`
+	Type         string      `json:"type"`
+	Value        float32     `json:"valuePer100UnitServing"`
+	Unit         string      `json:"unit"  binding:"required"`
+	Derivation   *Derivation `json:"derivation,omitempty"`
+	Nutrientno   uint        `json:"nutrientNumber"`
+	Nutrient     string      `json:"nutrientName"`
+	Datapoints   int         `json:"datapoints,omitempty"`
+	Min          float32     `json:"min,omitempty"`
+	Max          float32     `json:"max,omitempty"`
 }
 
 // NutrientReportData is an item returned in a nutrient report
