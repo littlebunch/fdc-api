@@ -126,9 +126,12 @@ func dictionaryBrowse(c *gin.Context) {
 // nutrientno's in the n paramter array
 func nutrientFdcID(c *gin.Context) {
 	var (
-		q  string
-		dt fdc.DocType
-		nd []interface{}
+		q   string
+		dt  fdc.DocType
+		nd  []interface{}
+		ndb []fdc.NutrientFoodBrowseItem
+		ndi fdc.NutrientFoodBrowseItem
+		ndd fdc.NutrientFoodBrowse
 	)
 
 	if q = c.Param("id"); q == "" {
@@ -147,13 +150,25 @@ func nutrientFdcID(c *gin.Context) {
 			nids = append(nids, fmt.Sprintf("%s_%s", q, n[i]))
 		}
 		qids, _ := buildIDList(nids)
-		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
-
+		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	} else {
-		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+
+		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 	}
 	dc.Query(q, &nd)
-	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
+	haveFood := false
+	for i := range nd {
+		b, _ := json.Marshal(nd[i])
+		json.Unmarshal(b, &ndi)
+		if !haveFood {
+			json.Unmarshal(b, &ndd)
+			haveFood = true
+		}
+
+		ndb = append(ndb, ndi)
+	}
+	results := fdc.NutrientFoodBrowse{FdcID: ndd.FdcID, Description: ndd.Description, Upc: ndd.Upc, Nutrients: ndb}
+	//results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 	c.JSON(http.StatusOK, results)
 
 	return
@@ -164,9 +179,13 @@ func nutrientFdcID(c *gin.Context) {
 // nutrientno in the n paramter
 func nutrientFdcIDs(c *gin.Context) {
 	var (
-		q  string
-		dt fdc.DocType
-		nd []interface{}
+		q       string
+		dt      fdc.DocType
+		nd      []interface{}
+		ndb     []fdc.NutrientFoodBrowseItem
+		ndi     fdc.NutrientFoodBrowseItem
+		ndd, nn fdc.NutrientFoodBrowse
+		ndds    []fdc.NutrientFoodBrowse
 	)
 	// replace any UPC's with FdcID's
 	ids := getFdcIDs(c.QueryArray("id"))
@@ -183,15 +202,41 @@ func nutrientFdcIDs(c *gin.Context) {
 			}
 		}
 		qids, _ := buildIDList(nids)
-		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,derivation,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 
 	} else {
 		qids, _ := buildIDList(ids)
-		q = fmt.Sprintf("SELECT * from %s as nutrient WHERE type=\"%s\" AND fdcId in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,derivation,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	}
+	fmt.Printf("q=%s\n", q)
 	dc.Query(q, &nd)
-	results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
-	c.JSON(http.StatusOK, results)
+	haveFood := false
+	for i := range nd {
+		b, _ := json.Marshal(nd[i])
+		json.Unmarshal(b, &nn)
+		json.Unmarshal(b, &ndi)
+		if haveFood && nn.FdcID != ndd.FdcID {
+			ndd.Nutrients = ndb
+			ndds = append(ndds, ndd)
+			ndb = nil
+			haveFood = false
+		} else {
+			if !haveFood {
+				ndd.Category = nn.Category
+				ndd.Description = nn.Description
+				ndd.FdcID = nn.FdcID
+				ndd.Manufacturer = nn.Manufacturer
+				ndd.Upc = nn.Upc
+				haveFood = true
+			}
+
+		}
+		ndb = append(ndb, ndi)
+
+	}
+	ndd.Nutrients = ndb
+	ndds = append(ndds, ndd)
+	c.JSON(http.StatusOK, ndds)
 	return
 }
 

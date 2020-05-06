@@ -150,16 +150,13 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 // NutrientReport Runs a NutrientReportRequest
 func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error {
 	w := ""
-	/*if nr.Source == "BFPD" {
-		w = fmt.Sprintf(" AND ( n.Datasource = '%s' OR n.Datasource='%s' )", "LI", "GDSN")
-	} else if nr.Source != "" {
-		w = fmt.Sprintf(" AND n.Datasource = '%s'", nr.Source)
-	}*/
+	sort := "nutdata"
+
 	if nr.FoodGroup != "" {
-		w = fmt.Sprintf(" f.foodGroup.description=\"%s\" AND ", nr.FoodGroup)
+		w = fmt.Sprintf(" category=\"%s\" AND ", nr.FoodGroup)
+		sort = "nutdata_fg"
 	}
-	//SELECT f.foodDescription,f.upc,n.fdcId,n.valuePer100UnitServing,n.unit FROM bfpd n USE index(idx_nutdata_query_desc) inner join bfpd f on meta(f).id=n.fdcId where f.foodGroup.description="Cereal" and n.type="NUTDATA" and n.nutrientNumber=208 AND n.valuePer100UnitServing between 0.000000 AND 5000.000000 OFFSET 0 LIMIT 50
-	n1ql := fmt.Sprintf("SELECT f.foodDescription,f.upc,n.fdcId,n.valuePer100UnitServing,n.unit FROM %s n USE index(idx_nutdata_query_desc) inner join %s f on meta(f).id=n.fdcId WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f OFFSET %d LIMIT %d", bucket, bucket, w, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
+	n1ql := fmt.Sprintf("SELECT n.foodDescription,n.upc,n.fdcId,n.category,n.company,n.valuePer100UnitServing,n.unit FROM %s n USE index(%s) WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f OFFSET %d LIMIT %d", bucket, useIndex(sort, "desc"), w, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
 	err := ds.Query(n1ql, nutrients)
 	return err
 }
@@ -233,6 +230,10 @@ func useIndex(sort string, order string) string {
 		useindex = "idx_fd"
 	case "company":
 		useindex = "idx_company"
+	case "nutdata":
+		useindex = "idx_nutdata_query"
+	case "nutdata_fg":
+		useindex = "idx_nutdata_fg_query"
 	case "fdcid":
 	default:
 		useindex = "idx_fdcId"

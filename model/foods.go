@@ -171,6 +171,25 @@ type NutrientData struct {
 	Max          float32     `json:"max,omitempty"`
 }
 
+//NutrientFoodBrowse is returned from the food nutrient endpoints
+type NutrientFoodBrowse struct {
+	FdcID        string                   `json:"fdcId" binding:"required"`
+	Upc          string                   `json:"upc,omitempty"`
+	Description  string                   `json:"foodDescription" binding:"required"`
+	Manufacturer string                   `json:"company,omitempty"`
+	Category     string                   `json:"category,omitempty"`
+	Nutrients    []NutrientFoodBrowseItem `json:"nutrients"`
+}
+
+// NutrientFoodBrowseItem is the list of nutrient data returned by the food nutrient endpoints
+type NutrientFoodBrowseItem struct {
+	Value      float32     `json:"valuePer100UnitServing"`
+	Unit       string      `json:"unit"  binding:"required"`
+	Derivation *Derivation `json:"derivation,omitempty"`
+	Nutrientno uint        `json:"nutrientNumber"`
+	Nutrient   string      `json:"nutrientName"`
+}
+
 // NutrientReportData is an item returned in a nutrient report
 type NutrientReportData struct {
 	FdcID           string  `json:"fdcId" binding:"required"`
