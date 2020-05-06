@@ -725,61 +725,35 @@
           }
         }
       },
-      "BrowseNutrientResult": {
-        "type": "object",
-        "properties": {
-          "count": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Number of records found by a browse or search request",
-            "example": 10
-          },
-          "start": {
-            "type": "integer",
-            "description": "Starting point (offset) into the list returned by a browse or search request",
-            "format": "int32",
-            "example": 0
-          },
-          "max": {
-            "type": "integer",
-            "description": "The number of items in the list returned by a browse or search request",
-            "format": "int32",
-            "example": 50,
-            "minimum": 1,
-            "maximum": 150
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/nutrient"
-            }
-          }
-        }
-      },
       "BrowseNutrientDataResult": {
         "type": "object",
         "properties": {
           "count": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Number of records found by a browse or search request",
-            "example": 10
+            "type": "string",
+            "description": "FdcID of the food",
+            "example": "412617"
           },
-          "start": {
-            "type": "integer",
-            "description": "Starting point (offset) into the list returned by a browse or search request",
-            "format": "int32",
-            "example": 0
+          "upc": {
+            "type": "string",
+            "description": "UPC for the food",
+            "example": "061500127178"
           },
-          "max": {
-            "type": "integer",
-            "description": "The number of items in the list returned by a browse or search request",
-            "format": "int32",
-            "example": 50,
-            "minimum": 1,
-            "maximum": 150
+          "foodDescription": {
+            "type": "string",
+            "description": "Name of the food",
+            "example": "!AJUA!, CAFFEINE FREE SODA, MANDARIN ORANGE"
           },
-          "items": {
+          "company": {
+            "type": "string",
+            "description": "food manufacturer",
+            "example": "!AJUA!"
+          },
+          "category": {
+            "type": "string",
+            "description": "food group to which food belongs",
+            "example": "Soda"
+          },
+          "nutrients": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/nutrientData"
@@ -909,10 +883,6 @@
           "unit"
         ],
         "properties": {
-          "fdcId": {
-            "type": "string",
-            "example": 167514
-          },
           "nutrientNumber": {
             "type": "integer",
             "format": "uint",
@@ -920,11 +890,11 @@
           },
           "nutrientName": {
             "type": "string",
-            "example": "Energy"
+            "example": "Calcium, CA"
           },
           "unit": {
             "type": "string",
-            "example": "kcal"
+            "example": "MG"
           },
           "derivation": {
             "$ref": "#/components/schemas/derivation"
@@ -932,11 +902,7 @@
           "valuePer100UnitServing": {
             "type": "number",
             "format": "float",
-            "example": 10.4
-          },
-          "datapoints": {
-            "type": "integer",
-            "format": "uint"
+            "example": 0
           }
         }
       },
@@ -948,11 +914,11 @@
         "properties": {
           "code": {
             "type": "string",
-            "example": "A"
+            "example": "LCCD"
           },
           "description": {
             "type": "string",
-            "example": "Analytical"
+            "example": "Calculated from a daily value percentage per serving size measure"
           },
           "id": {
             "type": "integer",
