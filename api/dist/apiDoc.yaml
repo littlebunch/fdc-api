@@ -527,7 +527,7 @@ components:
     BrowseNutrientDataResult:
       type: object
       properties:
-        count:
+        fdcId:
           type: string
           description: FdcID of the food
           example: "412617"
