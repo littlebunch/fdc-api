@@ -183,9 +183,9 @@ func nutrientFdcIDs(c *gin.Context) {
 		dt      fdc.DocType
 		nd      []interface{}
 		ndb     []fdc.NutrientFoodBrowseItem
-		ndi     fdc.NutrientFoodBrowseItem
-		ndd, nn fdc.NutrientFoodBrowse
-		ndds    []fdc.NutrientFoodBrowse
+		nfbi    fdc.NutrientFoodBrowseItem
+		nfb, nf fdc.NutrientFoodBrowse
+		nfbs    []fdc.NutrientFoodBrowse
 	)
 	// replace any UPC's with FdcID's
 	ids := getFdcIDs(c.QueryArray("id"))
@@ -208,35 +208,37 @@ func nutrientFdcIDs(c *gin.Context) {
 		qids, _ := buildIDList(ids)
 		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,derivation,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	}
-	fmt.Printf("q=%s\n", q)
 	dc.Query(q, &nd)
-	haveFood := false
+	// convert each row to the types NutrientFoodBrowse and NutrientFoodBrowseItem
 	for i := range nd {
 		b, _ := json.Marshal(nd[i])
-		json.Unmarshal(b, &nn)
-		json.Unmarshal(b, &ndi)
-		if haveFood && nn.FdcID != ndd.FdcID {
-			ndd.Nutrients = ndb
-			ndds = append(ndds, ndd)
-			ndb = nil
-			haveFood = false
-		} else {
-			if !haveFood {
-				ndd.Category = nn.Category
-				ndd.Description = nn.Description
-				ndd.FdcID = nn.FdcID
-				ndd.Manufacturer = nn.Manufacturer
-				ndd.Upc = nn.Upc
-				haveFood = true
+		//get NutrientFoodBrowse nf
+		json.Unmarshal(b, &nf)
+		//get the NutrientFoodBrowseItem nfbi
+		json.Unmarshal(b, &nfbi)
+		if nf.FdcID != nfb.FdcID {
+			// add the current NutrientFoodBrowse nfb to the NutrientFoodBrowseItem array nfbs to be returned
+			if nfb.FdcID != "" {
+				nfb.Nutrients = ndb
+				nfbs = append(nfbs, nfb)
+				ndb = nil
 			}
-
+			// create a new current NutrientFoodBrowse nfb from the
+			// current working NutrientFoodBrowse nf
+			nfb.Category = nf.Category
+			nfb.Description = nf.Description
+			nfb.FdcID = nf.FdcID
+			nfb.Manufacturer = nf.Manufacturer
+			nfb.Upc = nf.Upc
 		}
-		ndb = append(ndb, ndi)
+		// append the current NutrientFoodBrowseItem
+		// to the current working NutrientFoodBrowseItem array nfbs
+		ndb = append(ndb, nfbi)
 
 	}
-	ndd.Nutrients = ndb
-	ndds = append(ndds, ndd)
-	c.JSON(http.StatusOK, ndds)
+	nfb.Nutrients = ndb
+	nfbs = append(nfbs, nfb)
+	c.JSON(http.StatusOK, nfbs)
 	return
 }
 
