@@ -164,6 +164,7 @@ type NutrientData struct {
 	Value        float32     `json:"valuePer100UnitServing"`
 	Unit         string      `json:"unit"  binding:"required"`
 	Derivation   *Derivation `json:"derivation,omitempty"`
+	Serving      []Serving   `json:"serving,omitempty"`
 	Nutrientno   uint        `json:"nutrientNumber"`
 	Nutrient     string      `json:"nutrientName"`
 	Datapoints   int         `json:"datapoints,omitempty"`
@@ -171,7 +172,7 @@ type NutrientData struct {
 	Max          float32     `json:"max,omitempty"`
 }
 
-//NutrientFoodBrowse is returned from the food nutrient endpoints
+// NutrientFoodBrowse is returned from the food nutrient endpoints
 type NutrientFoodBrowse struct {
 	FdcID        string                   `json:"fdcId" binding:"required"`
 	Upc          string                   `json:"upc,omitempty"`
