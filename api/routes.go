@@ -150,10 +150,10 @@ func nutrientFdcID(c *gin.Context) {
 			nids = append(nids, fmt.Sprintf("%s_%s", q, n[i]))
 		}
 		qids, _ := buildIDList(nids)
-		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,serving,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	} else {
 
-		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		q = fmt.Sprintf("SELECT fdcId,upc,foodDescription,serving,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 	}
 	dc.Query(q, &nd)
 	haveFood := false
@@ -167,7 +167,7 @@ func nutrientFdcID(c *gin.Context) {
 
 		ndb = append(ndb, ndi)
 	}
-	results := fdc.NutrientFoodBrowse{FdcID: ndd.FdcID, Description: ndd.Description, Upc: ndd.Upc, Nutrients: ndb}
+	results := fdc.NutrientFoodBrowse{FdcID: ndd.FdcID, Description: ndd.Description, Upc: ndd.Upc, Serving: ndd.Serving, Nutrients: ndb}
 	//results := fdc.BrowseResult{Count: int32(len(nd)), Start: 0, Max: int32(len(nd)), Items: nd}
 	c.JSON(http.StatusOK, results)
 
