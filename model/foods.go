@@ -164,7 +164,6 @@ type NutrientData struct {
 	Value        float32     `json:"valuePer100UnitServing"`
 	Unit         string      `json:"unit"  binding:"required"`
 	Derivation   *Derivation `json:"derivation,omitempty"`
-	Serving      []Serving   `json:"serving,omitempty"`
 	Nutrientno   uint        `json:"nutrientNumber"`
 	Nutrient     string      `json:"nutrientName"`
 	Datapoints   int         `json:"datapoints,omitempty"`
