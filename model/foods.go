@@ -180,7 +180,7 @@ type NutrientFoodBrowse struct {
 	Description  string                   `json:"foodDescription" binding:"required"`
 	Manufacturer string                   `json:"company,omitempty"`
 	Category     string                   `json:"category,omitempty"`
-	Serving      []Serving                `json:"servingSizes,omitempty"`
+	Portion      string                   `json:"portion,omitempty"`
 	Nutrients    []NutrientFoodBrowseItem `json:"nutrients"`
 }
 

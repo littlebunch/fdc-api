@@ -548,6 +548,10 @@ components:
           type: string
           description: food group to which food belongs
           example: "Soda"
+        portion:
+          type: string
+          description: Portion description
+          example: "8 oz"
         nutrients:
           type: array
           items:
@@ -657,6 +661,11 @@ components:
         derivation:
           $ref: '#/components/schemas/derivation'
         valuePer100UnitServing:
+          type: number
+          format: float
+          example: 0
+        valuePerPortion:
+          description: 100g equivalent for stated portion
           type: number
           format: float
           example: 0

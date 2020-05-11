@@ -150,24 +150,24 @@ func nutrientFdcID(c *gin.Context) {
 			nids = append(nids, fmt.Sprintf("%s_%s", q, n[i]))
 		}
 		qids, _ := buildIDList(nids)
-		q = fmt.Sprintf("SELECT fdcId,upc,portionValue,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+		q = fmt.Sprintf("SELECT fdcId,upc,portion,portionValue as valuePerPortion,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	} else {
 
-		q = fmt.Sprintf("SELECT fdcId,upc,portionValue,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
+		q = fmt.Sprintf("SELECT fdcId,upc,portion,portionValue as valuePerPortion,foodDescription,company,category,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId = \"%s\"", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), q)
 	}
 	dc.Query(q, &nd)
 	haveFood := false
 	for i := range nd {
 		b, _ := json.Marshal(nd[i])
+		ndi = fdc.NutrientFoodBrowseItem{}
 		json.Unmarshal(b, &ndi)
 		if !haveFood {
 			json.Unmarshal(b, &ndd)
 			haveFood = true
 		}
-
 		ndb = append(ndb, ndi)
 	}
-	results := fdc.NutrientFoodBrowse{FdcID: ndd.FdcID, Serving: ndd.Serving, Description: ndd.Description, Upc: ndd.Upc, Nutrients: ndb}
+	results := fdc.NutrientFoodBrowse{FdcID: ndd.FdcID, Portion: ndd.Portion, Description: ndd.Description, Upc: ndd.Upc, Nutrients: ndb}
 	c.JSON(http.StatusOK, results)
 
 	return
@@ -201,11 +201,11 @@ func nutrientFdcIDs(c *gin.Context) {
 			}
 		}
 		qids, _ := buildIDList(nids)
-		q = fmt.Sprintf("SELECT fdcId,upc,servingSizes,foodDescription,company,category,derivation,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+		q = fmt.Sprintf("SELECT fdcId,upc,servingSizes,foodDescription,company,category,derivation,valuePer100UnitServing,portion,portionValue as valuePerPortion,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND meta(nutrient).id in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 
 	} else {
 		qids, _ := buildIDList(ids)
-		q = fmt.Sprintf("SELECT fdcId,upc,servingSizes,foodDescription,company,category,derivation,valuePer100UnitServing,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
+		q = fmt.Sprintf("SELECT fdcId,upc,servingSizes,foodDescription,company,category,derivation,valuePer100UnitServing,portion,portionValue as valuePerPortion,unit,nutrientNumber,nutrientName from %s as nutrient WHERE type=\"%s\" AND fdcId in %s order by fdcId", cs.CouchDb.Bucket, dt.ToString(fdc.NUTDATA), qids)
 	}
 	dc.Query(q, &nd)
 	// convert each row to the types NutrientFoodBrowse and NutrientFoodBrowseItem
@@ -214,6 +214,7 @@ func nutrientFdcIDs(c *gin.Context) {
 		//get NutrientFoodBrowse nf
 		json.Unmarshal(b, &nf)
 		//get the NutrientFoodBrowseItem nfbi
+		nfbi = fdc.NutrientFoodBrowseItem{}
 		json.Unmarshal(b, &nfbi)
 		if nf.FdcID != nfb.FdcID {
 			// add the current NutrientFoodBrowse nfb to the NutrientFoodBrowseItem array nfbs to be returned
@@ -228,11 +229,10 @@ func nutrientFdcIDs(c *gin.Context) {
 			nfb.Description = nf.Description
 			nfb.FdcID = nf.FdcID
 			nfb.Manufacturer = nf.Manufacturer
-			nfb.Serving = nf.Serving
+			nfb.Portion = nf.Portion
 			nfb.Upc = nf.Upc
 		}
-		// calculate portion value for each nutrient item
-		nfbi.PortionValue = nfbi.Value * nfb.Serving[0].Servingamount
+
 		// append the current NutrientFoodBrowseItem
 		// to the current working NutrientFoodBrowseItem array nfbs
 		ndb = append(ndb, nfbi)
