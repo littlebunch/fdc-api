@@ -162,6 +162,8 @@ type NutrientData struct {
 	Source       string      `json:"Datasource"`
 	Type         string      `json:"type"`
 	Value        float32     `json:"valuePer100UnitServing"`
+	Portion      string      `json:"portion,omitempty"`
+	PortionValue float32     `json:"portionValue,omitempty"`
 	Unit         string      `json:"unit"  binding:"required"`
 	Derivation   *Derivation `json:"derivation,omitempty"`
 	Nutrientno   uint        `json:"nutrientNumber"`
@@ -178,17 +180,18 @@ type NutrientFoodBrowse struct {
 	Description  string                   `json:"foodDescription" binding:"required"`
 	Manufacturer string                   `json:"company,omitempty"`
 	Category     string                   `json:"category,omitempty"`
-	Serving      []Serving                `json:"serving,omitempty"`
+	Serving      []Serving                `json:"servingSizes,omitempty"`
 	Nutrients    []NutrientFoodBrowseItem `json:"nutrients"`
 }
 
 // NutrientFoodBrowseItem is the list of nutrient data returned by the food nutrient endpoints
 type NutrientFoodBrowseItem struct {
-	Value      float32     `json:"valuePer100UnitServing"`
-	Unit       string      `json:"unit"  binding:"required"`
-	Derivation *Derivation `json:"derivation,omitempty"`
-	Nutrientno uint        `json:"nutrientNumber"`
-	Nutrient   string      `json:"nutrientName"`
+	Value        float32     `json:"valuePer100UnitServing"`
+	Unit         string      `json:"unit"  binding:"required"`
+	Derivation   *Derivation `json:"derivation,omitempty"`
+	Nutrientno   uint        `json:"nutrientNumber"`
+	Nutrient     string      `json:"nutrientName"`
+	PortionValue float32     `json:"valuePerPortion"`
 }
 
 // NutrientReportData is an item returned in a nutrient report
