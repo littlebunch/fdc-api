@@ -149,13 +149,21 @@ func (ds *Cb) Search(sr fdc.SearchRequest, foods *[]interface{}) (int, error) {
 // NutrientReport Runs a NutrientReportRequest
 func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrients *[]interface{}) error {
 	w := ""
+	qfield := ""
 	sort := "nutdata"
 
 	if nr.FoodGroup != "" {
 		w = fmt.Sprintf(" category=\"%s\" AND ", nr.FoodGroup)
 		sort = "nutdata_fg"
 	}
-	n1ql := fmt.Sprintf("SELECT n.foodDescription,n.upc,n.fdcId,n.category,n.company,n.valuePer100UnitServing,n.unit FROM %s n USE index(%s) WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND n.valuePer100UnitServing between %f AND %f OFFSET %d LIMIT %d", bucket, useIndex(sort, "desc"), w, nr.Nutrient, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
+	if strings.ToLower(nr.Sort) == "portion" {
+		sort = sort + "_portion"
+		qfield = "n.portionValue"
+	} else {
+		qfield = "n.valuePer100UnitServing"
+	}
+	n1ql := fmt.Sprintf("SELECT n.foodDescription,n.upc,n.fdcId,n.category,n.company,n.valuePer100UnitServing,n.unit,n.portion,n.portionValue FROM %s n USE index(%s) WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND %s between %f AND %f OFFSET %d LIMIT %d", bucket, useIndex(sort, "desc"), w, nr.Nutrient, qfield, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
+	fmt.Printf("n1ql=%s\n", n1ql)
 	err := ds.Query(n1ql, nutrients)
 	return err
 }
@@ -231,6 +239,10 @@ func useIndex(sort string, order string) string {
 		useindex = "idx_company"
 	case "nutdata":
 		useindex = "idx_nutdata_query"
+	case "nutdata_portion":
+		useindex = "idx_nutdata_portion_query"
+	case "nutdata_fg_portion":
+		useindex = "idx_nutdata_fg_portion_query"
 	case "nutdata_fg":
 		useindex = "idx_nutdata_fg_query"
 	case "fdcid":
@@ -242,6 +254,7 @@ func useIndex(sort string, order string) string {
 	} else {
 		useindex = useindex + "_asc"
 	}
+	fmt.Printf("useindex=%s\n", useindex)
 	return useindex
 }
 

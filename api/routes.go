@@ -442,6 +442,12 @@ func nutrientReportPost(c *gin.Context) {
 	if nr.Page < 0 {
 		nr.Page = 0
 	}
+	if nr.Sort != "" {
+		if strings.ToLower(nr.Sort) != "portion" && strings.ToLower(nr.Sort) != "100value" {
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Value sort values are 'portion' and '100value'"})
+			return
+		}
+	}
 	// validate values
 	if nr.ValueLTE < 0 || nr.ValueGTE < 0 {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "ValueGTE  and ValueLTE must be greater than or equal to 0"})

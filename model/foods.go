@@ -37,6 +37,7 @@ type NutrientReportRequest struct {
 	Max       int     `json:"max"`
 	Nutrient  int     `json:"nutrientno" binding:"required"`
 	FoodGroup string  `json:"foodGroup,omitEmpty"`
+	Sort      string  `json:"sort,omitEmpty"`
 	ValueGTE  float32 `json:"valueGTE"`
 	ValueLTE  float32 `json:"valueLTE"`
 }
@@ -200,6 +201,8 @@ type NutrientReportData struct {
 	Upc             string  `json:"upc"`
 	FoodDescription string  `json:"foodDescription"`
 	Value           float32 `json:"valuePer100UnitServing"`
+	Portion         string  `json:"portion,omitempty"`
+	PortionValue    float32 `json:"valuePerPortion"`
 	Unit            string  `json:"unit"`
 	Type            string  `json:"type"`
 }
