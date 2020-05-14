@@ -604,6 +604,15 @@
             "type": "integer",
             "format": "float32"
           },
+          "sort": {
+            "description": "sort the report using valuePer100UnitServing or valuePortion.  Default is \"100value\" for valuePer100UnitServing",
+            "type": "string",
+            "enum": [
+              "portion",
+              "100value"
+            ],
+            "example": "portion"
+          },
           "page": {
             "type": "integer",
             "format": "int32"
@@ -786,9 +795,17 @@
             "format": "float32",
             "example": 206
           },
-          "Unit": {
+          "unit": {
             "type": "string",
             "example": "KCAL"
+          },
+          "portion": {
+            "type": "string",
+            "example": "10 PIECES (136 g)"
+          },
+          "portionValue": {
+            "type": "string",
+            "example": 280
           }
         }
       },
