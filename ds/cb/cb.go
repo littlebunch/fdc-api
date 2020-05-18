@@ -190,7 +190,7 @@ func (ds *Cb) CloseDs() {
 func (ds *Cb) Bulk(items *[]fdc.NutrientData) error {
 	var v []gocb.BulkOp
 	for _, r := range *items {
-		v = append(v, &gocb.InsertOp{Key: fmt.Sprintf("%s_%d", r.FdcID, r.Nutrientno), Value: r})
+		v = append(v, &gocb.InsertOp{Key: r.ID, r.FdcID, r.Nutrientno), Value: r})
 	}
 	return ds.Conn.Do(v)
 

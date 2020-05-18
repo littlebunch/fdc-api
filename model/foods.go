@@ -133,12 +133,12 @@ type Serving struct {
 
 // Nutrient is metadata abount nutrients usually in a nutrients collection
 type Nutrient struct {
-	NutrientID uint   `json:"id" binding:"required"`
-	Nutrientno uint   `json:"nutrientno" binding:"required"`
-	Tagname    string `json:"tagname,omitempty"`
-	Name       string `json:"name"  binding:"required"`
-	Unit       string `json:"unit"  binding:"required"`
-	Type       string `json:"type"  binding:"required"`
+	NutrientID uint    `json:"id" binding:"required"`
+	Nutrientno float32 `json:"nutrientno" binding:"required"`
+	Tagname    string  `json:"tagname,omitempty"`
+	Name       string  `json:"name"  binding:"required"`
+	Unit       string  `json:"unit"  binding:"required"`
+	Type       string  `json:"type"  binding:"required"`
 }
 
 // Derivation is a code for describing how nutrient values are derived
@@ -167,7 +167,7 @@ type NutrientData struct {
 	PortionValue float64     `json:"portionValue,omitempty"`
 	Unit         string      `json:"unit"  binding:"required"`
 	Derivation   *Derivation `json:"derivation,omitempty"`
-	Nutrientno   uint        `json:"nutrientNumber"`
+	Nutrientno   float32     `json:"nutrientNumber"`
 	Nutrient     string      `json:"nutrientName"`
 	Datapoints   int         `json:"datapoints,omitempty"`
 	Min          float32     `json:"min,omitempty"`
