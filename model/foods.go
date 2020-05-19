@@ -35,7 +35,7 @@ type BrowseNutrients struct {
 type NutrientReportRequest struct {
 	Page      int     `json:"page"`
 	Max       int     `json:"max"`
-	Nutrient  int     `json:"nutrientno" binding:"required"`
+	Nutrient  string  `json:"nutrientno" binding:"required"`
 	FoodGroup string  `json:"foodGroup,omitEmpty"`
 	Sort      string  `json:"sort,omitEmpty"`
 	ValueGTE  float64 `json:"valueGTE"`
@@ -133,12 +133,12 @@ type Serving struct {
 
 // Nutrient is metadata abount nutrients usually in a nutrients collection
 type Nutrient struct {
-	NutrientID uint    `json:"id" binding:"required"`
-	Nutrientno float32 `json:"nutrientno" binding:"required"`
-	Tagname    string  `json:"tagname,omitempty"`
-	Name       string  `json:"name"  binding:"required"`
-	Unit       string  `json:"unit"  binding:"required"`
-	Type       string  `json:"type"  binding:"required"`
+	NutrientID uint   `json:"id" binding:"required"`
+	Nutrientno string `json:"nutrientno" binding:"required"`
+	Tagname    string `json:"tagname,omitempty"`
+	Name       string `json:"name"  binding:"required"`
+	Unit       string `json:"unit"  binding:"required"`
+	Type       string `json:"type"  binding:"required"`
 }
 
 // Derivation is a code for describing how nutrient values are derived
@@ -167,7 +167,7 @@ type NutrientData struct {
 	PortionValue float64     `json:"portionValue,omitempty"`
 	Unit         string      `json:"unit"  binding:"required"`
 	Derivation   *Derivation `json:"derivation,omitempty"`
-	Nutrientno   float32     `json:"nutrientNumber"`
+	Nutrientno   string      `json:"nutrientNumber"`
 	Nutrient     string      `json:"nutrientName"`
 	Datapoints   int         `json:"datapoints,omitempty"`
 	Min          float32     `json:"min,omitempty"`
@@ -190,7 +190,7 @@ type NutrientFoodBrowseItem struct {
 	Value        float64     `json:"valuePer100UnitServing"`
 	Unit         string      `json:"unit"  binding:"required"`
 	Derivation   *Derivation `json:"derivation,omitempty"`
-	Nutrientno   uint        `json:"nutrientNumber"`
+	Nutrientno   string      `json:"nutrientNumber"`
 	Nutrient     string      `json:"nutrientName"`
 	PortionValue float64     `json:"valuePerPortion"`
 }
