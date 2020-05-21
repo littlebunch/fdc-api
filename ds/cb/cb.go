@@ -162,7 +162,7 @@ func (ds *Cb) NutrientReport(bucket string, nr fdc.NutrientReportRequest, nutrie
 	} else {
 		qfield = "n.valuePer100UnitServing"
 	}
-	n1ql := fmt.Sprintf("SELECT n.foodDescription,n.upc,n.fdcId,n.category,n.company,n.valuePer100UnitServing,n.unit,n.portion,n.portionValue FROM %s n USE index(%s) WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND %s between %f AND %f OFFSET %d LIMIT %d", bucket, useIndex(sort, "desc"), w, nr.Nutrient, qfield, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
+	n1ql := fmt.Sprintf("SELECT n.foodDescription,n.upc,n.fdcId,n.category,n.company,n.valuePer100UnitServing,n.unit,n.portion,n.portionValue FROM %s n USE index(%s) WHERE %s n.type=\"NUTDATA\" AND n.nutrientNumber=%d AND %s between %f AND %f OFFSET %d LIMIT %d", bucket, useIndex(sort, nr.Order), w, nr.Nutrient, qfield, nr.ValueGTE, nr.ValueLTE, nr.Page, nr.Max)
 	err := ds.Query(n1ql, nutrients)
 	return err
 }

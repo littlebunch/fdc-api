@@ -527,7 +527,7 @@
           "developers"
         ],
         "operationId": "NutrientReport",
-        "summary": "Return a list of values in descending order for a specified nutrient number.  Optionally filter by FoodGroup description",
+        "summary": "Return a list of foods based on values within a specified range of values for a  nutrient.  Values may be based on per 100 unit or portion and may be ordered descending or ascending.  A report may optionally be filtered by FoodGroup description",
         "requestBody": {
           "required": true,
           "description": "report to perform",
@@ -612,6 +612,15 @@
               "100value"
             ],
             "example": "portion"
+          },
+          "order": {
+            "description": "order the report using valuePer100UnitServing or valuePortion in ascending (asc) or descending order (desc).  The default is desc.",
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "example": "desc"
           },
           "page": {
             "type": "integer",

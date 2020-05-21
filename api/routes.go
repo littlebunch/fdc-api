@@ -448,6 +448,14 @@ func nutrientReportPost(c *gin.Context) {
 			return
 		}
 	}
+	if nr.Order != "" {
+		if strings.ToLower(nr.Order) != "asc" && strings.ToLower(nr.Order) != "desc" {
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Order value should be 'asc' and 'desc'"})
+			return
+		}
+	} else {
+		nr.Order = "desc"
+	}
 	// validate values
 	if nr.ValueLTE < 0 || nr.ValueGTE < 0 {
 		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "ValueGTE  and ValueLTE must be greater than or equal to 0"})
