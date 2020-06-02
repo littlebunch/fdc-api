@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/littlebunch/fdc-api/auth"
 	fdc "github.com/littlebunch/fdc-api/model"
 
 	gocb "gopkg.in/couchbase/gocb.v1"
@@ -69,7 +70,11 @@ func (ds *Cb) GetDictionary(bucket string, doctype string, offset int64, limit i
 		for rows.Next(&row) {
 			i = append(i, row)
 		}
-
+	case "USER":
+		var row auth.User
+		for rows.Next(&row) {
+			i = append(i, row)
+		}
 	case "FGFNDDS":
 		fallthrough
 	case "FGGPC":

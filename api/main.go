@@ -13,6 +13,7 @@ import (
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
+	auth "github.com/littlebunch/fdc-api/auth"
 	"github.com/littlebunch/fdc-api/ds"
 	"github.com/littlebunch/fdc-api/ds/cb"
 	fdc "github.com/littlebunch/fdc-api/model"
@@ -28,7 +29,7 @@ const (
 
 var (
 	s   = flag.String("s", "dist", "Path for static files")
-	i   = flag.Bool("i", false, "Initialize the authentication store")
+	i   = flag.String("i", "", "Initialize the authentication store")
 	c   = flag.String("c", "config.yml", "YAML Config file")
 	l   = flag.String("l", "/tmp/bfpd.out", "send log output to this file -- defaults to /tmp/bfpd.out")
 	p   = flag.String("p", "8000", "TCP port to used")
@@ -65,11 +66,13 @@ func main() {
 	}
 	defer dc.CloseDs()
 	// initialize our jwt authentication
-	//var u *auth.User
-	//if *i {
-	//	u.BootstrapUsers(session, cs.MongoDb.Collection)
-	//}
-	//authMiddleware := u.AuthMiddleware(session, cs.MongoDb.Collection)
+	var u *auth.User
+	if *i != "" {
+		if err = u.BootstrapUsers(i, dc); err != nil {
+			log.Fatalf("cannot bootstrap user %v", err)
+		}
+	}
+	authMiddleware := u.AuthMiddleware(cs.CouchDb.Bucket, dc)
 	//router := gin.Default()
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -78,7 +81,13 @@ func main() {
 	router.LoadHTMLGlob(*s + "/*.html")
 	v1 := router.Group(fmt.Sprintf("%s", *r))
 	{
-		//v1.POST("/login", authMiddleware.LoginHandler)
+		ag := v1.Group("/")
+		ag.Use(authMiddleware.MiddlewareFunc())
+		v1.POST("/login", authMiddleware.LoginHandler)
+		ag.PUT("/user", userAdd)
+		ag.DELETE("/user/:id", userDelete)
+		ag.GET("/user/:id", userList)
+		ag.GET("/users", userList)
 		v1.GET("/nutrients/food/:id", nutrientFdcID)
 		v1.GET("/nutrients/foods", nutrientFdcIDs)
 		v1.GET("/food/:id", foodFdcID)
@@ -89,9 +98,7 @@ func main() {
 		v1.GET("/foods/count/:doctype", countsGet)
 		v1.GET("/dictionary/:type", dictionaryBrowse)
 		v1.GET("/docs/:type", specDoc)
-
 		v1.POST("/nutrients/report", nutrientReportPost)
-		//v1.POST("/user/", authMiddleware.MiddlewareFunc(), userPost)
 	}
 	doc.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "apiDoc.html", nil)

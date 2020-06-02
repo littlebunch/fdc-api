@@ -1,5 +1,5 @@
 # fdc-api
-Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  The site uses the Branded Food Products dataset.  OpenAPI 3.0 documentation is available as HTML at https://go.littlebunch.com/doc.  The specification can also be retrieved as JSON or YAML from the /docs endpoint described below.
+Provides a REST server to query and retrieve USDA [FoodData Central](https://fdc.nal.usda.gov/data-documentation.html) datasets.  You can browse foods from different sources, perform simple searches, access nutrient data for individual foods and obtain lists of foods ordered by nutrient content.  A rudimentary authentication/authorization framework is also included.  A demonstration site for trying the usage examples below is available at https://go.littlebunch.com.  The site uses the Branded Food Products dataset.  OpenAPI 3.0 documentation is available as HTML at https://go.littlebunch.com/doc.  The specification can also be retrieved as JSON or YAML from the /docs endpoint described below.  
 
 # What's in the repo    
 /api -- source for the REST web server    
@@ -76,6 +76,7 @@ where
   -c configuration file to use (defaults to ./config.yml )      
   -p TCP port to run server (defaults to 8000)    
   -r root deployment context (v1)    
+  -i username:password bootstrap an admin user and password
   -l send stdout/stderr to named file (defaults to /tmp/bfpd.out
  ```
  
@@ -122,8 +123,7 @@ curl 'https://go.littlebunch.com/v1/nutrients/foods?id=344604&id=042222850325&id
 curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=foodDescription'
 curl 'https://go.littlebunch.com/v1/foods/browse?page=1&max=50&sort=company&order=desc'    
 ```
-
-
+      
 ### Search foods (GET): 
 Perform a simple keyword search of the index.  Include quotes to search phrases, e.g. ?q='"bubbies homemade"'. For more complicated and/or precise searches, use the POST method.   
 ```

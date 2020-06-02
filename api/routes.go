@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	auth "github.com/littlebunch/fdc-api/auth"
 	fdc "github.com/littlebunch/fdc-api/model"
 )
 
@@ -475,6 +476,85 @@ func nutrientReportPost(c *gin.Context) {
 	}
 	results := fdc.BrowseNutrientReport{Request: nr, Items: nutdata}
 	c.JSON(http.StatusOK, results)
+}
+
+// Add a user
+func userAdd(c *gin.Context) {
+	var (
+		rt auth.RoleType
+		dt fdc.DocType
+	)
+	u := auth.User{}
+	err := c.BindJSON(&u)
+	if err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		return
+	}
+	u.Password, err = auth.HashPassword(u.Password)
+	if err != nil {
+		log.Println(err)
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		return
+	}
+	if u.Role == "" {
+		u.Role = rt.ToString(auth.USER)
+	}
+	u.ID = fmt.Sprintf("%s:%s", dt.ToString(fdc.USER), u.Name)
+	u.Type = dt.ToString(fdc.USER)
+	err = dc.Update(u.ID, u)
+	if err != nil {
+		log.Println(err)
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+		return
+
+	}
+	u.Password = ""
+	c.JSON(http.StatusOK, u)
+}
+
+// Delete a user
+func userDelete(c *gin.Context) {
+	var (
+		dt fdc.DocType
+	)
+
+	id := c.Param("id")
+	if id == "" {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User name is required"})
+		return
+	}
+	uid := fmt.Sprintf("%s:%s", dt.ToString(fdc.USER), id)
+	err = dc.Remove(uid)
+	if err != nil {
+		errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User name name not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": fmt.Sprintf("User %s deleted ", id)})
+}
+
+// userList returns one user or a list of users
+func userList(c *gin.Context) {
+	var (
+		dt fdc.DocType
+		u  auth.User
+	)
+	q := c.Param("id")
+	if q != "" {
+		uid := fmt.Sprintf("%s:%s", dt.ToString(fdc.USER), q)
+		if err := dc.Get(uid, &u); err != nil {
+			errorout(c, http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "User name name not found"})
+			return
+		}
+		c.JSON(http.StatusOK, u)
+	} else {
+		items, err := dc.GetDictionary(cs.CouchDb.Bucket, dt.ToString(fdc.USER), 0, 100)
+		if err != nil {
+			errorout(c, http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Error."})
+			return
+		}
+		results := fdc.BrowseResult{Count: int32(len(items)), Start: int32(0), Max: int32(len(items)), Items: items}
+		c.JSON(http.StatusOK, results)
+	}
 }
 
 // errorout

@@ -31,7 +31,7 @@ const (
 	NUT
 	DERV
 	FOOD
-	FOOD_DEL
+	USER
 	NUTDATA
 )
 
@@ -60,8 +60,8 @@ func (dt *DocType) ToDocType(t string) DocType {
 		return DERV
 	case "FOOD":
 		return FOOD
-	case "FOOD_DEL":
-		return FOOD_DEL
+	case "USER":
+		return USER
 	default:
 		return 999
 	}
@@ -92,8 +92,8 @@ func (dt *DocType) ToString(t DocType) string {
 		return "DERV"
 	case FOOD:
 		return "FOOD"
-	case FOOD_DEL:
-		return "FOOD_DEL"
+	case USER:
+		return "USER"
 	default:
 		return ""
 	}

@@ -13,9 +13,122 @@ info:
 servers: 
   - url: https://go.littlebunch.com
 tags:
+  - name: admin
+    description: Operations avaiable for administrators
   - name: developers
     description: Operations available to regular developers
 paths:
+  /v1/login:
+    post:
+      tags:
+        - admin
+      summary: login by username and password
+      description: valid credentials will return a bearer token which can then be sent on authorization requests to protected operations.
+      operationId: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/login'
+      responses:
+        '200':
+          description: results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/loginresult'
+                
+        '400':
+          description: bad input parameter
+        '401':
+          description: incorrect user name or password
+  /v1/user/{username}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - admin
+      summary: delete user record for username
+      operationId: DeleteUser
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: username of user to delete
+          schema:
+            type: string
+            example: "myuser"
+      responses:
+        '200':
+          description: delete successful
+        '401':
+          description: token is expired
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - admin
+      summary: list user record for username
+      operationId: ListUser
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: username of user to delete
+          schema:
+            type: string
+            example: "myuser"
+      responses:
+        '200':
+          description: returns user record
+          content:
+           application/json:
+            schema:
+              $ref: '#/components/schemas/user'
+        '401':
+          description: token is expired
+  /v1/user:
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - admin
+      summary: Add or edit user record for username
+      operationId: AddUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user'
+      responses:
+        '200':
+          description: add/edit successful
+        '400':
+          description: missing required data
+        '401':
+          description: token is expired
+  /v1/users:
+    get:
+      security:
+        - bearerAuth: []
+      tags: 
+        - admin
+      summary: list all admin users
+      operationId: ListUsers
+      responses:
+        '200':
+          description: list of users
+          content:
+           application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/user'
+        '401':
+          description: token is expired
+        
   /v1/dictionary/{type}:
     get:
       tags:
@@ -393,6 +506,11 @@ paths:
           description: no results found
   
 components:
+  securitySchemes:
+      bearerAuth: 
+        type: http
+        scheme: bearer
+        bearerFormat: JWT 
   schemas:
     BrowseNutrientReport:
       type: object
@@ -765,5 +883,38 @@ components:
         type:
           type: string
           example: "FOOD"
+    login:
+      description: login credentials
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    loginresult:
+      properties:
+        code:
+          type: integer
+          description: http response code
+          example: 200
+        expire: 
+          type: string
+          example: "2020-05-31T10:43:24-04:00"
+        token:
+            type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA5MzYyMDQsIm9yaWdfaWF0IjoxNTkwOTMyNjA0LCJyb2xlIjoiQURNSU4ifQ.cZjm02Nk06IMUIcKNwQb_NzimBz9cEztmEa4k-itnmI"
+    user:
+      properties:
+        name:
+          type: string
+          description: username identifying a user
+          example: "myuser"
+        password:
+          type: string
+        email:
+          type: string
+          description: email address for the user
+          example: "myuser@example.com"
+          
+          
             
    
